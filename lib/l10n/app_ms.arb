@@ -26,7 +26,7 @@
   "errorRateLimited": "Terlalu banyak cubaan. Sila cuba sebentar lagi.",
   "errorInvalidCredentials": "E-mel atau kata laluan tidak betul.",
   "errorEmailNotConfirmed": "Sila sahkan e-mel anda dahulu. Semak peti masuk anda.",
-  "errorEmailInUse": "E-mel ini sudah didaftarkan.",
+  "errorEmailInUse": "E-mel ini sudah didaftarkan. Log masuk, atau guna \"Lupa kata laluan\" untuk menetapkan kata laluan baharu.",
   "errorWeakPassword": "Kata laluan terlalu lemah.",
   "errorConfirmationMismatch": "Teks pengesahan tidak sepadan.",
   "errorOwnerMustTransfer": "Pindahkan pemilikan keluarga dahulu sebelum keluar.",

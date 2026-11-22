@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.5] - 2026-11-22: Email delivery fixes
+
+### Fixed
+- Signing up with an already-registered email now shows "E-mel ini sudah didaftarkan…" instead of
+  waiting for a code. Supabase sends no email in that case (`user_repeated_signup`); it is detected from
+  the empty `identities` list.
+- Project SMTP username set to the full Gmail address. Auth logs showed Gmail rejecting the login
+  (`535 5.7.8 BadCredentials`).
+
 ## [0.1.4] - 2026-11-22: Branded code emails live
 
 ### Deployed

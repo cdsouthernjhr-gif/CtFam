@@ -39,7 +39,12 @@ boleh lewat atau masuk ke folder Spam. Untuk kegunaan keluarga, pasang **SMTP se
   (Akaun Google → Keselamatan → Pengesahan 2 Langkah → App passwords).
 - **Resend / Brevo / SendGrid**: pelan percuma tersedia; ikut panduan SMTP mereka.
 
-Sender name: `FamilySync`. Selepas SMTP dipasang, naikkan had *Rate Limits → emails sent per hour*
+Sender name: `FamilySync`.
+
+**Penting untuk Gmail:** *Username* mesti alamat Gmail **penuh** (`nama@gmail.com`), dan *Password* mesti
+**App Password** 16 huruf (tanpa ruang), bukan kata laluan Gmail biasa. App Password hanya boleh dicipta
+selepas *Pengesahan 2 Langkah* diaktifkan. Jika log Auth menunjukkan `535 5.7.8 Username and Password not
+accepted`, salah satu daripada dua perkara ini masih salah. Selepas SMTP dipasang, naikkan had *Rate Limits → emails sent per hour*
 (contoh 30).
 
 ## 4. Lain-lain (Authentication → Sign In / Providers → Email)

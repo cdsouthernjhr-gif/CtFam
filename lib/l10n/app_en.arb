@@ -26,7 +26,7 @@
   "errorRateLimited": "Too many attempts. Please try again shortly.",
   "errorInvalidCredentials": "Incorrect email or password.",
   "errorEmailNotConfirmed": "Please confirm your email first. Check your inbox.",
-  "errorEmailInUse": "This email is already registered.",
+  "errorEmailInUse": "This email is already registered. Sign in, or use \"Forgot password\" to set a new password.",
   "errorWeakPassword": "That password is too weak.",
   "errorConfirmationMismatch": "The confirmation text does not match.",
   "errorOwnerMustTransfer": "Transfer family ownership before leaving.",

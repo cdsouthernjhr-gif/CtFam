@@ -31,6 +31,13 @@ class AuthRepository {
           data: {'display_name': displayName.trim()},
           emailRedirectTo: AppConfig.authRedirectUrl,
         );
+        // When the email is already registered, Supabase returns a user with
+        // no identities and sends NO email (protection against account
+        // enumeration). Tell the user instead of waiting for a code forever.
+        final identities = res.user?.identities;
+        if (res.session == null && identities != null && identities.isEmpty) {
+          throw const AppFailure(FailureKind.emailInUse, 'repeated signup');
+        }
         return res.session != null ? SignUpOutcome.signedIn : SignUpOutcome.confirmationEmailSent;
       });
 
