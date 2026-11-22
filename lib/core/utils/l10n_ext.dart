@@ -43,6 +43,7 @@ extension AppLocalizationsX on AppLocalizations {
     FailureKind.invalidCode => errorInvalidCode,
     FailureKind.server => errorServer,
     FailureKind.emailDelivery => errorEmailDelivery,
+    FailureKind.conflict => errorConflict,
     FailureKind.unknown => errorGeneric,
   };
 

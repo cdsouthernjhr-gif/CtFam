@@ -489,5 +489,227 @@
   "errorInvalidCode": "Kod tidak sah atau telah tamat tempoh. Minta kod baharu.",
   "emailVerified": "E-mel disahkan. Selamat datang!",
   "errorServer": "Pelayan menghadapi masalah. Ini bukan masalah sambungan internet anda. Cuba lagi sebentar.",
-  "errorEmailDelivery": "Pelayan tidak dapat menghantar e-mel sekarang. Ini bukan masalah internet anda. Sila minta pentadbir FamilySync menyemak tetapan e-mel (SMTP)."
+  "errorEmailDelivery": "Pelayan tidak dapat menghantar e-mel sekarang. Ini bukan masalah internet anda. Sila minta pentadbir FamilySync menyemak tetapan e-mel (SMTP).",
+  "errorConflict": "Tugasan ini baru diubah oleh ahli lain. Versi terkini telah dimuatkan, sila semak dan cuba lagi.",
+  "catShopping": "Membeli-belah",
+  "catGrocery": "Barang dapur",
+  "catHousehold": "Rumah",
+  "catSchool": "Sekolah",
+  "catFamilyActivities": "Aktiviti keluarga",
+  "catBills": "Bil",
+  "catTravel": "Percutian",
+  "catPersonal": "Peribadi",
+  "catCustom": "Lain-lain",
+  "priorityLow": "Rendah",
+  "priorityNormal": "Biasa",
+  "priorityHigh": "Tinggi",
+  "priorityUrgent": "Segera",
+  "repeatNone": "Tidak berulang",
+  "repeatDaily": "Setiap hari",
+  "repeatWeekly": "Setiap minggu",
+  "repeatMonthly": "Setiap bulan",
+  "repeatYearly": "Setiap tahun",
+  "dueToday": "Hari ini",
+  "dueTomorrow": "Esok",
+  "dueYesterday": "Semalam",
+  "todoListsTitle": "Senarai tugasan",
+  "newList": "Senarai baharu",
+  "noListsTitle": "Belum ada senarai",
+  "noListsBody": "Cipta senarai pertama, contohnya barang dapur atau kerja rumah, dan kongsi dengan keluarga.",
+  "filterAll": "Semua",
+  "filterOpen": "Belum siap",
+  "filterCompleted": "Siap",
+  "itemsProgress": "{done}/{total} siap",
+  "@itemsProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "overdueCount": "{count} lewat",
+  "@overdueCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dueTodayCount": "{count} hari ini",
+  "@dueTodayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listName": "Nama senarai",
+  "listNameHint": "cth. Barang dapur minggu ini",
+  "category": "Kategori",
+  "membersOnlyList": "Hanya ahli terpilih",
+  "membersOnlyListHint": "Hanya anda, ahli yang dipilih dan pentadbir keluarga boleh melihat senarai ini.",
+  "createList": "Cipta senarai",
+  "listDeleted": "Senarai ini telah dipadam.",
+  "backToLists": "Kembali ke senarai",
+  "searchTasks": "Cari tugasan",
+  "renameList": "Tukar nama senarai",
+  "deleteList": "Padam senarai",
+  "deleteListTitle": "Padam \"{name}\"?",
+  "@deleteListTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteListBody": "Senarai dan semua tugasannya akan dibuang untuk semua ahli.",
+  "noTasksTitle": "Belum ada tugasan",
+  "noTasksBody": "Taip tugasan di bawah dan tekan +.",
+  "noMatchingTasks": "Tiada tugasan sepadan dengan penapis.",
+  "completedCount": "Siap ({count})",
+  "@completedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addTaskHint": "Tambah tugasan…",
+  "addTask": "Tambah tugasan",
+  "addTaskDetailed": "Tambah dengan butiran",
+  "filterByMember": "Ahli",
+  "everyone": "Semua ahli",
+  "syncing": "Menyegerak…",
+  "deleteTaskTitle": "Padam tugasan?",
+  "newTask": "Tugasan baharu",
+  "editTask": "Butiran tugasan",
+  "taskTitle": "Tugasan",
+  "priority": "Keutamaan",
+  "noDueDate": "Tiada tarikh akhir",
+  "clearDueDate": "Buang tarikh akhir",
+  "repeat": "Ulang",
+  "assignTo": "Tugaskan kepada",
+  "comments": "Komen",
+  "writeComment": "Tulis komen…",
+  "send": "Hantar",
+  "noComments": "Belum ada komen.",
+  "todoActListCreated": "{actor} mencipta senarai \"{title}\"",
+  "@todoActListCreated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "todoActListUpdated": "{actor} mengemas kini senarai \"{title}\"",
+  "@todoActListUpdated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "todoActListDeleted": "{actor} memadam senarai",
+  "@todoActListDeleted": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "todoActListMembers": "{actor} menukar ahli senarai",
+  "@todoActListMembers": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "todoActItemCreated": "{actor} menambah \"{title}\"",
+  "@todoActItemCreated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "todoActItemUpdated": "{actor} mengubah \"{title}\"",
+  "@todoActItemUpdated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "todoActItemCompleted": "{actor} menyiapkan \"{title}\"",
+  "@todoActItemCompleted": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "todoActItemReopened": "{actor} membuka semula \"{title}\"",
+  "@todoActItemReopened": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "todoActItemDeleted": "{actor} memadam \"{title}\"",
+  "@todoActItemDeleted": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "todoActItemAssigned": "{actor} menukar penerima tugasan",
+  "@todoActItemAssigned": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "todoActItemRecurred": "\"{title}\" dijadualkan semula",
+  "@todoActItemRecurred": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardTodayTasks": "Tugasan hari ini",
+  "viewAllTasks": "Lihat semua",
+  "dashboardNoTasksToday": "Tiada tugasan untuk hari ini.",
+  "statToday": "Hari ini",
+  "statOverdue": "Lewat",
+  "statMine": "Saya",
+  "statOpen": "Belum siap"
 }

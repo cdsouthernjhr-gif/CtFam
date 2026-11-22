@@ -39,7 +39,7 @@ Never paste service-role keys, keystore passwords or service-account JSON into c
 |---|---|---|
 | 0 | Environment audit | **Done** |
 | 1 | Flutter project, auth, profiles, families, roles, invitations, migrations, RLS | **Done** (not yet run against a hosted project or on a device) |
-| 2 | Realtime To-Do: lists, items with `revision` + idempotent `set_todo_item_state` RPC, assignments, comments, activity, categories, filters, recurring tasks, `todo:{list_id}` channel, optimistic UI with rollback | Not started |
+| 2 | Realtime To-Do: lists, items with `revision`, idempotent RPCs, assignments, comments, activity, categories, filters, recurring tasks, `todo:{list_id}` channel, optimistic UI with rollback | **Done, deployed** (see §11) |
 | 3 | Chat: race-safe direct conversations (unique pair per family), groups, messages with client UUIDs (idempotent send), receipts, Broadcast typing, Presence online status, attachments in private bucket, pagination, search, pin, mute | Not started |
 | 4 | FCM: token registration (table + RPC already exist), `notification_queue`, Edge Function sender, preferences, lock-screen privacy, tap navigation, dedupe | Not started |
 | 5 | Calendar: events, participants, reminders, recurrence (RRULE), month/week/day views | Not started |
@@ -56,7 +56,7 @@ Never paste service-role keys, keystore passwords or service-account JSON into c
 | C. Invitations | **Complete in code, verified by tests** | Includes race test (20 sessions → 1 join) |
 | D. Private chat | Not implemented | Tab shows "coming soon" |
 | E. Group chat | Not implemented | |
-| F. Shared To-Do | Not implemented | |
+| F. Shared To-Do | **Complete in code, verified by tests, deployed** | Not yet tested on two physical devices at once |
 | G. Calendar | Not implemented | |
 | H. Notifications | Partial: `device_tokens` + `register_device_token` RPC + preference columns only | No Firebase integration |
 | I. Offline | Not implemented | Network errors show a retry state |
@@ -192,3 +192,19 @@ Management API, so sign-up confirmation and password reset are fully code-based 
   while SMTP is broken. Risk is limited because new accounts cannot see any family data without an
   invitation, but email ownership is not verified. **Turn it back OFF once a Gmail App Password is
   saved and a recovery email is confirmed delivered (`mail.send` in the Auth logs).**
+
+## 11. Phase 2: real-time shared To-Do (2026-11-23)
+
+| Check | Result |
+|---|---|
+| pgTAP `03_todo.test.sql` | **63 assertions passed**: cross-family isolation, members-only lists, direct writes denied, idempotent create, revision conflicts, idempotent status, recurrence, comments as self, suspended member lockout, deleted lists |
+| `todo_concurrent_updates.sh` | 12 sessions editing one item at revision 1: **1 ok, 11 revision_conflict**. 12 sessions completing one recurring item: **1 next occurrence** |
+| Flutter tests | **65 passed** (merge, filter and sort logic; controller optimistic success, rollback, conflict reload, stale Realtime events, remote list deletion; list screen toggle, quick add, member filter) |
+| Hosted deploy | migration `todo` applied via Management API (same file as tested); rolled-back end-to-end check as the real user: revision bump, stale edit rejected, 1 recurrence, summary counts, anon denied |
+| Advisors | no new findings except "unused index" on empty new tables (expected) and the accepted SECURITY DEFINER notices |
+
+**Design note:** Postgres Changes only delivers rows that pass the SELECT policy. To-Do read policies
+therefore include soft-deleted rows (`private.can_read_todo_list`), so other devices receive deletions.
+The client filters `deleted_at`. All writes require an active list (`private.can_access_todo_list`).
+
+**Not yet verified:** live Realtime between two physical phones (needs two signed-in devices).

@@ -21,6 +21,7 @@ enum FailureKind {
   invalidCode,
   server,
   emailDelivery,
+  conflict,
   unknown,
 }
 
@@ -88,6 +89,7 @@ class AppFailure implements Exception {
       '42501' => FailureKind.forbidden,
       'P0429' => FailureKind.rateLimited,
       'P0002' => FailureKind.notFound,
+      'P0409' => FailureKind.conflict,
       '22023' || '23514' || '23505' => FailureKind.invalidInput,
       _ => FailureKind.unknown,
     };
@@ -97,10 +99,12 @@ class AppFailure implements Exception {
   static FailureKind? _kindForCode(String? code) => switch (code) {
     'forbidden' || 'cannot_manage_self' => FailureKind.forbidden,
     'rate_limited' => FailureKind.rateLimited,
+    'revision_conflict' => FailureKind.conflict,
     'confirmation_mismatch' => FailureKind.confirmationMismatch,
     'owner_must_transfer' => FailureKind.ownerMustTransfer,
     'member_not_found' => FailureKind.notFound,
     'not_authenticated' => FailureKind.forbidden,
+    'invalid_input' ||
     'invalid_max_uses' ||
     'invalid_expiry' ||
     'invalid_status' ||

@@ -17,6 +17,8 @@ import '../../features/invitation/presentation/create_invitation_screen.dart';
 import '../../features/invitation/presentation/invitations_screen.dart';
 import '../../features/invitation/presentation/join_family_screen.dart';
 import '../../features/settings/presentation/profile_screen.dart';
+import '../../features/todo/presentation/todo_activity_screen.dart';
+import '../../features/todo/presentation/todo_list_screen.dart';
 import '../../features/todo/presentation/todo_screen.dart';
 import '../../shared/providers/session_controller.dart';
 import '../utils/invite_code.dart';
@@ -127,7 +129,24 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [GoRoute(path: Routes.chat, builder: (_, _) => const ChatScreen())],
           ),
           StatefulShellBranch(
-            routes: [GoRoute(path: Routes.todo, builder: (_, _) => const TodoScreen())],
+            routes: [
+              GoRoute(
+                path: Routes.todo,
+                builder: (_, _) => const TodoScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':listId',
+                    builder: (_, state) => TodoListScreen(listId: state.pathParameters['listId']!),
+                    routes: [
+                      GoRoute(
+                        path: 'activity',
+                        builder: (_, state) => TodoActivityScreen(listId: state.pathParameters['listId']!),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: Routes.calendar, builder: (_, _) => const CalendarScreen())],

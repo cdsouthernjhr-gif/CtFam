@@ -7,9 +7,9 @@ Android app with **Flutter** on a **Supabase** backend.
 - **Languages:** Bahasa Melayu (primary), English
 - **Target:** private family groups of 20–100+ members
 
-> **Status: Phase 1 (foundation) complete. Phases 2–8 not started.**
-> Authentication, profiles, families, roles and secure invitations work end to end against the
-> database. Chat, To-Do, Calendar, push notifications and offline mode are **not implemented yet**;
+> **Status: Phases 1 (foundation) and 2 (real-time To-Do) complete and deployed. Phases 3–8 not started.**
+> Authentication, profiles, families, roles, secure invitations and shared real-time To-Do lists work end to
+> end against the database. Chat, Calendar, push notifications and offline mode are **not implemented yet**;
 > their tabs show an honest "coming soon" screen. See [docs/STATUS.md](docs/STATUS.md).
 
 ## What works today (Phase 1)
@@ -24,7 +24,8 @@ Android app with **Flutter** on a **Supabase** backend.
 | Invitations | 80-bit random codes (only a hash is stored), share link + QR code, expiry, usage limits, single-use or multi-use, revoke, history, optional admin approval, brute-force limiting, race-safe redemption |
 | Activity | Family activity feed (member-visible) plus an admin audit trail |
 | Realtime | Member list and family details update live through the `family:{id}` channel |
-| Dashboard | Family header, member overview, recent activity, quick invite |
+| To-Do (Phase 2) | Shared lists (family-wide or members-only), tasks with priority, due date, recurrence, assignees and comments; live sync across devices; optimistic UI with rollback; revision conflict detection; filters by status, member and search; progress; activity history |
+| Dashboard | Family header, member overview, today's/overdue/my tasks, recent activity, quick invite |
 
 ## Repository layout
 

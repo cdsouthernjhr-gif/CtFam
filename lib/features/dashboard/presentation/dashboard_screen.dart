@@ -12,6 +12,9 @@ import '../../family/domain/family_models.dart';
 import '../../family/domain/family_permissions.dart';
 import '../../family/presentation/activity_screen.dart';
 import '../../family/presentation/family_providers.dart';
+import '../../todo/domain/todo_models.dart';
+import '../../todo/presentation/todo_providers.dart';
+import '../../todo/presentation/todo_ui.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -32,6 +35,7 @@ class DashboardScreen extends ConsumerWidget {
       ref.invalidate(familyMembersProvider(familyId));
       ref.invalidate(familyActivityProvider(familyId));
       ref.invalidate(myProfileProvider);
+      ref.invalidate(todoOverviewProvider(familyId));
       await ref.read(familyMembersProvider(familyId).future);
     }
 
@@ -104,18 +108,11 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: AppSpacing.lg),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Row(
-                  children: [
-                    Icon(Icons.auto_awesome_outlined, color: Theme.of(context).colorScheme.secondary),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(child: Text(l10n.dashboardComingSoon)),
-                  ],
-                ),
-              ),
+            _SectionHeader(
+              title: l10n.dashboardTodayTasks,
+              action: TextButton(onPressed: () => context.go(Routes.todo), child: Text(l10n.viewAllTasks)),
             ),
+            _TodayTasks(familyId: familyId),
             const SizedBox(height: AppSpacing.lg),
             _SectionHeader(
               title: l10n.dashboardRecentActivity,
@@ -198,5 +195,89 @@ class _SectionHeader extends StatelessWidget {
       ),
       ?action,
     ],
+  );
+}
+
+/// Today's / overdue / my open tasks, live via the family To-Do channel.
+class _TodayTasks extends ConsumerWidget {
+  const _TodayTasks({required this.familyId});
+
+  final String familyId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final overview = ref.watch(todoOverviewProvider(familyId));
+    return overview.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.all(AppSpacing.md),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => ListTile(
+        leading: const Icon(Icons.error_outline),
+        title: Text(context.errorText(e)),
+        trailing: IconButton(
+          icon: const Icon(Icons.refresh),
+          onPressed: () => ref.invalidate(todoOverviewProvider(familyId)),
+        ),
+      ),
+      data: (o) {
+        final shown = <TodoItem>[...o.overdue, ...o.today].take(5).toList();
+        final now = DateTime.now();
+        return Card(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 0),
+                child: Row(
+                  children: [
+                    _Stat(value: o.today.length, label: l10n.statToday, color: theme.colorScheme.primary),
+                    _Stat(value: o.overdue.length, label: l10n.statOverdue, color: theme.colorScheme.error),
+                    _Stat(value: o.mine.length, label: l10n.statMine, color: theme.colorScheme.secondary),
+                    _Stat(value: o.openCount, label: l10n.statOpen, color: theme.colorScheme.onSurfaceVariant),
+                  ],
+                ),
+              ),
+              if (shown.isEmpty)
+                Padding(padding: const EdgeInsets.all(AppSpacing.md), child: Text(l10n.dashboardNoTasksToday))
+              else
+                for (final item in shown)
+                  ListTile(
+                    dense: true,
+                    leading: Icon(
+                      item.isOverdue(now) ? Icons.warning_amber_rounded : Icons.radio_button_unchecked,
+                      color: item.isOverdue(now) ? theme.colorScheme.error : null,
+                    ),
+                    title: Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: item.dueAt == null ? null : Text(dueLabel(l10n, item.dueAt!, now)),
+                    onTap: () => context.go('/todo/${item.listId}'),
+                  ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat({required this.value, required this.label, required this.color});
+
+  final int value;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Column(
+      children: [
+        Text(
+          '$value',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: color, fontWeight: FontWeight.w700),
+        ),
+        Text(label, style: Theme.of(context).textTheme.labelSmall, textAlign: TextAlign.center),
+      ],
+    ),
   );
 }

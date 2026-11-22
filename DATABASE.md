@@ -9,6 +9,7 @@ Postgres 17 on Supabase. Migrations live in `supabase/migrations/` and are appli
 | `20261122000300_realtime_family.sql` | adds `family_members`, `families` to `supabase_realtime` |
 | `20261122000400_backfill_existing_users.sql` | profile + preferences for accounts that existed before install (idempotent) |
 | `20261122000500_fk_indexes.sql` | covering indexes for foreign keys |
+| `20261123000100_todo.sql` | shared To-Do: tables, RLS, RPCs, Realtime publication |
 
 All timestamps are `timestamptz` (stored in UTC, displayed in the device's local time). All primary keys
 are UUIDs.
@@ -69,11 +70,41 @@ dispose. After every (re)subscribe the client re-fetches, so missed events while
 Planned channels: `todo:{list_id}` (Phase 2), `conversation:{id}` with Broadcast for typing and Presence
 for online status (Phase 3).
 
+## To-Do (Phase 2)
+
+| Table | Purpose | Client access |
+|---|---|---|
+| `todo_lists` | list per family; `visibility` = `family` or `members`; `revision`; soft delete | read via `can_read_todo_list`; writes via RPC |
+| `todo_list_members` | explicit members of a members-only list | read; writes via `set_todo_list_members` |
+| `todo_items` | tasks; `status`, `priority`, `due_at`, `recurrence`, `recurrence_source_id` (unique), `revision`, soft delete | read; writes via RPC |
+| `todo_assignments` | item ↔ member (denormalised `list_id`, `family_id`) | read; writes via `upsert_todo_item` |
+| `todo_comments` | comments (client UUID for idempotent posting) | read; insert as self; edit own |
+| `todo_activity_logs` | per-list history | read |
+| `todo_categories` | custom categories per family | members CRUD (own) |
+
+**Access helpers:** `private.can_read_todo_list` (family member and list visible, *including* soft-deleted
+rows, so Realtime delivers deletions) and `private.can_access_todo_list` (same, but active lists only; used
+for every write).
+
+| RPC | Notes |
+|---|---|
+| `create_todo_list(id, family_id, name, category, description, visibility, member_ids)` | idempotent on `id` |
+| `update_todo_list(id, name, description, category, expected_revision)` | creator or owner/admin; `revision_conflict` (P0409) |
+| `delete_todo_list(id)` | creator or owner/admin; soft delete |
+| `set_todo_list_members(list_id, user_ids)` | creator or owner/admin; members must be active family members |
+| `upsert_todo_item(id, list_id, title, description, priority, due_at, recurrence, assignee_ids, expected_revision)` | idempotent create; stale edit gives `revision_conflict`; `assignee_ids` null = unchanged |
+| `set_todo_item_status(id, completed)` | idempotent; recurring items create the next occurrence once |
+| `delete_todo_item(id)` | item creator, list creator or owner/admin; idempotent |
+| `todo_list_summaries(family_id)` | SECURITY INVOKER; progress, overdue and due-today counts |
+
+**Realtime:** `todo_lists`, `todo_items`, `todo_comments` are in `supabase_realtime`. Channels:
+`todo:{list_id}` (filter `list_id` / `id`) and `todo-family:{family_id}` (filter `family_id`). Assignment
+changes bump the item's revision, so they arrive as `todo_items` updates.
+
 ## Planned tables (later phases)
 
 Chat (`conversations`, `conversation_members`, `messages`, `message_attachments`, `message_receipts`),
-To-Do (`todo_lists`, `todo_list_members`, `todo_items` with `revision` column, `todo_assignments`,
-`todo_activity_logs`, `todo_comments`, `todo_categories`), Calendar (`family_events`,
+Calendar (`family_events`,
 `event_participants`, `event_reminders`), notifications (`notifications`, `notification_queue`) and
 `sync_operations`. They will be added as new migrations, and existing migrations will not be edited once
 deployed.

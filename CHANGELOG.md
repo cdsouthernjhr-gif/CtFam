@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.2.0] - 2026-11-23: Phase 2, real-time shared To-Do
+
+### Added
+- **Database** (`20261123000100_todo.sql`): todo_categories, todo_lists, todo_list_members, todo_items,
+  todo_assignments, todo_comments, todo_activity_logs, all with RLS. Lists are family-wide or members-only.
+- **RPCs:** create/update/delete list (idempotent create, revision-checked update),
+  `upsert_todo_item` (idempotent create with a client UUID, `revision_conflict` on stale edits),
+  `set_todo_item_status` (idempotent set, never a blind toggle; recurring items spawn the next occurrence
+  exactly once), `delete_todo_item`, `set_todo_list_members`, `todo_list_summaries`.
+- **Realtime:** `todo:{list_id}` per open list and `todo-family:{family_id}` for the overview. Read access
+  includes soft-deleted rows so deletions are delivered; the client filters them out.
+- **App:** lists overview with category filter and progress, list screen with quick add, status, member
+  and search filters, progress bar, completed section, item sheet (priority, due date and time, recurrence,
+  assignees, comments), list activity history, rename and delete, live "syncing" state.
+- **Optimistic UI with rollback**, revision-based merge (stale or duplicate Realtime events ignored),
+  conflict reload, and a full refetch after reconnect.
+- **Dashboard:** today's, overdue, my and open task counters plus the next tasks due.
+- **Tests:** 63 pgTAP assertions; a concurrency test (12 sessions: 1 edit wins and 11 get conflicts; a
+  recurring item completed concurrently creates exactly 1 next occurrence); 65 Flutter tests.
+
 ## [0.1.6] - 2026-11-22: Correct error for server-side email failures
 
 ### Fixed
