@@ -1,0 +1,50 @@
+name: familysync
+description: "FamilySync - private family chat, shared to-do lists and calendar."
+publish_to: 'none'
+
+# versionName+versionCode. Bump the build number for every release upload.
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.14.0
+  flutter: ">=3.50.0"
+
+# Versions are pinned exactly; pubspec.lock is committed.
+# supabase_flutter: 2.18.3 is the latest STABLE release. 3.x is only available as
+# 3.0.0-dev.* pre-releases, so v3 APIs are intentionally NOT used.
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  material_ui: 1.11.1
+  cupertino_icons: 1.0.8
+
+  supabase_flutter: 2.18.3
+  flutter_riverpod: 3.5.0
+  go_router: 18.1.4
+  intl: 0.20.3
+  qr_flutter: 4.1.0
+  image_picker: 1.2.4
+  share_plus: 13.3.1
+  uuid: 4.6.0
+  package_info_plus: 10.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: 6.0.0
+  mocktail: 1.0.5
+  flutter_launcher_icons: 0.14.4
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/branding/icon.png
+  adaptive_icon_background: "#1B2A4A"
+  adaptive_icon_foreground: assets/branding/icon_foreground.png
+  min_sdk_android: 24

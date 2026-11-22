@@ -1,0 +1,464 @@
+{
+  "@@locale": "ms",
+  "appName": "FamilySync",
+  "navHome": "Utama",
+  "navChat": "Sembang",
+  "navTodo": "Tugasan",
+  "navCalendar": "Kalendar",
+  "navFamily": "Keluarga",
+  "actionContinue": "Teruskan",
+  "actionCancel": "Batal",
+  "actionSave": "Simpan",
+  "actionRetry": "Cuba lagi",
+  "actionConfirm": "Sahkan",
+  "actionClose": "Tutup",
+  "actionShare": "Kongsi",
+  "actionCopy": "Salin",
+  "actionDelete": "Padam",
+  "copied": "Disalin",
+  "loading": "Memuatkan…",
+  "saved": "Disimpan.",
+  "refresh": "Muat semula",
+  "signOut": "Log keluar",
+  "errorGeneric": "Sesuatu tidak kena. Sila cuba lagi.",
+  "errorNetwork": "Tiada sambungan internet. Semak rangkaian anda.",
+  "errorForbidden": "Anda tidak mempunyai kebenaran untuk tindakan ini.",
+  "errorRateLimited": "Terlalu banyak cubaan. Sila cuba sebentar lagi.",
+  "errorInvalidCredentials": "E-mel atau kata laluan tidak betul.",
+  "errorEmailNotConfirmed": "Sila sahkan e-mel anda dahulu. Semak peti masuk anda.",
+  "errorEmailInUse": "E-mel ini sudah didaftarkan.",
+  "errorWeakPassword": "Kata laluan terlalu lemah.",
+  "errorConfirmationMismatch": "Teks pengesahan tidak sepadan.",
+  "errorOwnerMustTransfer": "Pindahkan pemilikan keluarga dahulu sebelum keluar.",
+  "errorNotFound": "Tidak dijumpai.",
+  "errorInvalidInput": "Maklumat tidak sah.",
+  "errorStorageRejected": "Fail ditolak. Gunakan imej JPG, PNG atau WebP di bawah 5 MB.",
+  "validationRequired": "Ruangan ini wajib diisi",
+  "validationEmail": "Alamat e-mel tidak sah",
+  "validationPasswordShort": "Kata laluan mesti sekurang-kurangnya {min} aksara",
+  "@validationPasswordShort": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "validationPasswordMix": "Gunakan sekurang-kurangnya satu huruf dan satu nombor",
+  "validationPasswordMismatch": "Kata laluan tidak sepadan",
+  "validationNameShort": "Terlalu pendek",
+  "validationNameLong": "Terlalu panjang",
+  "validationInviteCode": "Kod jemputan tidak sah",
+  "validationPhone": "Nombor telefon tidak sah",
+  "authWelcomeTitle": "Selamat datang ke FamilySync",
+  "authWelcomeSubtitle": "Ruang peribadi untuk keluarga anda berhubung, berkongsi tugasan dan merancang bersama.",
+  "fieldEmail": "E-mel",
+  "fieldPassword": "Kata laluan",
+  "fieldConfirmPassword": "Sahkan kata laluan",
+  "fieldDisplayName": "Nama paparan",
+  "signIn": "Log masuk",
+  "signUp": "Daftar",
+  "signUpTitle": "Cipta akaun",
+  "noAccount": "Belum ada akaun? Daftar",
+  "haveAccount": "Sudah ada akaun? Log masuk",
+  "forgotPassword": "Lupa kata laluan?",
+  "forgotPasswordTitle": "Set semula kata laluan",
+  "forgotPasswordBody": "Masukkan e-mel anda. Kami akan menghantar pautan untuk menetapkan kata laluan baharu.",
+  "sendResetLink": "Hantar pautan",
+  "resetLinkSent": "Jika akaun wujud, pautan telah dihantar ke e-mel anda.",
+  "newPasswordTitle": "Kata laluan baharu",
+  "newPasswordSave": "Simpan kata laluan",
+  "passwordUpdated": "Kata laluan dikemas kini.",
+  "confirmEmailSent": "Kami telah menghantar e-mel pengesahan ke {email}. Buka pautan dalam e-mel untuk mengaktifkan akaun anda.",
+  "@confirmEmailSent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "configErrorTitle": "Konfigurasi diperlukan",
+  "configErrorBody": "Aplikasi ini dibina tanpa konfigurasi Supabase yang sah. Lihat DEVELOPMENT.md.",
+  "sessionLoadError": "Tidak dapat memuatkan data keluarga.",
+  "onboardingTitle": "Sertai keluarga anda",
+  "onboardingBody": "Cipta keluarga baharu atau sertai keluarga sedia ada dengan kod jemputan.",
+  "createFamily": "Cipta keluarga",
+  "joinWithCode": "Sertai dengan kod",
+  "pendingApprovalTitle": "Menunggu kelulusan",
+  "pendingApprovalBody": "Permintaan anda untuk menyertai keluarga sedang menunggu kelulusan pentadbir.",
+  "createFamilyTitle": "Cipta keluarga",
+  "fieldFamilyName": "Nama keluarga",
+  "fieldFamilyNameHint": "cth. Keluarga Abdullah",
+  "fieldDescription": "Penerangan (pilihan)",
+  "familyCreated": "Keluarga dicipta!",
+  "joinTitle": "Sertai keluarga",
+  "joinBody": "Masukkan kod jemputan 16 aksara atau tampal pautan jemputan.",
+  "fieldInviteCode": "Kod jemputan",
+  "checkCode": "Semak kod",
+  "joinFamilyNamed": "Sertai {family}",
+  "@joinFamilyNamed": {
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
+  },
+  "memberCountLabel": "{count, plural, =1{1 ahli} other{{count} ahli}}",
+  "@memberCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "joinRequiresApproval": "Pentadbir perlu meluluskan permintaan anda.",
+  "joinButton": "Sertai",
+  "redeemJoined": "Anda telah menyertai keluarga!",
+  "redeemPending": "Permintaan dihantar. Menunggu kelulusan.",
+  "redeemAlready": "Anda sudah menjadi ahli keluarga ini.",
+  "redeemInvalid": "Kod jemputan tidak sah.",
+  "redeemExpired": "Jemputan ini telah tamat tempoh.",
+  "redeemExhausted": "Jemputan ini telah digunakan sepenuhnya.",
+  "redeemRevoked": "Jemputan ini telah dibatalkan.",
+  "redeemSuspended": "Keahlian anda dalam keluarga ini digantung. Hubungi pentadbir.",
+  "redeemFamilyFull": "Keluarga ini telah mencapai had ahli.",
+  "redeemRateLimited": "Terlalu banyak cubaan gagal. Cuba lagi dalam 15 minit.",
+  "greeting": "Hai, {name}",
+  "@greeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardMembers": "Ahli keluarga",
+  "dashboardSeeAll": "Lihat semua",
+  "dashboardRecentActivity": "Aktiviti terkini",
+  "dashboardNoActivity": "Belum ada aktiviti.",
+  "dashboardQuickInvite": "Jemput ahli",
+  "dashboardComingSoon": "Tugasan hari ini, mesej terkini dan acara akan datang akan dipaparkan di sini apabila modul tersebut siap.",
+  "comingSoonTitle": "Akan datang",
+  "comingSoonChat": "Sembang peribadi dan kumpulan sedang dibangunkan (Fasa 3).",
+  "comingSoonTodo": "Senarai tugasan dikongsi masa nyata sedang dibangunkan (Fasa 2).",
+  "comingSoonCalendar": "Kalendar keluarga sedang dibangunkan (Fasa 5).",
+  "familySettings": "Tetapan keluarga",
+  "invitations": "Jemputan",
+  "activity": "Aktiviti",
+  "pendingRequests": "Permintaan menunggu",
+  "approve": "Luluskan",
+  "reject": "Tolak",
+  "roleOwner": "Pemilik",
+  "roleAdmin": "Pentadbir",
+  "roleModerator": "Moderator",
+  "roleMember": "Ahli",
+  "statusPending": "Menunggu",
+  "statusSuspended": "Digantung",
+  "you": "Anda",
+  "noMembers": "Tiada ahli lagi.",
+  "switchFamily": "Tukar keluarga",
+  "memberChangeRole": "Tukar peranan",
+  "memberSuspend": "Gantung ahli",
+  "memberReactivate": "Aktifkan semula",
+  "memberRemove": "Keluarkan daripada keluarga",
+  "memberTransferOwnership": "Jadikan pemilik",
+  "confirmRemoveTitle": "Keluarkan {name}?",
+  "@confirmRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmRemoveBody": "{name} akan hilang akses kepada keluarga ini serta-merta.",
+  "@confirmRemoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmSuspendTitle": "Gantung {name}?",
+  "@confirmSuspendTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmSuspendBody": "{name} tidak dapat mengakses keluarga sehingga diaktifkan semula.",
+  "@confirmSuspendBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmTransferTitle": "Pindahkan pemilikan?",
+  "confirmTransferBody": "{name} akan menjadi pemilik. Anda akan menjadi pentadbir.",
+  "@confirmTransferBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memberJoined": "Menyertai {date}",
+  "@memberJoined": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "memberUpdated": "Dikemas kini.",
+  "inviteTitle": "Jemput ahli",
+  "inviteUses": "Bilangan penggunaan",
+  "inviteSingleUse": "Sekali guna",
+  "inviteMultiUse": "{count} orang",
+  "@inviteMultiUse": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inviteExpiry": "Tamat tempoh selepas",
+  "hours24": "24 jam",
+  "days3": "3 hari",
+  "days7": "7 hari",
+  "days30": "30 hari",
+  "inviteRequireApproval": "Perlu kelulusan pentadbir",
+  "inviteNote": "Nota (pilihan)",
+  "inviteNoteHint": "cth. Untuk sepupu",
+  "generateInvite": "Jana jemputan",
+  "inviteReadyTitle": "Jemputan sedia",
+  "inviteReadyBody": "Kongsi kod atau pautan ini. Atas sebab keselamatan, kod ini hanya dipaparkan sekali.",
+  "inviteExpiresOn": "Tamat tempoh {date}",
+  "@inviteExpiresOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteShareText": "Anda dijemput menyertai keluarga \"{family}\" di FamilySync.\n\nKod: {code}\nPautan: {link}\n\nTamat tempoh: {date}",
+  "@inviteShareText": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "family": {
+        "type": "String"
+      },
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteScanHint": "Imbas kod QR dengan kamera telefon untuk membuka jemputan dalam FamilySync.",
+  "invitationsTitle": "Sejarah jemputan",
+  "invitationsEmpty": "Belum ada jemputan.",
+  "invitationActive": "Aktif",
+  "invitationExpired": "Tamat tempoh",
+  "invitationExhausted": "Habis digunakan",
+  "invitationRevoked": "Dibatalkan",
+  "invitationUsage": "{used}/{max} digunakan",
+  "@invitationUsage": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      },
+      "used": {
+        "type": "int"
+      }
+    }
+  },
+  "invitationEnding": "Kod berakhir …{hint}",
+  "@invitationEnding": {
+    "placeholders": {
+      "hint": {
+        "type": "String"
+      }
+    }
+  },
+  "revoke": "Batalkan",
+  "confirmRevokeTitle": "Batalkan jemputan?",
+  "confirmRevokeBody": "Kod ini tidak boleh digunakan lagi.",
+  "familySettingsTitle": "Tetapan keluarga",
+  "requireApprovalSetting": "Jemputan baharu perlu kelulusan",
+  "allowAdminInvitesSetting": "Pentadbir boleh menjemput ahli",
+  "changeFamilyPhoto": "Tukar gambar keluarga",
+  "leaveFamily": "Keluar daripada keluarga",
+  "confirmLeaveTitle": "Keluar daripada keluarga?",
+  "confirmLeaveBody": "Anda memerlukan jemputan baharu untuk kembali.",
+  "deleteFamily": "Padam keluarga",
+  "deleteFamilyBody": "Tindakan ini tidak boleh dibatalkan. Taip nama keluarga untuk mengesahkan:",
+  "activityTitle": "Aktiviti keluarga",
+  "someone": "Seseorang",
+  "activityFamilyCreated": "{actor} mencipta keluarga",
+  "@activityFamilyCreated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityMemberJoined": "{actor} menyertai keluarga",
+  "@activityMemberJoined": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityMemberRequested": "{actor} meminta untuk menyertai",
+  "@activityMemberRequested": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityMemberApproved": "{actor} meluluskan ahli baharu",
+  "@activityMemberApproved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityMemberRejected": "{actor} menolak permintaan menyertai",
+  "@activityMemberRejected": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityRoleChanged": "{actor} menukar peranan ahli",
+  "@activityRoleChanged": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityOwnershipTransferred": "{actor} memindahkan pemilikan keluarga",
+  "@activityOwnershipTransferred": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityMemberLeft": "{actor} keluar daripada keluarga",
+  "@activityMemberLeft": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityMemberRemoved": "{actor} mengeluarkan ahli",
+  "@activityMemberRemoved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityMemberSuspended": "{actor} menggantung ahli",
+  "@activityMemberSuspended": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityMemberReactivated": "{actor} mengaktifkan semula ahli",
+  "@activityMemberReactivated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityInvitationCreated": "{actor} mencipta jemputan",
+  "@activityInvitationCreated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityInvitationRevoked": "{actor} membatalkan jemputan",
+  "@activityInvitationRevoked": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityFamilyDeleted": "{actor} memadam keluarga",
+  "@activityFamilyDeleted": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityGeneric": "{actor}: {action}",
+  "@activityGeneric": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTitle": "Profil & tetapan",
+  "fieldPhone": "Telefon (pilihan)",
+  "fieldBio": "Tentang saya (pilihan)",
+  "changePhoto": "Tukar gambar",
+  "language": "Bahasa",
+  "languageMalay": "Bahasa Melayu",
+  "languageEnglish": "English",
+  "theme": "Tema",
+  "themeSystem": "Ikut sistem",
+  "themeLight": "Cerah",
+  "themeDark": "Gelap",
+  "security": "Keselamatan",
+  "changePassword": "Tukar kata laluan",
+  "signOutEverywhere": "Log keluar dari semua peranti",
+  "deleteAccount": "Padam akaun",
+  "deleteAccountBody": "Akaun dan data peribadi anda akan dipadam secara kekal.",
+  "deleteAccountBlocked": "Pindahkan pemilikan keluarga berikut dahulu: {families}",
+  "@deleteAccountBlocked": {
+    "placeholders": {
+      "families": {
+        "type": "String"
+      }
+    }
+  },
+  "typeToConfirm": "Taip {word} untuk mengesahkan",
+  "@typeToConfirm": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteConfirmWord": "PADAM",
+  "version": "Versi {version}",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  }
+}
