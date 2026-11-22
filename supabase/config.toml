@@ -43,3 +43,18 @@ token_verifications = 30
 
 [functions.delete-account]
 verify_jwt = true
+
+# Branded Malay email templates showing a one-time CODE (no links), entered in
+# the app's "Masukkan kod" screen. Apply the same content in the dashboard:
+# Authentication → Emails → Templates.
+[auth.email.template.confirmation]
+subject = "Kod pengesahan FamilySync"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Kod set semula kata laluan FamilySync"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "Sahkan e-mel baharu FamilySync"
+content_path = "./supabase/templates/email_change.html"

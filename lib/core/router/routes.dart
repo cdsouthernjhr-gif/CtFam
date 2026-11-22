@@ -6,6 +6,7 @@ abstract final class Routes {
   static const signUp = '/sign-up';
   static const forgotPassword = '/forgot-password';
   static const resetPassword = '/reset-password';
+  static const verifyCode = '/verify-code';
   static const onboarding = '/onboarding';
   static const createFamily = '/create-family';
   static const join = '/join';
@@ -25,8 +26,11 @@ abstract final class Routes {
   static const invitations = '/invitations';
   static const activity = '/activity';
 
-  static const publicRoutes = {signIn, signUp, forgotPassword};
+  static const publicRoutes = {signIn, signUp, forgotPassword, verifyCode};
   static const noFamilyRoutes = {onboarding, createFamily, join, profile, changePassword};
+
+  static String verifyCodeFor(String email, {required bool recovery}) =>
+      Uri(path: verifyCode, queryParameters: {'email': email, 'purpose': recovery ? 'recovery' : 'signup'}).toString();
 
   static String joinWithCode(String code) => Uri(path: join, queryParameters: {'code': code}).toString();
 }

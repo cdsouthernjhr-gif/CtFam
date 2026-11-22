@@ -37,6 +37,19 @@ class AuthRepository {
   Future<void> sendPasswordReset(String email) =>
       _guard(() => _auth.resetPasswordForEmail(email.trim(), redirectTo: AppConfig.authRedirectUrl));
 
+  /// Confirms a new account with the code from the confirmation email.
+  /// Emits `signedIn` on success.
+  Future<void> verifySignupCode({required String email, required String code}) =>
+      _guard(() => _auth.verifyOTP(email: email.trim(), token: code.trim(), type: OtpType.email));
+
+  /// Verifies a password-reset code. Emits `passwordRecovery`, which routes to
+  /// the "new password" screen.
+  Future<void> verifyRecoveryCode({required String email, required String code}) =>
+      _guard(() => _auth.verifyOTP(email: email.trim(), token: code.trim(), type: OtpType.recovery));
+
+  Future<void> resendSignupCode(String email) =>
+      _guard(() => _auth.resend(email: email.trim(), type: OtpType.signup, emailRedirectTo: AppConfig.authRedirectUrl));
+
   Future<void> updatePassword(String newPassword) =>
       _guard(() => _auth.updateUser(UserAttributes(password: newPassword)));
 

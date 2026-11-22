@@ -157,3 +157,15 @@ Until the redirect URL is added, links in confirmation and reset emails will not
 
 `env/dev.json` (git-ignored) holds the project URL and **publishable** key. Build with
 `flutter build apk --release --dart-define-from-file=env/dev.json`.
+
+## 10. Auth email fix (0.1.2)
+
+Reported on a real device: confirmation emails were slow, and the password-reset email opened the old
+smartstock login page. Cause: the project's Auth settings (Site URL, email templates) were still
+smartstock's, and the built-in Supabase mailer is rate-limited.
+
+- App: switched to code-based verification (`VerifyCodeScreen`), so no deep link is needed.
+- Templates with `{{ .Token }}` are in `supabase/templates/`.
+- **Pending (owner):** apply the settings in `docs/AUTH_SETUP.md`. A Management API token was saved, but
+  Supabase rejected it (`JWT could not be decoded`, i.e. not an `sbp_` personal access token), so the
+  settings could not be applied automatically.

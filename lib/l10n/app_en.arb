@@ -207,5 +207,18 @@
   "deleteAccountBlocked": "First transfer ownership of: {families}",
   "typeToConfirm": "Type {word} to confirm",
   "deleteConfirmWord": "DELETE",
-  "version": "Version {version}"
+  "version": "Version {version}",
+  "sendResetCode": "Send code",
+  "haveCodeAlready": "Already have a code?",
+  "enterCodeTitle": "Enter code",
+  "enterCodeBody": "We sent a verification code to {email}. Enter it below.",
+  "codeEmailHint": "The email can take a few minutes. Also check your Spam or Promotions folder.",
+  "fieldCode": "Verification code",
+  "verifyCodeButton": "Verify",
+  "resendCode": "Resend code",
+  "resendIn": "Resend in {seconds}s",
+  "codeResent": "A new code has been sent.",
+  "validationCode": "Enter the code from the email (6–10 digits)",
+  "errorInvalidCode": "The code is invalid or has expired. Request a new one.",
+  "emailVerified": "Email verified. Welcome!"
 }

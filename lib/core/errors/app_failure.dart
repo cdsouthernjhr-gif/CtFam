@@ -18,6 +18,7 @@ enum FailureKind {
   notFound,
   invalidInput,
   storageRejected,
+  invalidCode,
   unknown,
 }
 
@@ -59,6 +60,7 @@ class AppFailure implements Exception {
       'email_not_confirmed' => FailureKind.emailNotConfirmed,
       'user_already_exists' || 'email_exists' => FailureKind.emailInUse,
       'weak_password' => FailureKind.weakPassword,
+      'otp_expired' || 'invalid_otp' || 'otp_disabled' => FailureKind.invalidCode,
       'over_email_send_rate_limit' || 'over_request_rate_limit' => FailureKind.rateLimited,
       _ when e is AuthRetryableFetchException => FailureKind.network,
       _ => FailureKind.unknown,

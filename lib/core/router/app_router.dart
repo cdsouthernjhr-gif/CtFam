@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../features/authentication/presentation/auth_screens.dart';
+import '../../features/authentication/presentation/verify_code_screen.dart';
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
@@ -94,6 +95,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.signUp, builder: (_, _) => const SignUpScreen()),
       GoRoute(path: Routes.forgotPassword, builder: (_, _) => const ForgotPasswordScreen()),
       GoRoute(path: Routes.resetPassword, builder: (_, _) => const ResetPasswordScreen()),
+      GoRoute(
+        path: Routes.verifyCode,
+        builder: (_, state) => VerifyCodeScreen(
+          email: state.uri.queryParameters['email'] ?? '',
+          recovery: state.uri.queryParameters['purpose'] == 'recovery',
+        ),
+      ),
       GoRoute(path: Routes.onboarding, builder: (_, _) => const OnboardingScreen()),
       GoRoute(path: Routes.createFamily, builder: (_, _) => const CreateFamilyScreen()),
       GoRoute(

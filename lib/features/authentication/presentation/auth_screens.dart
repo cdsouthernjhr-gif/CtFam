@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/errors/app_failure.dart';
 import '../../../core/router/routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/l10n_ext.dart';
@@ -162,7 +165,18 @@ class _SignInScreenState extends ConsumerState<SignInScreen> with SubmittingStat
 
   void _signIn() {
     if (!_form.currentState!.validate()) return;
-    submit(() => ref.read(authRepositoryProvider).signIn(email: _email.text, password: _password.text));
+    submit(() async {
+      try {
+        await ref.read(authRepositoryProvider).signIn(email: _email.text, password: _password.text);
+      } on AppFailure catch (f) {
+        // Unconfirmed account: send a fresh code and let the user enter it.
+        if (f.kind != FailureKind.emailNotConfirmed || !mounted) rethrow;
+        final email = _email.text.trim();
+        context.showMessage(context.l10n.errorEmailNotConfirmed);
+        await ref.read(authRepositoryProvider).resendSignupCode(email).catchError((_) {});
+        if (mounted) unawaited(context.push(Routes.verifyCodeFor(email, recovery: false)));
+      }
+    });
   }
 
   @override
@@ -229,7 +243,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> with SubmittingStat
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
-  String? _sentTo;
 
   @override
   void dispose() {
@@ -246,7 +259,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> with SubmittingStat
           .read(authRepositoryProvider)
           .signUp(email: _email.text, password: _password.text, displayName: _name.text);
       if (outcome == SignUpOutcome.confirmationEmailSent && mounted) {
-        setState(() => _sentTo = _email.text.trim());
+        context.go(Routes.verifyCodeFor(_email.text.trim(), recovery: false));
       }
     });
   }
@@ -254,21 +267,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> with SubmittingStat
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    if (_sentTo != null) {
-      return AuthScaffold(
-        title: l10n.signUpTitle,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Icon(Icons.mark_email_read_outlined, size: 56, color: Theme.of(context).colorScheme.secondary),
-            const SizedBox(height: AppSpacing.md),
-            Text(l10n.confirmEmailSent(_sentTo!), textAlign: TextAlign.center),
-            const SizedBox(height: AppSpacing.lg),
-            FilledButton(onPressed: () => context.go(Routes.signIn), child: Text(l10n.signIn)),
-          ],
-        ),
-      );
-    }
     return AuthScaffold(
       title: l10n.signUpTitle,
       subtitle: l10n.authWelcomeSubtitle,
@@ -339,7 +337,6 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> with SubmittingState {
   final _form = GlobalKey<FormState>();
   final _email = TextEditingController();
-  bool _sent = false;
 
   @override
   void dispose() {
@@ -351,8 +348,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> wit
     if (!_form.currentState!.validate()) return;
     submit(() async {
       await ref.read(authRepositoryProvider).sendPasswordReset(_email.text);
-      if (mounted) setState(() => _sent = true);
+      if (mounted) unawaited(context.push(Routes.verifyCodeFor(_email.text.trim(), recovery: true)));
     });
+  }
+
+  void _haveCode() {
+    if (!_form.currentState!.validate()) return;
+    context.push(Routes.verifyCodeFor(_email.text.trim(), recovery: true));
   }
 
   @override
@@ -361,27 +363,27 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> wit
     return AuthScaffold(
       showBack: true,
       title: l10n.forgotPasswordTitle,
-      subtitle: _sent ? l10n.resetLinkSent : l10n.forgotPasswordBody,
-      child: _sent
-          ? FilledButton(onPressed: () => context.go(Routes.signIn), child: Text(l10n.signIn))
-          : Form(
-              key: _form,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextFormField(
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    decoration: InputDecoration(labelText: l10n.fieldEmail, prefixIcon: const Icon(Icons.mail_outline)),
-                    validator: (v) => l10n.validation(Validators.email(v)),
-                    onFieldSubmitted: (_) => _send(),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  SubmitButton(label: l10n.sendResetLink, onPressed: _send, busy: submitting),
-                ],
-              ),
+      subtitle: l10n.forgotPasswordBody,
+      child: Form(
+        key: _form,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextFormField(
+              controller: _email,
+              keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
+              decoration: InputDecoration(labelText: l10n.fieldEmail, prefixIcon: const Icon(Icons.mail_outline)),
+              validator: (v) => l10n.validation(Validators.email(v)),
+              onFieldSubmitted: (_) => _send(),
             ),
+            const SizedBox(height: AppSpacing.lg),
+            SubmitButton(label: l10n.sendResetCode, onPressed: _send, busy: submitting),
+            const SizedBox(height: AppSpacing.sm),
+            TextButton(onPressed: submitting ? null : _haveCode, child: Text(l10n.haveCodeAlready)),
+          ],
+        ),
+      ),
     );
   }
 }

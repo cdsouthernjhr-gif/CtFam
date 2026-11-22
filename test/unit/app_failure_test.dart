@@ -25,6 +25,7 @@ void main() {
     expect(AppFailure.from(const AuthException('x', code: 'invalid_credentials')).kind, FailureKind.invalidCredentials);
     expect(AppFailure.from(const AuthException('x', code: 'email_not_confirmed')).kind, FailureKind.emailNotConfirmed);
     expect(AppFailure.from(const AuthException('x', code: 'weak_password')).kind, FailureKind.weakPassword);
+    expect(AppFailure.from(const AuthException('x', code: 'otp_expired')).kind, FailureKind.invalidCode);
   });
 
   test('network errors', () {

@@ -460,5 +460,32 @@
         "type": "String"
       }
     }
-  }
+  },
+  "sendResetCode": "Hantar kod",
+  "haveCodeAlready": "Sudah ada kod?",
+  "enterCodeTitle": "Masukkan kod",
+  "enterCodeBody": "Kami telah menghantar kod pengesahan ke {email}. Masukkan kod itu di bawah.",
+  "@enterCodeBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "codeEmailHint": "E-mel mungkin mengambil masa beberapa minit. Semak juga folder Spam atau Promosi.",
+  "fieldCode": "Kod pengesahan",
+  "verifyCodeButton": "Sahkan",
+  "resendCode": "Hantar semula kod",
+  "resendIn": "Hantar semula dalam {seconds}s",
+  "@resendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "codeResent": "Kod baharu telah dihantar.",
+  "validationCode": "Masukkan kod daripada e-mel (6–10 digit)",
+  "errorInvalidCode": "Kod tidak sah atau telah tamat tempoh. Minta kod baharu.",
+  "emailVerified": "E-mel disahkan. Selamat datang!"
 }

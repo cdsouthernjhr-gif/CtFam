@@ -18,6 +18,7 @@ void main() {
     expect(go(SessionStatus.signedOut, Routes.join), Routes.signIn);
     expect(go(SessionStatus.signedOut, Routes.signUp), isNull);
     expect(go(SessionStatus.signedOut, Routes.forgotPassword), isNull);
+    expect(go(SessionStatus.signedOut, '/verify-code?email=a@b.co&purpose=recovery'), isNull);
   });
 
   test('users without a family are kept in onboarding', () {
@@ -43,5 +44,10 @@ void main() {
   test('password recovery forces the reset screen', () {
     expect(go(SessionStatus.passwordRecovery, Routes.home), Routes.resetPassword);
     expect(go(SessionStatus.passwordRecovery, Routes.resetPassword), isNull);
+    expect(
+      go(SessionStatus.passwordRecovery, Routes.verifyCode),
+      Routes.resetPassword,
+      reason: 'a verified recovery code always leads to the new-password screen',
+    );
   });
 }

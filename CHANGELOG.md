@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.2] - 2026-11-22: Code-based email verification
+
+### Changed
+- Sign-up confirmation and password reset now use a **one-time code** typed into the new
+  *Masukkan kod* screen instead of an email link. The flow stays inside FamilySync and no longer depends
+  on deep links or the project's Site URL (which still pointed to the old smartstock page).
+- Signing in with an unconfirmed email resends the code and opens the code screen.
+- Resend button with a 60-second cooldown; hint to check the Spam folder.
+
+### Added
+- Branded Malay email templates showing the code (`supabase/templates/*.html`) and
+  `docs/AUTH_SETUP.md` with the dashboard settings (Site URL, templates, custom SMTP).
+- Tests: verify-code widget tests, OTP error mapping, router rules (42 Flutter tests).
+
 ## [0.1.1] - 2026-11-22: Hosted deployment
 
 ### Added

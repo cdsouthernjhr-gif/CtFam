@@ -40,6 +40,7 @@ extension AppLocalizationsX on AppLocalizations {
     FailureKind.notFound => errorNotFound,
     FailureKind.invalidInput => errorInvalidInput,
     FailureKind.storageRejected => errorStorageRejected,
+    FailureKind.invalidCode => errorInvalidCode,
     FailureKind.unknown => errorGeneric,
   };
 
