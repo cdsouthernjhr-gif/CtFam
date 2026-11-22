@@ -174,3 +174,9 @@ smartstock's, and the built-in Supabase mailer is rate-limited.
   English **link**. The app's "Semak e-mel anda" screen supports both the link and a code.
 - The built-in mailer allows 2 emails per hour, which explains the slow or missing emails. Fix: custom SMTP
   (see `docs/AUTH_SETUP.md` §3). After that, the code templates can be applied.
+
+### Update: custom SMTP configured
+
+The owner configured Gmail SMTP (sender "FamilySync"). Email rate limit is now 30 per hour. The branded
+Malay code templates (`supabase/templates/*.html`, `{{ .Token }}` only, no links) were applied through the
+Management API, so sign-up confirmation and password reset are fully code-based inside the app (0.1.4).

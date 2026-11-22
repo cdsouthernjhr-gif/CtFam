@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.4] - 2026-11-22: Branded code emails live
+
+### Deployed
+- Custom SMTP (Gmail, sender "FamilySync") configured by the owner; email rate limit 30/hour.
+- Branded Malay templates with a one-time code applied for sign-up, password reset and email change.
+
+### Changed
+- "Masukkan kod" screen text is code-focused again (emails no longer contain links).
+
 ## [0.1.3] - 2026-11-22: Auth settings applied
 
 ### Changed

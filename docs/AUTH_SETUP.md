@@ -54,9 +54,10 @@ Sender name: `FamilySync`. Selepas SMTP dipasang, naikkan had *Rate Limits → e
 |---|---|
 | Site URL / Redirect URLs | ✅ `familysync://auth-callback` (ditetapkan oleh pemilik) |
 | Kata laluan minimum 8, huruf + nombor | ✅ ditetapkan melalui Management API |
-| Templat kod berjenama | ⏳ perlukan SMTP sendiri (had pelan percuma) |
+| SMTP sendiri (Gmail, pengirim "FamilySync") | ✅ dipasang oleh pemilik |
+| Templat kod berjenama (BM) | ✅ dipasang melalui Management API |
 | Leaked password protection | ❌ hanya untuk pelan Pro |
-| Had e-mel | 2 sejam (pelayan lalai). Naikkan selepas SMTP dipasang |
+| Had e-mel | ✅ 30 sejam |
 
 ## Pilihan: biar Claude yang tetapkan
 

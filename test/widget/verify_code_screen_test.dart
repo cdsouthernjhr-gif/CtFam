@@ -35,7 +35,7 @@ void main() {
     ).thenAnswer((_) async {});
     await pump(tester, recovery: true);
 
-    expect(find.text('Semak e-mel anda'), findsOneWidget);
+    expect(find.text('Masukkan kod'), findsOneWidget);
     expect(find.textContaining('aminah@example.my'), findsOneWidget);
     expect(find.text('Hantar semula dalam 60s'), findsOneWidget, reason: 'resend has a cooldown');
 
