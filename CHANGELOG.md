@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.3] - 2026-11-22: Auth settings applied
+
+### Changed
+- "Semak e-mel anda" screen now explains both options: open the email link on this phone, or type the
+  code. Needed because the free plan's default mailer cannot use custom (code) templates.
+
+### Deployed (Management API)
+- Password policy: minimum 8 characters, letters and digits required.
+- Verified: Site URL / redirect URL = `familysync://auth-callback`.
+- Not available on the free plan: custom email templates without custom SMTP, leaked-password protection.
+
 ## [0.1.2] - 2026-11-22: Code-based email verification
 
 ### Changed

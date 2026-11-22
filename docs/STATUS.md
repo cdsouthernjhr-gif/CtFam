@@ -166,6 +166,11 @@ smartstock's, and the built-in Supabase mailer is rate-limited.
 
 - App: switched to code-based verification (`VerifyCodeScreen`), so no deep link is needed.
 - Templates with `{{ .Token }}` are in `supabase/templates/`.
-- **Pending (owner):** apply the settings in `docs/AUTH_SETUP.md`. A Management API token was saved, but
-  Supabase rejected it (`JWT could not be decoded`, i.e. not an `sbp_` personal access token), so the
-  settings could not be applied automatically.
+- Site URL and redirect URL are now `familysync://auth-callback` (set by the owner), so email links open
+  FamilySync instead of smartstock.
+- Applied via Management API: minimum password length 8, letters + digits required.
+- **Not possible on the free plan:** custom email templates while using the default mailer, and
+  leaked-password protection (Pro only). Until custom SMTP is configured, emails contain the default
+  English **link**. The app's "Semak e-mel anda" screen supports both the link and a code.
+- The built-in mailer allows 2 emails per hour, which explains the slow or missing emails. Fix: custom SMTP
+  (see `docs/AUTH_SETUP.md` §3). After that, the code templates can be applied.

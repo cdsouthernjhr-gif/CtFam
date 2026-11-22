@@ -15,6 +15,11 @@ Projek: `bdakjtyxpgfkgfwjvlfq` (dahulu `smartstock`). Semua tetapan di bawah dib
 
 ## 2. Templat e-mel (Authentication → Emails → Templates)
 
+> **Had pelan percuma:** Supabase **tidak membenarkan** templat diubah selagi pelayan e-mel lalai
+> digunakan (`entitlement_required`). Tanpa SMTP sendiri, e-mel kekal dengan **pautan** dalam bahasa
+> Inggeris. Pautan itu tetap membuka FamilySync kerana Site URL sudah betul, asalkan ia dibuka pada
+> telefon yang sama dengan aplikasi. Selepas SMTP dipasang (langkah 3), templat di bawah boleh digunakan.
+
 Mulai versi 0.1.2, aplikasi menggunakan **kod**, bukan pautan. Pengguna menaip kod dari e-mel ke dalam
 skrin *Masukkan kod*. Setiap templat **mesti** mengandungi `{{ .Token }}`.
 
@@ -42,6 +47,16 @@ Sender name: `FamilySync`. Selepas SMTP dipasang, naikkan had *Rate Limits → e
 - *Confirm email*: **ON**
 - *Minimum password length*: **8**
 - *Leaked password protection*: ON (jika tersedia pada pelan anda)
+
+## Status (2026-11-22)
+
+| Tetapan | Status |
+|---|---|
+| Site URL / Redirect URLs | ✅ `familysync://auth-callback` (ditetapkan oleh pemilik) |
+| Kata laluan minimum 8, huruf + nombor | ✅ ditetapkan melalui Management API |
+| Templat kod berjenama | ⏳ perlukan SMTP sendiri (had pelan percuma) |
+| Leaked password protection | ❌ hanya untuk pelan Pro |
+| Had e-mel | 2 sejam (pelayan lalai). Naikkan selepas SMTP dipasang |
 
 ## Pilihan: biar Claude yang tetapkan
 

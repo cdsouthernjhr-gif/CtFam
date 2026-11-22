@@ -463,8 +463,8 @@
   },
   "sendResetCode": "Hantar kod",
   "haveCodeAlready": "Sudah ada kod?",
-  "enterCodeTitle": "Masukkan kod",
-  "enterCodeBody": "Kami telah menghantar kod pengesahan ke {email}. Masukkan kod itu di bawah.",
+  "enterCodeTitle": "Semak e-mel anda",
+  "enterCodeBody": "Kami telah menghantar e-mel ke {email}. Buka pautan dalam e-mel itu pada telefon ini, dan FamilySync akan dibuka secara automatik. Jika e-mel mengandungi kod, masukkan kod di bawah.",
   "@enterCodeBody": {
     "placeholders": {
       "email": {
