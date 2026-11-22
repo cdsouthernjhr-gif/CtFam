@@ -63,6 +63,7 @@ accepted`, salah satu daripada dua perkara ini masih salah. Selepas SMTP dipasan
 | Templat kod berjenama (BM) | ✅ dipasang melalui Management API |
 | Leaked password protection | ❌ hanya untuk pelan Pro |
 | Had e-mel | ✅ 30 sejam |
+| Pengesahan e-mel (Confirm email) | ⚠️ **DIMATIKAN SEMENTARA**. Hidupkan semula selepas App Password Gmail berfungsi |
 
 ## Pilihan: biar Claude yang tetapkan
 

@@ -180,3 +180,15 @@ smartstock's, and the built-in Supabase mailer is rate-limited.
 The owner configured Gmail SMTP (sender "FamilySync"). Email rate limit is now 30 per hour. The branded
 Malay code templates (`supabase/templates/*.html`, `{{ .Token }}` only, no links) were applied through the
 Management API, so sign-up confirmation and password reset are fully code-based inside the app (0.1.4).
+
+### Update: login reset and temporary auto-confirm (2026-11-22 ~13:00 UTC)
+
+- Auth logs after the owner switched SMTP to their own Gmail: `534 5.7.9 Application-specific password
+  required`. The username is now accepted, but a normal Gmail password was entered instead of an App
+  Password.
+- At the owner's request, the only auth account (`is6225@yahoo.com`, no family memberships) was
+  **deleted** so the owner can register again in the app.
+- **TEMPORARY:** `mailer_autoconfirm = true` (email confirmation OFF) so sign-up works without email
+  while SMTP is broken. Risk is limited because new accounts cannot see any family data without an
+  invitation, but email ownership is not verified. **Turn it back OFF once a Gmail App Password is
+  saved and a recovery email is confirmed delivered (`mail.send` in the Auth logs).**
