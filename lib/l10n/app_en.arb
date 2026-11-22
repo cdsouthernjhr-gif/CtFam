@@ -220,5 +220,7 @@
   "codeResent": "A new code has been sent.",
   "validationCode": "Enter the code from the email (6–10 digits)",
   "errorInvalidCode": "The code is invalid or has expired. Request a new one.",
-  "emailVerified": "Email verified. Welcome!"
+  "emailVerified": "Email verified. Welcome!",
+  "errorServer": "The server had a problem. This is not your internet connection. Please try again shortly.",
+  "errorEmailDelivery": "The server could not send the email right now. This is not your internet connection. Please ask the FamilySync admin to check the email (SMTP) settings."
 }

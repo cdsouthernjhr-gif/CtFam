@@ -41,6 +41,8 @@ extension AppLocalizationsX on AppLocalizations {
     FailureKind.invalidInput => errorInvalidInput,
     FailureKind.storageRejected => errorStorageRejected,
     FailureKind.invalidCode => errorInvalidCode,
+    FailureKind.server => errorServer,
+    FailureKind.emailDelivery => errorEmailDelivery,
     FailureKind.unknown => errorGeneric,
   };
 

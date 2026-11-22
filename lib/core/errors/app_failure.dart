@@ -19,6 +19,8 @@ enum FailureKind {
   invalidInput,
   storageRejected,
   invalidCode,
+  server,
+  emailDelivery,
   unknown,
 }
 
@@ -62,10 +64,21 @@ class AppFailure implements Exception {
       'weak_password' => FailureKind.weakPassword,
       'otp_expired' || 'invalid_otp' || 'otp_disabled' => FailureKind.invalidCode,
       'over_email_send_rate_limit' || 'over_request_rate_limit' => FailureKind.rateLimited,
-      _ when e is AuthRetryableFetchException => FailureKind.network,
+      _ when e is AuthRetryableFetchException => _retryableKind(e),
       _ => FailureKind.unknown,
     };
     return AppFailure(kind, '${e.code}: ${e.message}');
+  }
+
+  /// gotrue raises [AuthRetryableFetchException] both for real network
+  /// failures (no status code) and for HTTP 5xx responses. Only the former is
+  /// a connectivity problem.
+  static FailureKind _retryableKind(AuthRetryableFetchException e) {
+    final status = int.tryParse(e.statusCode ?? '');
+    if (status == null) return FailureKind.network;
+    final body = e.message.toLowerCase();
+    if (body.contains('sending') && body.contains('email')) return FailureKind.emailDelivery;
+    return FailureKind.server;
   }
 
   static AppFailure _fromPostgrest(PostgrestException e) {

@@ -30,6 +30,27 @@ void main() {
 
   test('network errors', () {
     expect(AppFailure.from(const SocketException('down')).kind, FailureKind.network);
+    expect(
+      AppFailure.from(AuthRetryableFetchException(message: 'ClientException: Failed host lookup')).kind,
+      FailureKind.network,
+      reason: 'no status code = real connectivity failure',
+    );
+  });
+
+  test('HTTP 5xx from Auth is a server problem, not "no internet"', () {
+    expect(
+      AppFailure.from(
+        AuthRetryableFetchException(
+          message: '{"code":500,"error_code":"unexpected_failure","msg":"Error sending recovery email"}',
+          statusCode: '500',
+        ),
+      ).kind,
+      FailureKind.emailDelivery,
+    );
+    expect(
+      AppFailure.from(AuthRetryableFetchException(message: '{"msg":"Internal error"}', statusCode: '503')).kind,
+      FailureKind.server,
+    );
   });
 
   test('unknown errors never throw', () {

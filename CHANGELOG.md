@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.6] - 2026-11-22: Correct error for server-side email failures
+
+### Fixed
+- HTTP 5xx responses from Supabase Auth were shown as "Tiada sambungan internet". gotrue raises
+  `AuthRetryableFetchException` for both real network failures (no status code) and 5xx responses.
+  These are now separated: a 5xx shows "Pelayan menghadapi masalah…", and a failed email send shows
+  "Pelayan tidak dapat menghantar e-mel… semak tetapan SMTP".
+
+### Known
+- Auth logs (12:33–12:34 UTC) still show Gmail rejecting the SMTP password (`535 5.7.8 BadCredentials`)
+  after the username fix. The SMTP password must be a valid 16-character Gmail App Password.
+
 ## [0.1.5] - 2026-11-22: Email delivery fixes
 
 ### Fixed

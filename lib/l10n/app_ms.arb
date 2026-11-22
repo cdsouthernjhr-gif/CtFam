@@ -487,5 +487,7 @@
   "codeResent": "Kod baharu telah dihantar.",
   "validationCode": "Masukkan kod daripada e-mel (6–10 digit)",
   "errorInvalidCode": "Kod tidak sah atau telah tamat tempoh. Minta kod baharu.",
-  "emailVerified": "E-mel disahkan. Selamat datang!"
+  "emailVerified": "E-mel disahkan. Selamat datang!",
+  "errorServer": "Pelayan menghadapi masalah. Ini bukan masalah sambungan internet anda. Cuba lagi sebentar.",
+  "errorEmailDelivery": "Pelayan tidak dapat menghantar e-mel sekarang. Ini bukan masalah internet anda. Sila minta pentadbir FamilySync menyemak tetapan e-mel (SMTP)."
 }
