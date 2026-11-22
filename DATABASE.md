@@ -7,6 +7,8 @@ Postgres 17 on Supabase. Migrations live in `supabase/migrations/` and are appli
 | `20261122000100_foundation.sql` | enums, helpers, profiles, families, family_members, invitations, invitation_uses, audit_logs, device_tokens, user_preferences, rate limiting, RLS, RPCs |
 | `20261122000200_storage.sql` | private buckets `avatars`, `family-media`, plus their policies |
 | `20261122000300_realtime_family.sql` | adds `family_members`, `families` to `supabase_realtime` |
+| `20261122000400_backfill_existing_users.sql` | profile + preferences for accounts that existed before install (idempotent) |
+| `20261122000500_fk_indexes.sql` | covering indexes for foreign keys |
 
 All timestamps are `timestamptz` (stored in UTC, displayed in the device's local time). All primary keys
 are UUIDs.

@@ -1,6 +1,6 @@
 # FamilySync: environment audit, roadmap and status report
 
-_Last updated: 2026-11-22 (end of Phase 1)_
+_Last updated: 2026-11-22 (Phase 1 deployed to Supabase)_
 
 ## 1. Phase 0: environment audit
 
@@ -12,7 +12,7 @@ _Last updated: 2026-11-22 (end of Phase 1)_
 | JDK / Gradle | OpenJDK 21, Gradle wrapper 9.5.0, AGP 9.3.1 | OK |
 | Git | Available; branch `ccr-04f99347-vg9i4z` | Used |
 | Supabase CLI | Not installed; GitHub release downloads return 403 | **Not available.** Migrations are tested with the official `supabase/postgres:17.12.0.002` image in Docker instead |
-| Supabase MCP | Connected. Account has 2 unrelated projects (`smartstock`, `Library`) and **no FamilySync project** | Nothing touched. No remote changes made |
+| Supabase MCP | Connected. The free plan's limit of 2 projects was reached | With the owner's approval the `smartstock` project (ref `bdakjtyxpgfkgfwjvlfq`, region `ap-northeast-2`) was **emptied and reused** for FamilySync. See §9 |
 | Firebase CLI / FlutterFire CLI | Not installed; no Firebase project or config | Deferred to Phase 4 (needs owner's Firebase project) |
 | Docker | Available | Used for DB tests |
 | Deno | Not installed | Installed 2.9.6 via npm for Edge Function checks |
@@ -114,3 +114,46 @@ build environment).
 - Dashboard sections for tasks, messages and events are placeholders until Phases 2, 3 and 5.
 - Release builds without `android/key.properties` are signed with the debug key and must not be distributed.
 - Hand-written Dart models (no code generation); `select` strings are kept next to the models.
+
+## 9. Hosted deployment (2026-11-22)
+
+**Project:** `smartstock` → reused for FamilySync (ref `bdakjtyxpgfkgfwjvlfq`, `https://bdakjtyxpgfkgfwjvlfq.supabase.co`).
+
+1. **Backup before wiping.** The inventory schema (22 tables, 54 functions, 10 views, 14 triggers, 33
+   policies, 2 buckets) and its data (65 rows) were exported to `backups/smartstock-*-2026-11-22.sql`.
+   These files are git-ignored because they contain personal data. The backup was **verified by restoring
+   it into a fresh Postgres**, and every count matched the original.
+2. **Wipe.** All `public` objects, the old `auth.users` trigger and the 5 old storage policies were dropped
+   in one transaction. The existing login account (1 user) was **kept**. The empty private bucket
+   `attachments` could not be removed via SQL (Supabase blocks it); delete it from the dashboard if wanted.
+3. **Migrations applied:** `foundation`, `storage`, `realtime_family`, `backfill_existing_users` (new:
+   creates profile + preferences for accounts that existed before FamilySync), `fk_indexes` (new: from the
+   performance advisor).
+4. **Edge Function:** `delete-account` deployed (version 1, `verify_jwt = true`).
+5. **Verification on the hosted project:**
+   - Rolled-back end-to-end flow as the real user: create family → create invitation (16-char code) →
+     preview → redeem (`already_member`) → audit rows written. Nothing persisted afterwards.
+   - Live API without login: tables and RPCs denied (42501), `private` schema not exposed, Edge Function
+     returns 401, and the avatars bucket has no public access.
+   - Security advisor: 13 × "SECURITY DEFINER callable by authenticated" is **accepted by design** (these
+     are the app's RPCs; each checks the caller's role internally, covered by 79 pgTAP assertions).
+     "Leaked password protection disabled" needs a dashboard setting (below).
+   - Performance advisor: unindexed foreign keys **fixed** (migration 0500).
+
+### Still required in the Supabase dashboard (no API available to do it from here)
+
+| Setting | Where | Value |
+|---|---|---|
+| Redirect URL for email confirmation / password reset | Authentication → URL Configuration → Redirect URLs | `familysync://auth-callback` |
+| Site URL | Authentication → URL Configuration | `familysync://auth-callback` |
+| Confirm email | Authentication → Sign In / Providers → Email | ON |
+| Minimum password length | Authentication → Sign In / Providers → Email | 8 |
+| Leaked password protection (if available on your plan) | Authentication → Attack Protection | ON |
+| Project name (optional) | Project Settings → General | rename `smartstock` → `familysync` |
+
+Until the redirect URL is added, links in confirmation and reset emails will not open the app.
+
+### Configured APK
+
+`env/dev.json` (git-ignored) holds the project URL and **publishable** key. Build with
+`flutter build apk --release --dart-define-from-file=env/dev.json`.

@@ -35,7 +35,7 @@ echo "==> Running pgTAP tests"
 shopt -s nullglob
 FAILED=0
 for f in "$ROOT"/supabase/tests/database/*.test.sql; do
-  OUT="$("${PSQL[@]}" -At -v ON_ERROR_STOP=0 -f "$f" 2>&1 || true)"
+  OUT="$(cd "$ROOT" && "${PSQL[@]}" -At -v ON_ERROR_STOP=0 -f "$f" 2>&1 || true)"
   if echo "$OUT" | grep -qE '^not ok|ERROR|Looks like you (failed|planned)'; then
     echo "FAIL $(basename "$f")"; echo "$OUT" | grep -E '^not ok|ERROR|#' | head -40; FAILED=1
   else

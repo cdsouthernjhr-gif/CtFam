@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.1] - 2026-11-22: Hosted deployment
+
+### Added
+- Migration `0400_backfill_existing_users`: profiles and preferences for accounts created before
+  FamilySync was installed (with pgTAP test).
+- Migration `0500_fk_indexes`: covering indexes for 8 foreign keys (Supabase performance advisor).
+
+### Deployed
+- All migrations and the `delete-account` Edge Function to Supabase project `bdakjtyxpgfkgfwjvlfq`
+  (formerly `smartstock`, emptied after a verified backup). See docs/STATUS.md §9.
+
 ## [0.1.0] - 2026-11-22: Phase 0 + Phase 1 (foundation)
 
 ### Added
