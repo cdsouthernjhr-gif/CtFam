@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1] - 2026-11-23: Firebase client configured
+
+### Changed
+- Release build now carries the owner's Firebase client identifiers (project `familysync-c3dbf`), so the
+  app registers for push. Delivery starts once `FCM_SERVICE_ACCOUNT_JSON` is set as an Edge Function
+  secret.
+
 ## [0.4.0] - 2026-11-23: Phase 4, notifications
 
 ### Added
