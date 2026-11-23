@@ -31,6 +31,15 @@ class CalendarScreen extends ConsumerWidget {
         title: Text(l10n.navCalendar),
         actions: [
           IconButton(tooltip: l10n.dueToday, onPressed: ctrl.today, icon: const Icon(Icons.today_outlined)),
+          if (ref.watch(sessionControllerProvider.select((s) => s.activeMemberships.length)) > 1)
+            IconButton(
+              key: const Key('calendar.all'),
+              tooltip: view.allFamilies ? l10n.calendarThisFamily : l10n.calendarAllFamilies,
+              isSelected: view.allFamilies,
+              onPressed: () => ctrl.setAllFamilies(!view.allFamilies),
+              icon: const Icon(Icons.layers_outlined),
+              selectedIcon: const Icon(Icons.layers),
+            ),
           IconButton(
             tooltip: view.agenda ? l10n.calendarMonthView : l10n.calendarAgendaView,
             onPressed: () => ctrl.setAgenda(!view.agenda),
@@ -45,9 +54,25 @@ class CalendarScreen extends ConsumerWidget {
         icon: const Icon(Icons.add),
         label: Text(l10n.newEvent),
       ),
-      body: view.agenda ? _Agenda(familyId: familyId) : _MonthView(familyId: familyId, view: view),
+      body: view.agenda
+          ? _Agenda(familyId: familyId, all: view.allFamilies)
+          : _MonthView(familyId: familyId, view: view),
     );
   }
+}
+
+/// Occurrences for a range: the active family (with clan events), or every
+/// family of the user.
+AsyncValue<List<EventOccurrence>> watchOccurrences(WidgetRef ref, CalendarRange r, {required bool all}) =>
+    all ? ref.watch(allFamiliesOccurrencesProvider((from: r.from, to: r.to))) : ref.watch(occurrencesProvider(r));
+
+/// Family name for events that are not from the active family.
+String? familyLabelFor(WidgetRef ref, BuildContext context, EventOccurrence o, String activeFamilyId) {
+  if (o.event.familyId == activeFamilyId) return null;
+  for (final m in ref.read(sessionControllerProvider).activeMemberships) {
+    if (m.familyId == o.event.familyId) return m.family?.name;
+  }
+  return context.l10n.linkClan;
 }
 
 void openOccurrence(BuildContext context, EventOccurrence o) =>
@@ -63,7 +88,7 @@ class _MonthView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final range = monthRange(familyId, view.month);
-    final occ = ref.watch(occurrencesProvider(range));
+    final occ = watchOccurrences(ref, range, all: view.allFamilies);
     final ctrl = ref.read(calendarViewProvider.notifier);
     final me = ref.watch(currentUserIdProvider);
     final all = occ.value ?? const <EventOccurrence>[];
@@ -112,7 +137,12 @@ class _MonthView extends ConsumerWidget {
             SliverList.list(
               children: [
                 for (final o in dayList)
-                  EventOccurrenceTile(occurrence: o, myUserId: me, onTap: () => openOccurrence(context, o)),
+                  EventOccurrenceTile(
+                    occurrence: o,
+                    myUserId: me,
+                    familyLabel: familyLabelFor(ref, context, o, familyId),
+                    onTap: () => openOccurrence(context, o),
+                  ),
               ],
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 88)),
@@ -294,15 +324,16 @@ class _DayCell extends StatelessWidget {
 }
 
 class _Agenda extends ConsumerWidget {
-  const _Agenda({required this.familyId});
+  const _Agenda({required this.familyId, this.all = false});
 
   final String familyId;
+  final bool all;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final range = upcomingRange(familyId);
-    final occ = ref.watch(occurrencesProvider(range));
+    final occ = watchOccurrences(ref, range, all: all);
     final me = ref.watch(currentUserIdProvider);
     return RefreshIndicator(
       onRefresh: () async {
@@ -331,7 +362,12 @@ class _Agenda extends ConsumerWidget {
                   ),
                 ),
                 for (final o in entry.value)
-                  EventOccurrenceTile(occurrence: o, myUserId: me, onTap: () => openOccurrence(context, o)),
+                  EventOccurrenceTile(
+                    occurrence: o,
+                    myUserId: me,
+                    familyLabel: familyLabelFor(ref, context, o, familyId),
+                    onTap: () => openOccurrence(context, o),
+                  ),
               ],
             ],
           );

@@ -77,6 +77,7 @@ class FamilyEvent {
     this.recurrence = EventRecurrence.none,
     this.recurrenceUntil,
     this.participantsOnly = false,
+    this.sharedWithClan = false,
     this.defaultReminders = const [],
     this.createdBy,
     this.revision = 1,
@@ -98,6 +99,7 @@ class FamilyEvent {
     recurrence: EventRecurrence.parse(j['recurrence'] as String?),
     recurrenceUntil: j['recurrence_until'] == null ? null : DateTime.parse(j['recurrence_until'] as String),
     participantsOnly: j['visibility'] == 'participants',
+    sharedWithClan: j['visibility'] == 'clan',
     defaultReminders: [for (final m in (j['default_reminders'] as List?) ?? const []) (m as num).toInt()],
     createdBy: j['created_by'] as String?,
     revision: (j['revision'] as num?)?.toInt() ?? 1,
@@ -126,6 +128,9 @@ class FamilyEvent {
   final EventRecurrence recurrence;
   final DateTime? recurrenceUntil;
   final bool participantsOnly;
+
+  /// Visible to every family in the clan (linked families), who may RSVP.
+  final bool sharedWithClan;
   final List<int> defaultReminders;
   final String? createdBy;
   final int revision;
@@ -167,6 +172,7 @@ class FamilyEvent {
       recurrence: recurrence,
       recurrenceUntil: recurrenceUntil,
       participantsOnly: participantsOnly,
+      sharedWithClan: sharedWithClan,
       defaultReminders: defaultReminders,
       createdBy: createdBy,
       revision: revision,

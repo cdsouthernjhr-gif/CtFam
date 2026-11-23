@@ -17,6 +17,7 @@ import '../../features/family/presentation/create_family_screen.dart';
 import '../../features/family/presentation/family_screen.dart';
 import '../../features/family/presentation/family_settings_screen.dart';
 import '../../features/family/presentation/onboarding_screen.dart';
+import '../../features/family_links/presentation/family_links_screen.dart';
 import '../../features/family_tree/presentation/family_tree_screen.dart';
 import '../../features/family_tree/presentation/person_screen.dart';
 import '../../features/invitation/presentation/create_invitation_screen.dart';
@@ -133,6 +134,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.activity, builder: (_, _) => const ActivityScreen()),
       GoRoute(path: Routes.notifications, builder: (_, _) => const NotificationsScreen()),
       GoRoute(path: Routes.sync, builder: (_, _) => const SyncScreen()),
+      GoRoute(path: Routes.familyLinks, builder: (_, _) => const FamilyLinksScreen()),
       GoRoute(
         path: Routes.familyTree,
         builder: (_, _) => const FamilyTreeScreen(),

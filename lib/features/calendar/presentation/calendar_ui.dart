@@ -76,6 +76,7 @@ class EventOccurrenceTile extends StatelessWidget {
     required this.myUserId,
     required this.onTap,
     this.showDate = false,
+    this.familyLabel,
     super.key,
   });
 
@@ -83,6 +84,9 @@ class EventOccurrenceTile extends StatelessWidget {
 
   /// Prefix the time with the date (lists spanning several days).
   final bool showDate;
+
+  /// Shown when the event belongs to another family (combined views, clan).
+  final String? familyLabel;
   final String? myUserId;
   final VoidCallback onTap;
 
@@ -95,6 +99,7 @@ class EventOccurrenceTile extends StatelessWidget {
       if (showDate) DateFormat.MMMEd(l.localeName).format(occurrence.start),
       occurrenceTimeLabel(l, occurrence),
       if (e.location != null) e.location!,
+      ?familyLabel,
     ].join(' · ');
     return ListTile(
       onTap: onTap,

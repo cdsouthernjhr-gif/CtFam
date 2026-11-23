@@ -97,7 +97,7 @@ final _uuidPart = RegExp(r'^[0-9a-fA-F-]{36}$');
 /// anything else (external URLs, unknown paths) is ignored.
 String? safeNotificationRoute(Object? raw) {
   if (raw is! String || raw.isEmpty) return null;
-  const fixed = {'/home', '/family', '/chat', '/todo', '/calendar', '/notifications', '/family-tree'};
+  const fixed = {'/home', '/family', '/chat', '/todo', '/calendar', '/notifications', '/family-tree', '/family-links'};
   if (fixed.contains(raw)) return raw;
   final parts = raw.split('/');
   if (parts.length == 3 &&

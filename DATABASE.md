@@ -19,6 +19,9 @@ Postgres 17 on Supabase. Migrations live in `supabase/migrations/` and are appli
 | `20261124000250_null_safe_permissions.sql` | NULL-safe delete checks for tasks and messages |
 | `20261124000300_family_tree.sql` | family tree, relationship engine, birthday cron |
 | `20261124000400_tree_photos.sql` | `tree-photos` bucket, person and cover photos |
+| `20261124000500_family_links.sql` | parent/branch family links, clan helpers |
+| `20261124000600_clan_tree.sql` | clan-wide tree, cross-family approvals, person merges |
+| `20261124000700_clan_events.sql` | clan-visible events, clan-aware event notifications |
 
 All timestamps are `timestamptz` (stored in UTC, displayed in the device's local time). All primary keys
 are UUIDs.
@@ -203,6 +206,20 @@ Photos: `family_persons.photo_path`, `families.tree_photo_path` (bucket `tree-ph
 
 Only confirmed links are used. Cron `familysync-birthdays` (00:05 UTC) runs `private.dispatch_birthdays()`.
 Realtime: channel `tree:{family_id}`.
+
+## Linked families (rumpun)
+
+| Object | Purpose |
+|---|---|
+| `family_links(parent_family_id, child_family_id unique, status pending/active, requested_side)` | one parent per family; members of either family read it |
+| `request_family_link(parent, child)` | owner/admin of one side who is a member of the other |
+| `respond_family_link(id, approve)` | owner/admin of the other side |
+| `remove_family_link(id)` | owner/admin of either side |
+| `linked_families(family_id)`, `family_link_requests(family_id)` | clan outline (name, member count, depth, relation) and pending requests |
+| `private.family_clan(id)`, `private.my_clan_family_ids()`, `private.is_clan_member(family, user)` | recursive clan helpers (active links only) |
+| `family_relations.other_family_id`, `family_ok`, `other_ok` | cross-family relations need both approvals |
+| `person_merges`, `merge_persons(keep, remove)`, `review_person_merge(id, approve)`, `merge_suggestions(family_id)` | duplicate records; same gender and birth date required |
+| `family_events.visibility = 'clan'` | visible to the whole clan; RSVP from linked families |
 
 ## Offline replay (Phase 6)
 

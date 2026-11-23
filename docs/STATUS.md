@@ -330,3 +330,15 @@ Reported by the owner after the first real conversation. Edge logs showed
 both reference `profiles`). Riverpod's default retry (10 attempts) kept the screen on "loading".
 Same defect found in the calendar's `event_participants` embed. Fixed in 0.8.2, plus a network-only retry
 policy and a PostgREST API contract test that runs every app read and RPC (it fails on the old query).
+
+## 19. Linked families (rumpun) (2026-11-24)
+
+| Check | Result |
+|---|---|
+| `12_family_links` (28) | consent rules, one parent, cycles refused, 3 levels deep, clan outline from root and leaf, member counts, **no leakage** of members/tasks/family row/activity, outsiders blocked, unlinking, pending requests view |
+| `13_clan_tree` (29) | clan-wide reading with birth dates, home-family editing, merge suggestion, cross-family merge request → approval → relations moved, cross-clan relationships (cucu, datuk, bapa, isteri, sepupu), cross-family relation pending until both admins approve, birthday scope, unlinking separates trees |
+| `14_clan_events` (14) | clan event visible/RSVP/reminders/change notices for a branch member; organiser-only editing; outsiders blocked; chat notifications do not widen; unlinking hides the event |
+| Bugs found by the tests | `uuid || uuid` in the merge request path (fixed before release) |
+| All DB suites | 14 pgTAP files + 5 concurrency scripts pass; API contract 25 selects / 60 RPCs; perf budgets unchanged |
+| Flutter | 129 tests pass; analyze clean |
+| Hosted | migrations applied; 0 tables without RLS, 0 anon functions, 0 PUBLIC definer functions |

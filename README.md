@@ -30,6 +30,7 @@ Android app with **Flutter** on a **Supabase** backend.
 | Calendar (Phase 5) | Month grid and agenda; all-day and timed events; daily/weekly/monthly/yearly repeat with end date and per-occurrence cancel; invitees and RSVP; personal reminders via push; participants-only events; live updates |
 | Offline (Phase 6) | Last data readable without a connection; To-Do changes, text messages and RSVPs queued on the phone and synced in order; status strip and Sync screen; local data wiped on sign-out |
 | Family tree | Generational tree; relationship to you computed in BM/EN (anak saudara, cucu saudara, sepupu, ipar, mertua …); people without accounts; admin-confirmed proposals; birthday notifications |
+| Linked families (rumpun) | Parent/branch families with consent on both sides; shared clan tree with cross-family approvals and duplicate merging; clan-wide events with RSVP; "All my families" calendar |
 | Dashboard | Family header, member overview, today's/overdue/my tasks, upcoming events, upcoming birthdays, recent messages, recent activity, quick invite |
 
 ## Repository layout

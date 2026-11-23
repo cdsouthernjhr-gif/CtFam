@@ -39,3 +39,9 @@ final relationshipProvider = FutureProvider.autoDispose.family<Relationship, ({S
   ref.watch(treeTickProvider(k.familyId));
   return ref.watch(treeRepositoryProvider).relationship(k.familyId, k.personId);
 });
+
+/// Likely duplicate records in the clan that the user can merge.
+final mergeSuggestionsProvider = FutureProvider.autoDispose.family<List<MergeSuggestion>, String>((ref, familyId) {
+  ref.watch(treeTickProvider(familyId));
+  return ref.watch(treeRepositoryProvider).mergeSuggestions(familyId);
+});

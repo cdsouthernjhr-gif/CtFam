@@ -3,7 +3,7 @@ description: "FamilySync - private family chat, shared to-do lists and calendar.
 publish_to: 'none'
 
 # versionName+versionCode. Bump the build number for every release upload.
-version: 0.8.2+17
+version: 0.9.0+18
 
 environment:
   sdk: ^3.14.0

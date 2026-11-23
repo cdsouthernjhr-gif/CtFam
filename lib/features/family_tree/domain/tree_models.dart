@@ -100,6 +100,9 @@ class TreeRelation {
     required this.status,
     this.adoptive = false,
     this.proposedBy,
+    this.otherFamilyId,
+    this.familyOk = true,
+    this.otherOk = true,
   });
 
   factory TreeRelation.fromJson(Map<String, dynamic> j) => TreeRelation(
@@ -111,9 +114,13 @@ class TreeRelation {
     status: RelationStatus.parse(j['status'] as String?),
     adoptive: j['parent_type'] == 'adoptive',
     proposedBy: j['proposed_by'] as String?,
+    otherFamilyId: j['other_family_id'] as String?,
+    familyOk: (j['family_ok'] as bool?) ?? true,
+    otherOk: (j['other_ok'] as bool?) ?? true,
   );
 
-  static const select = 'id, family_id, kind, person_a, person_b, parent_type, status, proposed_by';
+  static const select =
+      'id, family_id, other_family_id, kind, person_a, person_b, parent_type, status, proposed_by, family_ok, other_ok';
 
   final String id;
   final String familyId;
@@ -126,7 +133,58 @@ class TreeRelation {
   final bool adoptive;
   final String? proposedBy;
 
+  /// Second family when the two people belong to different families; such a
+  /// relation needs an owner/admin of both ([familyOk] and [otherOk]).
+  final String? otherFamilyId;
+  final bool familyOk;
+  final bool otherOk;
+
   bool get confirmed => status == RelationStatus.confirmed;
+
+  /// Families whose approval is still missing.
+  List<String> get awaitingFamilies => [
+    if (status == RelationStatus.pending && !familyOk) familyId,
+    if (status == RelationStatus.pending && !otherOk && otherFamilyId != null) otherFamilyId!,
+  ];
+}
+
+/// A request to merge a duplicate record into another family's record.
+class PersonMerge {
+  const PersonMerge({required this.id, required this.keepId, required this.removeId});
+
+  factory PersonMerge.fromJson(Map<String, dynamic> j) =>
+      PersonMerge(id: j['id'] as String, keepId: j['keep_id'] as String, removeId: j['remove_id'] as String);
+
+  final String id;
+  final String keepId;
+  final String removeId;
+}
+
+class MergeSuggestion {
+  const MergeSuggestion({
+    required this.keepId,
+    required this.keepName,
+    required this.keepFamily,
+    required this.removeId,
+    required this.removeName,
+    required this.removeFamily,
+  });
+
+  factory MergeSuggestion.fromJson(Map<String, dynamic> j) => MergeSuggestion(
+    keepId: j['keep_id'] as String,
+    keepName: j['keep_name'] as String,
+    keepFamily: j['keep_family'] as String,
+    removeId: j['remove_id'] as String,
+    removeName: j['remove_name'] as String,
+    removeFamily: j['remove_family'] as String,
+  );
+
+  final String keepId;
+  final String keepName;
+  final String keepFamily;
+  final String removeId;
+  final String removeName;
+  final String removeFamily;
 }
 
 /// Computed relationship between "me" and another person.
@@ -159,10 +217,22 @@ class Relationship {
 /// Everything in one family's tree with lookup helpers (confirmed links only
 /// unless stated).
 class TreeData {
-  TreeData({required List<TreePerson> persons, required this.relations}) : persons = {for (final p in persons) p.id: p};
+  TreeData({
+    required List<TreePerson> persons,
+    required this.relations,
+    this.familyNames = const {},
+    this.merges = const [],
+  }) : persons = {for (final p in persons) p.id: p};
 
   final Map<String, TreePerson> persons;
   final List<TreeRelation> relations;
+
+  /// Names of the families in the clan (id → name); people of other families
+  /// are labelled with these.
+  final Map<String, String> familyNames;
+
+  /// Pending cross-family merge requests.
+  final List<PersonMerge> merges;
 
   Iterable<TreeRelation> get _confirmed => relations.where((r) => r.confirmed);
   List<TreeRelation> get pending => relations.where((r) => r.status == RelationStatus.pending).toList();

@@ -45,6 +45,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
   EventRecurrence _recurrence = EventRecurrence.none;
   DateTime? _until;
   bool _participantsOnly = false;
+  bool _sharedWithClan = false;
   final Set<String> _participants = {};
   final Set<int> _reminders = {30};
 
@@ -84,6 +85,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
         _recurrence = e.recurrence;
         _until = e.recurrenceUntil;
         _participantsOnly = e.participantsOnly;
+        _sharedWithClan = e.sharedWithClan;
         _participants
           ..clear()
           ..addAll(e.participants.map((p) => p.userId));
@@ -181,6 +183,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
             recurrence: _recurrence,
             recurrenceUntil: _recurrence == EventRecurrence.none ? null : _until,
             participantsOnly: _participantsOnly,
+            sharedWithClan: _sharedWithClan,
             participantIds: _participants.toList(),
             reminderMinutes: _reminders.toList(),
             expectedRevision: _original?.revision,
@@ -390,7 +393,21 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                     title: Text(l10n.eventVisibleParticipants),
                     subtitle: Text(l10n.eventVisibleParticipantsHint),
                     value: _participantsOnly,
-                    onChanged: (v) => setState(() => _participantsOnly = v),
+                    onChanged: (v) => setState(() {
+                      _participantsOnly = v;
+                      if (v) _sharedWithClan = false;
+                    }),
+                  ),
+                  SwitchListTile(
+                    key: const Key('event.clan'),
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.eventShareClan),
+                    subtitle: Text(l10n.eventShareClanHint),
+                    value: _sharedWithClan,
+                    onChanged: (v) => setState(() {
+                      _sharedWithClan = v;
+                      if (v) _participantsOnly = false;
+                    }),
                   ),
                   if (_original?.isRecurring ?? false)
                     Padding(

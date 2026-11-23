@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.9.0] - 2026-11-24: Linked families (rumpun)
+
+Owner decisions: owner/admin approve links (1b); everyone in the clan sees the whole tree incl. birth dates
+(2a); cross-family relations need an admin of both families (3a); birthday push only within one's own
+families (4a); no depth limit (cycles refused; technical guard 50 levels).
+
+### Added
+- **Parent and branch families** (`20261124000500_family_links.sql`): a family can be a branch of one
+  parent; any number of branches, any depth. Requested by an owner/admin of one family who belongs to the
+  other; approved by an owner/admin of the other (both sides consent); either side can unlink. A link
+  shares nothing private: members, chats, tasks, activity stay within each family. "Linked families"
+  screen with the clan outline, requests, approve/decline/withdraw, unlink.
+- **Shared clan tree** (`20261124000600_clan_tree.sql`): people and relations visible across the clan;
+  each person keeps a home family that alone edits the record; cross-family relations need both
+  families' admins; duplicate records (same gender and birth date) are suggested and merged (across
+  families after the other admin approves); relationships are computed across the clan (e.g. cousins in
+  different branch families); birthday notices go to the person's home family and every family of their
+  account.
+- **Clan events and combined calendar** (`20261124000700_clan_events.sql`): events can be shared with
+  the whole clan (RSVP and reminders for members of linked families, editing only by the organiser's
+  family); "All my families" calendar view with family labels. Notifications widen to the clan for
+  events only; chats/tasks still require membership of the family itself.
+- **Tests:** `12_family_links` (28), `13_clan_tree` (29), `14_clan_events` (14) pgTAP assertions
+  including no-leak checks; API contract now 25 selects / 60 RPCs; 129 Flutter tests.
+
 ## [0.8.2] - 2026-11-24: Chat conversation stuck on loading (fixed)
 
 ### Fixed

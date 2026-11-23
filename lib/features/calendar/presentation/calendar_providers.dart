@@ -50,14 +50,23 @@ CalendarRange upcomingRange(String familyId, {int days = 60, DateTime? now}) {
 }
 
 class CalendarViewState {
-  const CalendarViewState({required this.month, required this.selected, this.agenda = false});
+  const CalendarViewState({required this.month, required this.selected, this.agenda = false, this.allFamilies = false});
 
   final DateTime month;
   final DateTime selected;
   final bool agenda;
 
-  CalendarViewState copyWith({DateTime? month, DateTime? selected, bool? agenda}) =>
-      CalendarViewState(month: month ?? this.month, selected: selected ?? this.selected, agenda: agenda ?? this.agenda);
+  /// Show events of every family the user belongs to (labelled), not only
+  /// the active one.
+  final bool allFamilies;
+
+  CalendarViewState copyWith({DateTime? month, DateTime? selected, bool? agenda, bool? allFamilies}) =>
+      CalendarViewState(
+        month: month ?? this.month,
+        selected: selected ?? this.selected,
+        agenda: agenda ?? this.agenda,
+        allFamilies: allFamilies ?? this.allFamilies,
+      );
 }
 
 final calendarViewProvider = NotifierProvider<CalendarViewController, CalendarViewState>(CalendarViewController.new);
@@ -83,6 +92,8 @@ class CalendarViewController extends Notifier<CalendarViewState> {
   void today() => select(DateTime.now());
 
   void setAgenda(bool agenda) => state = state.copyWith(agenda: agenda);
+
+  void setAllFamilies(bool all) => state = state.copyWith(allFamilies: all);
 }
 
 /// One event with live updates (detail screen). An RSVP made offline and
@@ -110,3 +121,23 @@ final eventProvider = FutureProvider.autoDispose.family<FamilyEvent?, ({String f
 final myRemindersProvider = FutureProvider.autoDispose.family<List<int>, String>(
   (ref, eventId) => ref.watch(calendarRepositoryProvider).myReminders(eventId),
 );
+
+/// Occurrences across every family the user belongs to (clan events can show
+/// up through several families; they are listed once).
+final allFamiliesOccurrencesProvider = FutureProvider.autoDispose
+    .family<List<EventOccurrence>, ({DateTime from, DateTime to})>((ref, r) async {
+      final ids = ref.watch(
+        sessionControllerProvider.select((s) => [for (final m in s.activeMemberships) m.familyId].join(',')),
+      );
+      final lists = await Future.wait([
+        for (final id in ids.split(',').where((x) => x.isNotEmpty))
+          ref.watch(occurrencesProvider((familyId: id, from: r.from, to: r.to)).future),
+      ]);
+      final seen = <String>{};
+      final out = <EventOccurrence>[
+        for (final l in lists)
+          for (final o in l)
+            if (seen.add('${o.event.id}@${o.start.toIso8601String()}')) o,
+      ]..sort((a, b) => a.start.compareTo(b.start));
+      return out;
+    });

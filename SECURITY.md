@@ -101,6 +101,18 @@
 - PL/pgSQL permission checks use `IS NOT DISTINCT FROM`: `if not (owner = me or …)` silently passes when
   `owner` is NULL. Two existing functions had this bug (fixed, see CHANGELOG 0.8.0).
 
+## Linked families (rumpun)
+
+- Linking needs an owner/admin on both sides, and the requester must belong to both families.
+- A link shares only the family tree and events explicitly shared with the clan. Members, chats, tasks,
+  activity and family settings stay private to each family (asserted by `12_family_links`).
+- Tree records are edited only by their home family; cross-family relations and merges need the other
+  family's owner/admin. Merges only join records with the same gender and birth date.
+- `private.notify` reaches clan members for `family_event` notifications only. Every other type still
+  requires membership of the family itself, so leaving a family stops its chat notifications even if you
+  are in a linked family (asserted by `14_clan_events`).
+- Unlinking immediately hides the other families' tree and clan events.
+
 ## Offline data on the device
 
 - Cached responses and queued writes live in the app's private storage (SQLite), keyed by user id. They

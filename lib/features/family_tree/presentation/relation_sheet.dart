@@ -78,7 +78,15 @@ class _TreeRelationSheetState extends ConsumerState<TreeRelationSheet> {
           );
       ref.invalidate(treeDataProvider(widget.familyId));
       if (!mounted) return;
-      context.showMessage(widget.isAdmin ? l10n.treeRelationAdded : l10n.treeRelationProposed);
+      final saved = ref.read(treeDataProvider(widget.familyId)).value;
+      final crossFamily = saved?.persons[other]?.familyId != widget.person.familyId;
+      context.showMessage(
+        widget.isAdmin && !crossFamily
+            ? l10n.treeRelationAdded
+            : crossFamily
+            ? l10n.treeRelationCrossFamily
+            : l10n.treeRelationProposed,
+      );
       Navigator.of(context).pop();
     } catch (e) {
       if (mounted) context.showError(e);
@@ -140,7 +148,12 @@ class _TreeRelationSheetState extends ConsumerState<TreeRelationSheet> {
                     RadioListTile<String>(
                       value: p.id,
                       title: Text(p.fullName),
-                      subtitle: Text('${p.birthDate.year}${p.isDeceased ? ' – ${p.deathDate!.year}' : ''}'),
+                      subtitle: Text(
+                        [
+                          '${p.birthDate.year}${p.isDeceased ? ' – ${p.deathDate!.year}' : ''}',
+                          if (p.familyId != widget.person.familyId) ?widget.tree.familyNames[p.familyId],
+                        ].join(' · '),
+                      ),
                     ),
                 ],
               ),

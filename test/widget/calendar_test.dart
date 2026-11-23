@@ -86,7 +86,7 @@ void main() {
     addTearDown(tester.view.reset);
   }
 
-  List<Override> overrides({FamilyRole role = FamilyRole.member}) => [
+  List<Override> overrides({FamilyRole role = FamilyRole.member, List<MyMembership>? memberships}) => [
     calendarRepositoryProvider.overrideWithValue(repo),
     familyRepositoryProvider.overrideWithValue(familyRepo),
     notificationRepositoryProvider.overrideWithValue(notifRepo),
@@ -96,14 +96,16 @@ void main() {
           status: SessionStatus.ready,
           user: fakeUser('u1'),
           activeFamilyId: 'F1',
-          memberships: [
-            MyMembership(
-              familyId: 'F1',
-              role: role,
-              status: MemberStatus.active,
-              family: const Family(id: 'F1', name: 'Keluarga'),
-            ),
-          ],
+          memberships:
+              memberships ??
+              [
+                MyMembership(
+                  familyId: 'F1',
+                  role: role,
+                  status: MemberStatus.active,
+                  family: const Family(id: 'F1', name: 'Keluarga'),
+                ),
+              ],
         ),
       ),
     ),
@@ -200,6 +202,7 @@ void main() {
         recurrence: any(named: 'recurrence'),
         recurrenceUntil: any(named: 'recurrenceUntil'),
         participantsOnly: any(named: 'participantsOnly'),
+        sharedWithClan: any(named: 'sharedWithClan'),
         participantIds: any(named: 'participantIds'),
         reminderMinutes: any(named: 'reminderMinutes'),
         expectedRevision: any(named: 'expectedRevision'),
@@ -236,6 +239,7 @@ void main() {
         recurrence: EventRecurrence.none,
         recurrenceUntil: any(named: 'recurrenceUntil'),
         participantsOnly: false,
+        sharedWithClan: false,
         participantIds: captureAny(named: 'participantIds'),
         reminderMinutes: captureAny(named: 'reminderMinutes'),
         expectedRevision: null,
@@ -247,5 +251,48 @@ void main() {
     expect(dateOnly(c[1] as DateTime), today.add(const Duration(days: 3)));
     expect(c[2], ['u2']);
     expect(c[3], [30]);
+  });
+
+  testWidgets('"All my families" merges events of every family, labelled, listed once', (tester) async {
+    final start = today.add(const Duration(hours: 20));
+    final own = _event(start: start);
+    final other = FamilyEvent(
+      id: 'e2',
+      familyId: 'F2',
+      title: 'Hari Raya',
+      startsAt: start.add(const Duration(hours: 1)),
+      endsAt: start.add(const Duration(hours: 3)),
+      sharedWithClan: true,
+    );
+    EventOccurrence occ(FamilyEvent e) => EventOccurrence(event: e, start: e.startsAt, end: e.endsAt);
+    when(() => repo.occurrences('F1', any(), any())).thenAnswer((_) async => [occ(own), occ(other)]); // clan event
+    when(() => repo.occurrences('F2', any(), any())).thenAnswer((_) async => [occ(other)]);
+    await pumpLocalized(
+      tester,
+      const CalendarScreen(),
+      overrides: overrides(
+        memberships: const [
+          MyMembership(
+            familyId: 'F1',
+            role: FamilyRole.member,
+            status: MemberStatus.active,
+            family: Family(id: 'F1', name: 'Keluarga'),
+          ),
+          MyMembership(
+            familyId: 'F2',
+            role: FamilyRole.member,
+            status: MemberStatus.active,
+            family: Family(id: 'F2', name: 'Keluarga Induk'),
+          ),
+        ],
+      ),
+    );
+    expect(find.text('Hari Raya'), findsOneWidget, reason: 'clan event in the active family view');
+    expect(find.textContaining('Keluarga Induk'), findsOneWidget, reason: 'labelled with its family');
+
+    await tester.tap(find.byKey(const Key('calendar.all')));
+    await tester.pumpAndSettle();
+    expect(find.text('Hari Raya'), findsOneWidget, reason: 'listed once although two families return it');
+    expect(find.text('Kenduri'), findsOneWidget);
   });
 }

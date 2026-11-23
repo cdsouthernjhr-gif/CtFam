@@ -109,6 +109,7 @@ class CalendarRepository {
     EventRecurrence recurrence = EventRecurrence.none,
     DateTime? recurrenceUntil,
     bool participantsOnly = false,
+    bool sharedWithClan = false,
     List<String>? participantIds,
     List<int>? reminderMinutes,
     int? expectedRevision,
@@ -133,7 +134,11 @@ class CalendarRepository {
             : '${recurrenceUntil.year.toString().padLeft(4, '0')}-'
                   '${recurrenceUntil.month.toString().padLeft(2, '0')}-'
                   '${recurrenceUntil.day.toString().padLeft(2, '0')}',
-        'p_visibility': participantsOnly ? 'participants' : 'family',
+        'p_visibility': sharedWithClan
+            ? 'clan'
+            : participantsOnly
+            ? 'participants'
+            : 'family',
         'p_participant_ids': participantIds,
         'p_reminder_minutes': reminderMinutes,
         'p_expected_revision': expectedRevision,

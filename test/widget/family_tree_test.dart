@@ -71,6 +71,7 @@ void main() {
         personB: 'saya',
         status: RelationStatus.pending,
         proposedBy: 'u2',
+        familyOk: false, // waiting for this family's admin
       ),
     ],
   );

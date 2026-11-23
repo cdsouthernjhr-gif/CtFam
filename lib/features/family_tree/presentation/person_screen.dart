@@ -20,6 +20,12 @@ import 'tree_providers.dart';
 
 bool isTreeAdmin(FamilyRole? role) => role == FamilyRole.owner || role == FamilyRole.admin;
 
+/// Owner/admin of [familyId] (people are edited by their home family).
+final adminOfFamilyProvider = Provider.family<bool, String>((ref, familyId) {
+  final memberships = ref.watch(sessionControllerProvider.select((s) => s.activeMemberships));
+  return memberships.any((m) => m.familyId == familyId && isTreeAdmin(m.role));
+});
+
 class PersonScreen extends ConsumerWidget {
   const PersonScreen({required this.personId, super.key});
 
@@ -32,8 +38,11 @@ class PersonScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final tree = ref.watch(treeDataProvider(familyId));
     final me = ref.watch(currentUserIdProvider);
-    final admin = isTreeAdmin(ref.watch(myRoleProvider));
     final person = tree.value?.persons[personId];
+    // Editing belongs to the person's home family; proposing works from the active family.
+    final admin = person == null
+        ? isTreeAdmin(ref.watch(myRoleProvider))
+        : ref.watch(adminOfFamilyProvider(person.familyId));
     final canEdit = person != null && (admin || person.userId == me);
 
     return Scaffold(
@@ -185,6 +194,11 @@ class _Body extends ConsumerWidget {
                         : l10n.treeAge(person.ageOn(now)),
                     style: TextStyle(color: scheme.outline),
                   ),
+                  if (person.familyId != familyId && tree.familyNames[person.familyId] != null)
+                    Text(
+                      l10n.treeFromFamily(tree.familyNames[person.familyId]!),
+                      style: TextStyle(color: scheme.outline, fontSize: 12),
+                    ),
                   if (person.hasAccount)
                     Row(
                       children: [
@@ -233,7 +247,13 @@ class _Body extends ConsumerWidget {
         group(l10n.treeChildren, tree.childrenOf(person.id)),
         const SizedBox(height: AppSpacing.lg),
         OutlinedButton.icon(
-          onPressed: () => showRelationSheet(context, familyId: familyId, person: person, tree: tree, isAdmin: admin),
+          onPressed: () => showRelationSheet(
+            context,
+            familyId: familyId,
+            person: person,
+            tree: tree,
+            isAdmin: isTreeAdmin(ref.read(myRoleProvider)),
+          ),
           icon: const Icon(Icons.link),
           label: Text(admin ? l10n.treeAddRelation : l10n.treeProposeRelation),
         ),

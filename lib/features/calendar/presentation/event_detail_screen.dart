@@ -43,7 +43,15 @@ class EventDetailScreen extends ConsumerWidget {
     final role = ref.watch(myRoleProvider);
 
     final event = ev.value;
-    final canManage = event != null && event.deletedAt == null && canManageEvent(event, userId: me, role: role);
+    // Events are edited by their own family (clan events may come from a linked family).
+    final eventRole = event == null
+        ? role
+        : ref
+              .watch(sessionControllerProvider.select((s) => s.activeMemberships))
+              .where((m) => m.familyId == event.familyId)
+              .map((m) => m.role)
+              .firstOrNull;
+    final canManage = event != null && event.deletedAt == null && canManageEvent(event, userId: me, role: eventRole);
 
     return Scaffold(
       appBar: AppBar(
@@ -201,8 +209,20 @@ class _Body extends ConsumerWidget {
           ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.notes), title: Text(event.description!)),
         ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: Icon(event.participantsOnly ? Icons.lock_outline : Icons.groups_outlined),
-          title: Text(event.participantsOnly ? l10n.eventVisibleParticipants : l10n.eventVisibleFamily),
+          leading: Icon(
+            event.sharedWithClan
+                ? Icons.diversity_3_outlined
+                : event.participantsOnly
+                ? Icons.lock_outline
+                : Icons.groups_outlined,
+          ),
+          title: Text(
+            event.sharedWithClan
+                ? l10n.eventVisibleClan
+                : event.participantsOnly
+                ? l10n.eventVisibleParticipants
+                : l10n.eventVisibleFamily,
+          ),
           subtitle: creator == null ? null : Text(l10n.eventCreatedBy(creator)),
         ),
         const Divider(),

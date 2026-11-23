@@ -16,6 +16,7 @@ abstract final class Routes {
   static const notifications = '/notifications';
   static const sync = '/sync';
   static const familyTree = '/family-tree';
+  static const familyLinks = '/family-links';
   static String treePerson(String id) => '$familyTree/$id';
 
   // Bottom navigation branches

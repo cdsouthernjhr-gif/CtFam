@@ -31,19 +31,36 @@ class FamilyTreeScreen extends ConsumerWidget {
     final tree = ref.watch(treeDataProvider(familyId));
     final me = ref.watch(currentUserIdProvider);
     final admin = isTreeAdmin(ref.watch(myRoleProvider));
+    final adminFamilies = {
+      for (final m in ref.watch(sessionControllerProvider.select((s) => s.activeMemberships)))
+        if (isTreeAdmin(m.role)) m.familyId,
+    };
     final t = tree.value;
     final pending = t?.pending ?? const <TreeRelation>[];
-    final visiblePending = admin ? pending : pending.where((r) => r.proposedBy == me).toList();
+    // Relations waiting for a family I administer, plus my own proposals.
+    final visiblePending = pending
+        .where((r) => r.awaitingFamilies.any(adminFamilies.contains) || r.proposedBy == me)
+        .toList();
+    final mergesForMe = (t?.merges ?? const <PersonMerge>[])
+        .where((m) => adminFamilies.contains(t!.persons[m.keepId]?.familyId))
+        .toList();
+    final waiting = visiblePending.length + mergesForMe.length;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.treeTitle),
         actions: [
-          if (visiblePending.isNotEmpty)
+          if (adminFamilies.isNotEmpty && t != null)
+            IconButton(
+              tooltip: l10n.treeMergeTitle,
+              icon: const Icon(Icons.merge_type),
+              onPressed: () => _showMergeSuggestions(context, ref, familyId),
+            ),
+          if (waiting > 0)
             IconButton(
               tooltip: l10n.treePendingTitle,
-              icon: Badge(label: Text('${visiblePending.length}'), child: const Icon(Icons.pending_actions)),
-              onPressed: () => _showPending(context, ref, familyId, t!, visiblePending, admin),
+              icon: Badge(label: Text('$waiting'), child: const Icon(Icons.pending_actions)),
+              onPressed: () => _showPending(context, ref, familyId, t!, visiblePending, mergesForMe, adminFamilies, me),
             ),
         ],
       ),
@@ -121,7 +138,9 @@ class FamilyTreeScreen extends ConsumerWidget {
     String familyId,
     TreeData tree,
     List<TreeRelation> pending,
-    bool admin,
+    List<PersonMerge> merges,
+    Set<String> adminFamilies,
+    String? me,
   ) => showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
@@ -133,6 +152,13 @@ class FamilyTreeScreen extends ConsumerWidget {
           ? l10n.treePendingSpouse(name(r.personA), name(r.personB))
           : l10n.treePendingParent(name(r.personA), name(r.personB)) +
                 (r.adoptive ? ' (${l10n.treeAdoptiveShort})' : '');
+      String? waitingFor(TreeRelation r) {
+        final others = r.awaitingFamilies
+            .where((f) => !adminFamilies.contains(f))
+            .map((f) => tree.familyNames[f] ?? '?');
+        return others.isEmpty ? null : l10n.treeWaitingFor(others.join(', '));
+      }
+
       Future<void> act(Future<void> Function() f) async {
         try {
           await f();
@@ -142,6 +168,22 @@ class FamilyTreeScreen extends ConsumerWidget {
           if (ctx.mounted) ctx.showError(e);
         }
       }
+
+      Widget approveReject(Future<void> Function() yes, Future<void> Function() no) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: l10n.treeApprove,
+            icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+            onPressed: () => act(yes),
+          ),
+          IconButton(
+            tooltip: l10n.treeReject,
+            icon: Icon(Icons.cancel_outlined, color: Theme.of(ctx).colorScheme.error),
+            onPressed: () => act(no),
+          ),
+        ],
+      );
 
       final repo = ref.read(treeRepositoryProvider);
       return ListView(
@@ -153,29 +195,87 @@ class FamilyTreeScreen extends ConsumerWidget {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(describe(r)),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (admin) ...[
-                    IconButton(
-                      tooltip: l10n.treeApprove,
-                      icon: const Icon(Icons.check_circle_outline, color: Colors.green),
-                      onPressed: () => act(() => repo.reviewRelation(r.id, approve: true)),
-                    ),
-                    IconButton(
-                      tooltip: l10n.treeReject,
-                      icon: Icon(Icons.cancel_outlined, color: Theme.of(ctx).colorScheme.error),
-                      onPressed: () => act(() => repo.reviewRelation(r.id, approve: false)),
-                    ),
-                  ] else
-                    TextButton(onPressed: () => act(() => repo.deleteRelation(r.id)), child: Text(l10n.treeWithdraw)),
-                ],
+              subtitle: waitingFor(r) == null ? null : Text(waitingFor(r)!),
+              trailing: r.awaitingFamilies.any(adminFamilies.contains)
+                  ? approveReject(
+                      () => repo.reviewRelation(r.id, approve: true),
+                      () => repo.reviewRelation(r.id, approve: false),
+                    )
+                  : TextButton(onPressed: () => act(() => repo.deleteRelation(r.id)), child: Text(l10n.treeWithdraw)),
+            ),
+          for (final m in merges)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.merge_type),
+              title: Text(l10n.treeMergeRequest(name(m.removeId), name(m.keepId))),
+              subtitle: Text(tree.familyNames[tree.persons[m.removeId]?.familyId] ?? ''),
+              trailing: approveReject(
+                () => repo.reviewMerge(m.id, approve: true),
+                () => repo.reviewMerge(m.id, approve: false),
               ),
             ),
         ],
       );
     },
   );
+
+  Future<void> _showMergeSuggestions(BuildContext context, WidgetRef ref, String familyId) =>
+      showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (ctx) => Consumer(
+          builder: (ctx, ref, _) {
+            final l10n = ctx.l10n;
+            final suggestions = ref.watch(mergeSuggestionsProvider(familyId));
+            return Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(l10n.treeMergeTitle, style: Theme.of(ctx).textTheme.titleMedium),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(l10n.treeMergeHint, style: Theme.of(ctx).textTheme.bodySmall),
+                  AsyncValueView(
+                    value: suggestions,
+                    onRetry: () => ref.invalidate(mergeSuggestionsProvider(familyId)),
+                    data: (list) => list.isEmpty
+                        ? Padding(padding: const EdgeInsets.all(AppSpacing.md), child: Text(l10n.treeMergeNone))
+                        : Column(
+                            children: [
+                              for (final s in list)
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text('${s.removeName} → ${s.keepName}'),
+                                  subtitle: Text('${s.removeFamily} → ${s.keepFamily}'),
+                                  trailing: TextButton(
+                                    onPressed: () async {
+                                      try {
+                                        final status = await ref
+                                            .read(treeRepositoryProvider)
+                                            .mergePersons(keepId: s.keepId, removeId: s.removeId);
+                                        ref.invalidate(treeDataProvider(familyId));
+                                        ref.invalidate(mergeSuggestionsProvider(familyId));
+                                        if (ctx.mounted) {
+                                          ctx.showMessage(status == 'done' ? l10n.treeMerged : l10n.treeMergeRequested);
+                                        }
+                                      } catch (e) {
+                                        if (ctx.mounted) ctx.showError(e);
+                                      }
+                                    },
+                                    child: Text(l10n.treeMergeAction),
+                                  ),
+                                ),
+                            ],
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
 }
 
 /// Generations drawn as rows of cards with parent→child connectors and

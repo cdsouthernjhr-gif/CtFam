@@ -29,16 +29,22 @@ class TreeRepository {
     return store.rows(key, fetch);
   }
 
-  /// People and relations (confirmed and pending) of one family; readable
-  /// offline from the last copy.
+  /// People, relations and pending merges of the whole clan of [familyId]
+  /// (linked families share one tree). Readable offline from the last copy.
   Future<TreeData> load(String familyId) => _guard(() async {
+    final clan = await _rows(
+      'tree:clan:$familyId',
+      () => _client.rpc<List<dynamic>>('linked_families', params: {'p_family_id': familyId}),
+    );
+    final names = {for (final f in clan) f['family_id'] as String: f['name'] as String};
+    final ids = names.isEmpty ? [familyId] : names.keys.toList();
     final results = await Future.wait([
       _rows(
         'tree:persons:$familyId',
         () => _client
             .from('family_persons')
             .select(TreePerson.select)
-            .eq('family_id', familyId)
+            .inFilter('family_id', ids)
             .isFilter('deleted_at', null)
             .order('birth_date'),
       ),
@@ -47,16 +53,41 @@ class TreeRepository {
         () => _client
             .from('family_relations')
             .select(TreeRelation.select)
-            .eq('family_id', familyId)
+            .inFilter('family_id', ids)
             .isFilter('deleted_at', null)
             .neq('status', 'rejected'),
       ),
+      _rows(
+        'tree:merges:$familyId',
+        () => _client.from('person_merges').select('id, keep_id, remove_id').eq('status', 'pending'),
+      ),
     ]);
+    final persons = results[0].map(TreePerson.fromJson).toList();
+    final personIds = {for (final p in persons) p.id};
     return TreeData(
-      persons: results[0].map(TreePerson.fromJson).toList(),
+      persons: persons,
       relations: results[1].map(TreeRelation.fromJson).toList(),
+      familyNames: names,
+      merges: results[2]
+          .map(PersonMerge.fromJson)
+          .where((m) => personIds.contains(m.keepId) && personIds.contains(m.removeId))
+          .toList(),
     );
   });
+
+  Future<List<MergeSuggestion>> mergeSuggestions(String familyId) => _guard(() async {
+    final rows = await _client.rpc<List<dynamic>>('merge_suggestions', params: {'p_family_id': familyId});
+    return rows.map((r) => MergeSuggestion.fromJson(Map<String, dynamic>.from(r as Map))).toList();
+  });
+
+  /// 'done' (merged now) or 'pending' (the other family's admin must approve).
+  Future<String> mergePersons({required String keepId, required String removeId}) => _guard(
+    () async =>
+        (await _client.rpc<dynamic>('merge_persons', params: {'p_keep': keepId, 'p_remove': removeId})) as String,
+  );
+
+  Future<void> reviewMerge(String mergeId, {required bool approve}) =>
+      _guard(() => _client.rpc<dynamic>('review_person_merge', params: {'p_merge_id': mergeId, 'p_approve': approve}));
 
   /// How [targetId] is related to [fromId] (default: the signed-in user).
   Future<Relationship> relationship(String familyId, String targetId, {String? fromId}) => _guard(() async {
@@ -198,19 +229,19 @@ class TreeRepository {
     await _removeQuietly(previousPath);
   });
 
-  /// Tree changes on channel `tree:{familyId}` (RLS-filtered). Emits after
-  /// each change and after (re)subscribing.
+  /// Tree changes anywhere in the clan (channel `tree:{familyId}`). Rows are
+  /// filtered by RLS to the families the user may see; extra refreshes from
+  /// another clan of the user are harmless. Emits after (re)subscribing too.
   Stream<void> watch(String familyId) {
     late final RealtimeChannel channel;
     final controller = StreamController<void>.broadcast();
     controller.onListen = () {
       channel = _client.channel('tree:$familyId');
-      for (final table in ['family_persons', 'family_relations']) {
+      for (final table in ['family_persons', 'family_relations', 'person_merges']) {
         channel.onPostgresChanges(
           event: PostgresChangeEvent.all,
           schema: 'public',
           table: table,
-          filter: PostgresChangeFilter(type: PostgresChangeFilterType.eq, column: 'family_id', value: familyId),
           callback: (_) => controller.add(null),
         );
       }

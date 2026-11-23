@@ -1320,5 +1320,127 @@
   "photoRemoveMessage": "Gambar ini akan dipadam.",
   "photoChange": "Tukar gambar",
   "treeAddCover": "Tambah gambar salasilah",
-  "treeChangeCover": "Tukar gambar salasilah"
+  "treeChangeCover": "Tukar gambar salasilah",
+  "linksTitle": "Keluarga berkaitan",
+  "linksExplain": "Sambungkan keluarga anda dengan keluarga induk (contohnya keluarga ibu bapa) atau keluarga cabang (contohnya keluarga anak). Chat dan tugasan tidak dikongsi; hanya salasilah dan acara yang dikongsi secara jelas.",
+  "linksClan": "Rumpun keluarga",
+  "linksNone": "Keluarga ini belum disambungkan kepada keluarga lain.",
+  "linksNoCandidates": "Untuk menyambung, anda perlu menjadi ahli keluarga yang satu lagi juga.",
+  "linkMakeBranch": "Jadikan cabang kepada keluarga lain…",
+  "linkAddBranch": "Tambah keluarga cabang…",
+  "linkPickParent": "Pilih keluarga induk",
+  "linkPickBranch": "Pilih keluarga cabang",
+  "linkRequested": "Permintaan dihantar. Pentadbir keluarga itu perlu meluluskannya.",
+  "linkActive": "Keluarga disambungkan.",
+  "linkIncoming": "{name} mahu bersambung",
+  "@linkIncoming": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "linkOutgoing": "Menunggu kelulusan: {name}",
+  "@linkOutgoing": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "linkAsBranchOf": "Keluarga ini sebagai cabang kepada {name}",
+  "@linkAsBranchOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "linkAsParentOf": "{name} sebagai cabang keluarga ini",
+  "@linkAsParentOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "linkApprove": "Luluskan",
+  "linkDecline": "Tolak",
+  "linkWithdraw": "Tarik balik",
+  "linkSelf": "Keluarga ini",
+  "linkParent": "Keluarga induk",
+  "linkChild": "Keluarga cabang",
+  "linkClan": "Dalam rumpun",
+  "linkRemove": "Putuskan sambungan",
+  "linkRemoveMessage": "Sambungan dengan {name} akan diputuskan. Salasilah dan acara yang dikongsi tidak lagi kelihatan merentas keluarga.",
+  "@linkRemoveMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityFamilyLinked": "{actor} menyambungkan keluarga ke rumpun",
+  "@activityFamilyLinked": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityFamilyUnlinked": "{actor} memutuskan sambungan keluarga",
+  "@activityFamilyUnlinked": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "activityFamilyLinkRequested": "{actor} meminta sambungan keluarga",
+  "@activityFamilyLinkRequested": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "treeFromFamily": "Daripada {name}",
+  "@treeFromFamily": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "treeRelationCrossFamily": "Hubungan merentas keluarga dihantar. Pentadbir keluarga yang satu lagi perlu mengesahkannya.",
+  "treeWaitingFor": "Menunggu: {names}",
+  "@treeWaitingFor": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "treeMergeTitle": "Rekod berganda",
+  "treeMergeHint": "Orang yang sama mungkin direkod dalam dua keluarga. Gabungkan supaya hanya ada satu rekod; hubungan dan gambar dipindahkan.",
+  "treeMergeNone": "Tiada rekod berganda ditemui.",
+  "treeMergeAction": "Gabungkan",
+  "treeMerged": "Rekod digabungkan.",
+  "treeMergeRequested": "Permintaan dihantar. Pentadbir keluarga yang satu lagi perlu meluluskannya.",
+  "treeMergeRequest": "Gabungkan {from} ke dalam {into}",
+  "@treeMergeRequest": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "into": {
+        "type": "String"
+      }
+    }
+  },
+  "eventShareClan": "Kongsi dengan keluarga berkaitan (rumpun)",
+  "eventShareClanHint": "Semua keluarga dalam rumpun boleh melihat dan menjawab RSVP. Hanya keluarga anda boleh mengedit.",
+  "eventVisibleClan": "Dikongsi dengan seluruh rumpun",
+  "calendarAllFamilies": "Semua keluarga saya",
+  "calendarThisFamily": "Keluarga ini sahaja"
 }

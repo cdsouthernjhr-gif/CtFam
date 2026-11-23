@@ -130,6 +130,32 @@ void main() {
     expect(r.via, 'h');
   });
 
+  test('cross-family relations list the families whose approval is missing', () {
+    const r = TreeRelation(
+      id: 'x',
+      familyId: 'P',
+      otherFamilyId: 'C',
+      kind: RelationKind.parent,
+      personA: 'a',
+      personB: 'b',
+      status: RelationStatus.pending,
+      familyOk: false,
+    );
+    expect(r.awaitingFamilies, ['P']);
+    final j = TreeRelation.fromJson({
+      'id': 'y',
+      'family_id': 'P',
+      'other_family_id': 'C',
+      'kind': 'spouse',
+      'person_a': 'a',
+      'person_b': 'b',
+      'status': 'pending',
+      'family_ok': true,
+      'other_ok': false,
+    });
+    expect(j.awaitingFamilies, ['C']);
+  });
+
   test('notification taps may open the tree', () {
     const id = '0b9f3c9e-3f5e-4f0b-9d55-3c1c2b8d7e11';
     expect(safeNotificationRoute('/family-tree'), '/family-tree');
