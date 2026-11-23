@@ -96,6 +96,8 @@
 - Members can only create/edit their own record and propose links; owner/admin confirm. Unconfirmed
   proposals never influence computed relationships.
 - Birth dates are visible to family members (they drive birthday notices).
+- Tree photos (bucket `tree-photos`, private): family members read; owner/admin write anything; a member
+  only the folder of their own record. The cover is admin-only.
 - PL/pgSQL permission checks use `IS NOT DISTINCT FROM`: `if not (owner = me or …)` silently passes when
   `owner` is NULL. Two existing functions had this bug (fixed, see CHANGELOG 0.8.0).
 
@@ -120,7 +122,7 @@ Supabase Auth applies its own limits to sign-in, sign-up and email sending (see 
 
 ## Storage
 
-- Buckets `avatars` and `family-media` are **private**, limited to 5 MB and `image/jpeg|png|webp`.
+- Buckets `avatars`, `family-media` and `tree-photos` are **private**, limited to 5 MB and `image/jpeg|png|webp`.
 - The first path segment is the authorization key: `avatars/{user_id}/…`, `family-media/{family_id}/…`.
 - Clients read through 1-hour signed URLs, which Storage only issues when the SELECT policy passes.
 

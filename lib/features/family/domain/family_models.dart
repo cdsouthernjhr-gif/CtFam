@@ -79,6 +79,7 @@ class Family {
     this.allowAdminInvites = true,
     this.maxMembers = 200,
     this.createdAt,
+    this.treePhotoPath,
   });
 
   factory Family.fromJson(Map<String, dynamic> json) => Family(
@@ -90,6 +91,7 @@ class Family {
     allowAdminInvites: (json['allow_admin_invites'] as bool?) ?? true,
     maxMembers: (json['max_members'] as int?) ?? 200,
     createdAt: _date(json['created_at']),
+    treePhotoPath: json['tree_photo_path'] as String?,
   );
 
   final String id;
@@ -100,6 +102,9 @@ class Family {
   final bool allowAdminInvites;
   final int maxMembers;
   final DateTime? createdAt;
+
+  /// Cover photo of the family tree (bucket `tree-photos`).
+  final String? treePhotoPath;
 }
 
 class FamilyMember {

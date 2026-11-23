@@ -18,6 +18,7 @@ Postgres 17 on Supabase. Migrations live in `supabase/migrations/` and are appli
 | `20261124000200_performance.sql` | set-based read policies, trigram search index |
 | `20261124000250_null_safe_permissions.sql` | NULL-safe delete checks for tasks and messages |
 | `20261124000300_family_tree.sql` | family tree, relationship engine, birthday cron |
+| `20261124000400_tree_photos.sql` | `tree-photos` bucket, person and cover photos |
 
 All timestamps are `timestamptz` (stored in UTC, displayed in the device's local time). All primary keys
 are UUIDs.
@@ -196,6 +197,9 @@ Realtime: `family_events`, `event_participants` (channel `calendar:{family_id}`,
 | `review_relation(id, approve)` | owner/admin |
 | `delete_relation(id)` | owner/admin; proposer while pending |
 | `relationship_between(family_id, target, from default me)` | family members; returns `{kind, ms, en, up, down, via}` |
+
+Photos: `family_persons.photo_path`, `families.tree_photo_path` (bucket `tree-photos`), set via
+`set_person_photo(person_id, path)` (admin or own record) and `set_tree_photo(family_id, path)` (admin).
 
 Only confirmed links are used. Cron `familysync-birthdays` (00:05 UTC) runs `private.dispatch_birthdays()`.
 Realtime: channel `tree:{family_id}`.

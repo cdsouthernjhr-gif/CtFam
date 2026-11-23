@@ -39,6 +39,7 @@ class TreePerson {
     this.userId,
     this.deathDate,
     this.notes,
+    this.photoPath,
     this.revision = 1,
   });
 
@@ -51,10 +52,12 @@ class TreePerson {
     birthDate: _day(j['birth_date'] as String),
     deathDate: j['death_date'] == null ? null : _day(j['death_date'] as String),
     notes: j['notes'] as String?,
+    photoPath: j['photo_path'] as String?,
     revision: (j['revision'] as num?)?.toInt() ?? 1,
   );
 
-  static const select = 'id, family_id, user_id, full_name, gender, birth_date, death_date, notes, revision';
+  static const select =
+      'id, family_id, user_id, full_name, gender, birth_date, death_date, notes, photo_path, revision';
 
   final String id;
   final String familyId;
@@ -64,6 +67,9 @@ class TreePerson {
   final DateTime birthDate;
   final DateTime? deathDate;
   final String? notes;
+
+  /// Photo in the private bucket `tree-photos` ({family}/{person}/{file}).
+  final String? photoPath;
   final int revision;
 
   bool get isDeceased => deathDate != null;

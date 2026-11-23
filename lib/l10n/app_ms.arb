@@ -1313,5 +1313,12 @@
         "type": "String"
       }
     }
-  }
+  },
+  "photoFromGallery": "Pilih dari galeri",
+  "photoFromCamera": "Ambil gambar",
+  "photoRemove": "Padam gambar",
+  "photoRemoveMessage": "Gambar ini akan dipadam.",
+  "photoChange": "Tukar gambar",
+  "treeAddCover": "Tambah gambar salasilah",
+  "treeChangeCover": "Tukar gambar salasilah"
 }

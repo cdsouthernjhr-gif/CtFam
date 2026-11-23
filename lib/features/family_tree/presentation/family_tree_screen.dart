@@ -5,7 +5,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/router/routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/l10n_ext.dart';
+import '../../../core/widgets/dialogs.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../core/widgets/user_avatar.dart';
 import '../../../shared/providers/session_controller.dart';
 import '../../family/domain/family_models.dart';
 import '../../family/presentation/family_providers.dart';
@@ -13,6 +15,7 @@ import '../data/tree_repository.dart';
 import '../domain/tree_models.dart';
 import 'person_form_sheet.dart';
 import 'person_screen.dart';
+import 'tree_photo.dart';
 import 'tree_providers.dart';
 
 /// Salasilah: the whole family as generations (zoom and pan), with a prompt
@@ -59,6 +62,7 @@ class FamilyTreeScreen extends ConsumerWidget {
           final mine = data.personForUser(me);
           return Column(
             children: [
+              _TreeCover(familyId: familyId, admin: admin),
               if (mine == null)
                 Card(
                   margin: const EdgeInsets.all(AppSpacing.md),
@@ -183,7 +187,7 @@ class TreeCanvas extends StatelessWidget {
   final String? highlightId;
 
   static const cardW = 116.0;
-  static const cardH = 76.0;
+  static const cardH = 108.0;
   static const gapX = 20.0;
   static const gapY = 64.0;
   static const pad = 24.0;
@@ -260,6 +264,13 @@ class _PersonCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              StorageAvatar(
+                radius: 17,
+                bucket: TreeRepository.photoBucket,
+                path: person.photoPath,
+                initials: person.initials,
+              ),
+              const SizedBox(height: 4),
               Text(
                 person.fullName,
                 maxLines: 2,
@@ -322,4 +333,93 @@ class _LinksPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_LinksPainter old) => old.tree != tree || old.pos != pos || old.color != color;
+}
+
+/// Cover photo of the tree. Admins add, change or remove it.
+class _TreeCover extends ConsumerStatefulWidget {
+  const _TreeCover({required this.familyId, required this.admin});
+
+  final String familyId;
+  final bool admin;
+
+  @override
+  ConsumerState<_TreeCover> createState() => _TreeCoverState();
+}
+
+class _TreeCoverState extends ConsumerState<_TreeCover> {
+  bool _busy = false;
+
+  Future<void> _edit(String? current) async {
+    final l10n = context.l10n;
+    final action = await choosePhotoAction(context, hasPhoto: current != null);
+    if (action == null || !mounted) return;
+    final repo = ref.read(treeRepositoryProvider);
+    try {
+      if (action == PhotoAction.remove) {
+        final ok = await confirmDialog(
+          context,
+          title: l10n.photoRemove,
+          message: l10n.photoRemoveMessage,
+          confirmLabel: l10n.actionDelete,
+          destructive: true,
+        );
+        if (!ok) return;
+        setState(() => _busy = true);
+        await repo.removeTreePhoto(widget.familyId, current);
+      } else {
+        final picked = await pickTreeImage(context, action, maxWidth: 1600);
+        if (picked == null) return;
+        setState(() => _busy = true);
+        await repo.setTreePhoto(widget.familyId, picked.$1, picked.$2, previousPath: current);
+      }
+      ref.invalidate(familyProvider(widget.familyId));
+      if (mounted) context.showMessage(l10n.saved);
+    } catch (e) {
+      if (mounted) context.showError(e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final path = ref.watch(familyProvider(widget.familyId)).value?.treePhotoPath;
+    if (path == null) {
+      if (!widget.admin) return const SizedBox.shrink();
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: const EdgeInsets.only(left: AppSpacing.sm),
+          child: TextButton.icon(
+            onPressed: _busy ? null : () => _edit(null),
+            icon: const Icon(Icons.add_photo_alternate_outlined),
+            label: Text(l10n.treeAddCover),
+          ),
+        ),
+      );
+    }
+    return SizedBox(
+      height: 150,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          TreeImage(path: path),
+          if (widget.admin)
+            Positioned(
+              right: AppSpacing.sm,
+              bottom: AppSpacing.sm,
+              child: IconButton.filledTonal(
+                tooltip: l10n.treeChangeCover,
+                onPressed: _busy ? null : () => _edit(path),
+                icon: _busy
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.photo_camera_outlined),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }

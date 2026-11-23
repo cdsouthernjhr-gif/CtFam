@@ -8,6 +8,7 @@ import 'package:familysync/features/settings/data/profile_repository.dart';
 import 'package:familysync/shared/providers/session_controller.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../helpers/pump_app.dart';
@@ -82,6 +83,7 @@ void main() {
     when(() => repo.load('F1')).thenAnswer((_) async => data);
     when(() => family.watchFamily(any())).thenAnswer((_) => const Stream.empty());
     when(() => family.members('F1')).thenAnswer((_) async => const []);
+    when(() => family.family('F1')).thenAnswer((_) async => const Family(id: 'F1', name: 'Keluarga'));
   });
 
   List<Override> overrides(FamilyRole role, {String user = 'u1'}) => [
@@ -115,6 +117,7 @@ void main() {
     expect(find.text('Tambah orang'), findsOneWidget, reason: 'admin FAB');
     expect(find.byTooltip('Cadangan menunggu pengesahan'), findsOneWidget);
     expect(find.text('Anda belum ada dalam salasilah'), findsNothing, reason: 'own record exists');
+    expect(find.text('Tambah gambar salasilah'), findsOneWidget, reason: 'admins can add a cover photo');
   });
 
   testWidgets('member without a record is asked to add themselves; no admin tools', (tester) async {
@@ -122,6 +125,7 @@ void main() {
     expect(find.text('Anda belum ada dalam salasilah'), findsOneWidget);
     expect(find.text('Tambah orang'), findsNothing);
     expect(find.byTooltip('Cadangan menunggu pengesahan'), findsNothing, reason: 'not their proposal');
+    expect(find.text('Tambah gambar salasilah'), findsNothing, reason: 'members cannot change the cover');
   });
 
   testWidgets('person screen explains the relationship (anak saudara · anak kepada Hasan)', (tester) async {
@@ -132,6 +136,7 @@ void main() {
     expect(find.text('anak saudara anda · anak kepada Hasan'), findsOneWidget);
     expect(find.text('Hasan'), findsOneWidget, reason: 'parent chip');
     expect(find.byTooltip('Edit maklumat'), findsNothing, reason: 'members edit only their own record');
+    expect(find.byKey(const Key('tree.photo')), findsNothing, reason: 'no photo editing for others');
     expect(find.text('Cadangkan hubungan'), findsOneWidget);
   });
 
@@ -139,5 +144,9 @@ void main() {
     await pumpLocalized(tester, const PersonScreen(personId: 'saya'), overrides: overrides(FamilyRole.member));
     expect(find.text('Ini anda'), findsOneWidget);
     expect(find.byTooltip('Edit maklumat'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tree.photo')));
+    await tester.pumpAndSettle();
+    expect(find.text('Pilih dari galeri'), findsOneWidget);
+    expect(find.text('Padam gambar'), findsNothing, reason: 'no photo yet');
   });
 }

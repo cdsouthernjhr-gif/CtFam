@@ -551,5 +551,12 @@
   "birthdayToday": "Today 🎂 · turns {age}",
   "birthdayOn": "{date} · turns {age}",
   "activityTreePersonAdded": "{actor} added {name} to the family tree",
-  "activityTreePersonRemoved": "{actor} removed {name} from the family tree"
+  "activityTreePersonRemoved": "{actor} removed {name} from the family tree",
+  "photoFromGallery": "Choose from gallery",
+  "photoFromCamera": "Take a photo",
+  "photoRemove": "Remove photo",
+  "photoRemoveMessage": "This photo will be removed.",
+  "photoChange": "Change photo",
+  "treeAddCover": "Add a family tree photo",
+  "treeChangeCover": "Change the family tree photo"
 }

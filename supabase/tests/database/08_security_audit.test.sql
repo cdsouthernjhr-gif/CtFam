@@ -48,8 +48,8 @@ select is(
     'relationship_between',
     'remove_conversation_member', 'review_membership', 'review_relation', 'revoke_invitation', 'search_messages',
     'send_message', 'set_conversation_member_role', 'set_event_reminders', 'set_event_rsvp',
-    'set_member_role', 'set_member_status', 'set_message_pinned', 'set_todo_item_status',
-    'set_todo_list_members', 'todo_list_summaries', 'transfer_ownership', 'update_group_conversation',
+    'set_member_role', 'set_member_status', 'set_message_pinned', 'set_person_photo', 'set_todo_item_status',
+    'set_todo_list_members', 'set_tree_photo', 'todo_list_summaries', 'transfer_ownership', 'update_group_conversation',
     'update_todo_list', 'upsert_family_event', 'upsert_person', 'upsert_todo_item'
   ]::text[],
   'callable RPCs match the reviewed allow-list');

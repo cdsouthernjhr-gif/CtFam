@@ -103,6 +103,19 @@ void main() {
     expect(t.upcomingBirthdays(DateTime(2026, 12, 20), days: 80).map((e) => e.$1.id), ['leap', 'soon']);
   });
 
+  test('person JSON includes the photo path', () {
+    final x = TreePerson.fromJson({
+      'id': 'a',
+      'family_id': 'F',
+      'full_name': 'Ali',
+      'gender': 'male',
+      'birth_date': '1990-01-02',
+      'photo_path': 'F/a/x.jpg',
+    });
+    expect(x.photoPath, 'F/a/x.jpg');
+    expect(x.birthDate, DateTime(1990, 1, 2));
+  });
+
   test('relationship JSON and locale label', () {
     final r = Relationship.fromJson({
       'kind': 'blood',

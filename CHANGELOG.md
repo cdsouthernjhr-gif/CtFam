@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.1] - 2026-11-24: Family tree photos
+
+### Added
+- Photo for every person in the tree and a cover photo for the whole tree: gallery or camera, change,
+  remove. Private bucket `tree-photos` (5 MB, JPEG/PNG/WebP), paths `{family}/{person}/…` and
+  `{family}/cover/…` (`20261124000400_tree_photos.sql`).
+- Who: family members see all photos; owner/admin change or remove any photo and the cover; a member only
+  the photo of their own record. Paths are set through `set_person_photo` / `set_tree_photo`, which check
+  the file exists in the right folder; replaced or removed files are deleted from storage; removing a person
+  removes their photo.
+- Tree cards show the photo; person page has a photo with a camera badge for those allowed to edit.
+- Tests: `11_tree_photos` (22 assertions: own folder only, no cover for members, nested paths refused,
+  file must exist and be in the person's folder, outsiders see nothing, delete rights), widget tests.
+
 ## [0.8.0] - 2026-11-24: Family tree (salasilah) and birthdays
 
 ### Added

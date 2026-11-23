@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/l10n_ext.dart';
 import '../../../core/widgets/dialogs.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../core/widgets/user_avatar.dart';
 import '../../../shared/providers/session_controller.dart';
 import '../../family/domain/family_models.dart';
 import '../../family/presentation/family_providers.dart';
@@ -14,6 +15,7 @@ import '../data/tree_repository.dart';
 import '../domain/tree_models.dart';
 import 'person_form_sheet.dart';
 import 'relation_sheet.dart';
+import 'tree_photo.dart';
 import 'tree_providers.dart';
 
 bool isTreeAdmin(FamilyRole? role) => role == FamilyRole.owner || role == FamilyRole.admin;
@@ -96,7 +98,7 @@ class PersonScreen extends ConsumerWidget {
             destructive: true,
           );
           if (!ok) return;
-          await repo.deletePerson(p.id);
+          await repo.deletePerson(p.id, photoPath: p.photoPath);
           if (context.mounted) context.pop();
       }
       ref.invalidate(treeDataProvider(familyId));
@@ -167,11 +169,7 @@ class _Body extends ConsumerWidget {
       children: [
         Row(
           children: [
-            CircleAvatar(
-              radius: 32,
-              backgroundColor: (person.gender == Gender.male ? Colors.blue : Colors.pink).withValues(alpha: 0.15),
-              child: Text(person.initials, style: Theme.of(context).textTheme.headlineSmall),
-            ),
+            _PersonPhoto(person: person, canEdit: admin || isMe, familyId: familyId),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
@@ -240,6 +238,95 @@ class _Body extends ConsumerWidget {
           label: Text(admin ? l10n.treeAddRelation : l10n.treeProposeRelation),
         ),
       ],
+    );
+  }
+}
+
+/// Person photo; tap to change or remove it (admins, or the person themselves).
+class _PersonPhoto extends ConsumerStatefulWidget {
+  const _PersonPhoto({required this.person, required this.canEdit, required this.familyId});
+
+  final TreePerson person;
+  final bool canEdit;
+  final String familyId;
+
+  @override
+  ConsumerState<_PersonPhoto> createState() => _PersonPhotoState();
+}
+
+class _PersonPhotoState extends ConsumerState<_PersonPhoto> {
+  bool _busy = false;
+
+  Future<void> _edit() async {
+    final l10n = context.l10n;
+    final action = await choosePhotoAction(context, hasPhoto: widget.person.photoPath != null);
+    if (action == null || !mounted) return;
+    final repo = ref.read(treeRepositoryProvider);
+    try {
+      if (action == PhotoAction.remove) {
+        final ok = await confirmDialog(
+          context,
+          title: l10n.photoRemove,
+          message: l10n.photoRemoveMessage,
+          confirmLabel: l10n.actionDelete,
+          destructive: true,
+        );
+        if (!ok) return;
+        setState(() => _busy = true);
+        await repo.removePersonPhoto(widget.person);
+      } else {
+        final picked = await pickTreeImage(context, action);
+        if (picked == null) return;
+        setState(() => _busy = true);
+        await repo.setPersonPhoto(widget.person, picked.$1, picked.$2);
+      }
+      ref.invalidate(treeDataProvider(widget.familyId));
+      if (mounted) context.showMessage(l10n.saved);
+    } catch (e) {
+      if (mounted) context.showError(e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final avatar = StorageAvatar(
+      radius: 40,
+      bucket: TreeRepository.photoBucket,
+      path: widget.person.photoPath,
+      initials: widget.person.initials,
+    );
+    if (!widget.canEdit) return avatar;
+    return Semantics(
+      button: true,
+      label: context.l10n.photoChange,
+      child: InkWell(
+        key: const Key('tree.photo'),
+        customBorder: const CircleBorder(),
+        onTap: _busy ? null : _edit,
+        child: Stack(
+          children: [
+            avatar,
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: CircleAvatar(
+                radius: 14,
+                backgroundColor: scheme.primary,
+                child: _busy
+                    ? SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: scheme.onPrimary),
+                      )
+                    : Icon(Icons.photo_camera, size: 15, color: scheme.onPrimary),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
