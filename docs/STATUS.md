@@ -40,7 +40,7 @@ Never paste service-role keys, keystore passwords or service-account JSON into c
 | 0 | Environment audit | **Done** |
 | 1 | Flutter project, auth, profiles, families, roles, invitations, migrations, RLS | **Done** (not yet run against a hosted project or on a device) |
 | 2 | Realtime To-Do: lists, items with `revision`, idempotent RPCs, assignments, comments, activity, categories, filters, recurring tasks, `todo:{list_id}` channel, optimistic UI with rollback | **Done, deployed** (see §11) |
-| 3 | Chat: race-safe direct conversations (unique pair per family), groups, messages with client UUIDs (idempotent send), receipts, Broadcast typing, Presence online status, attachments in private bucket, pagination, search, pin, mute | Not started |
+| 3 | Chat: race-safe direct conversations, groups, idempotent send, receipts, Broadcast typing, Presence, attachments, pagination, search, pin, mute | **Done, deployed** (see §12) |
 | 4 | FCM: token registration (table + RPC already exist), `notification_queue`, Edge Function sender, preferences, lock-screen privacy, tap navigation, dedupe | Not started |
 | 5 | Calendar: events, participants, reminders, recurrence (RRULE), month/week/day views | Not started |
 | 6 | Offline: Drift (SQLite) cache, pending-operations queue with UUID op IDs, retry/backoff, conflict detection by revision, sync status UI | Not started |
@@ -54,8 +54,8 @@ Never paste service-role keys, keystore passwords or service-account JSON into c
 | A. Authentication | **Complete in code, verified by tests** | Live email flows still need a hosted project to verify |
 | B. Family management | **Complete in code, verified by tests** | |
 | C. Invitations | **Complete in code, verified by tests** | Includes race test (20 sessions → 1 join) |
-| D. Private chat | Not implemented | Tab shows "coming soon" |
-| E. Group chat | Not implemented | |
+| D. Private chat | **Complete in code, verified by tests, deployed** | Not yet tested on two physical devices |
+| E. Group chat | **Complete in code, verified by tests, deployed** | Group image upload not implemented (name/description only) |
 | F. Shared To-Do | **Complete in code, verified by tests, deployed** | Not yet tested on two physical devices at once |
 | G. Calendar | Not implemented | |
 | H. Notifications | Partial: `device_tokens` + `register_device_token` RPC + preference columns only | No Firebase integration |
@@ -208,3 +208,19 @@ therefore include soft-deleted rows (`private.can_read_todo_list`), so other dev
 The client filters `deleted_at`. All writes require an active list (`private.can_access_todo_list`).
 
 **Not yet verified:** live Realtime between two physical phones (needs two signed-in devices).
+
+## 12. Phase 3: private and group chat (2026-11-23)
+
+| Check | Result |
+|---|---|
+| pgTAP `04_chat.test.sql` | **76 assertions passed**: direct-chat uniqueness, isolation (family members outside a chat, other families, outsiders, suspended members), idempotent send, id hijack refused, replies, receipts and unread, edit and delete rules, group admin/moderator rules, removed member lockout, mute (own only), attachment path and existence checks, file access revoked on delete, Realtime channel authorisation, search scoping |
+| `chat_races.sh` | concurrent direct-chat creation ×10 gives **1** conversation; same message id ×10 gives **1** message; 12 members posting at once gives **12/12** stored |
+| Flutter tests | **79 passed** (chat logic: merge, receipts, typing, grouping, attachment sanitising; controller: sending→sent, failed→retry with same id, realtime merge/dedupe, typing, remote delete, receipts, typing throttle) |
+| Hosted deploy | migration `chat` applied via Management API (same file as tested); rolled-back end-to-end check as the real user passed; Realtime topic policy verified (member allowed, other conversation denied) |
+| Advisors | only "unused index" on new empty tables |
+
+**Bug found by the tests and fixed before deploy:** the read cursor used `now()` (transaction start)
+while messages use `clock_timestamp()`; `mark_conversation_read` now uses `clock_timestamp()`.
+
+**Not yet verified:** typing, presence and live delivery between two physical phones; attachment upload
+from a real device.

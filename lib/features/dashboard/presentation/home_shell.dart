@@ -1,17 +1,22 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/utils/l10n_ext.dart';
+import '../../chat/presentation/chat_providers.dart';
 
 /// Bottom navigation: Home, Chat, To-Do, Calendar, Family.
-class HomeShell extends StatelessWidget {
+class HomeShell extends ConsumerWidget {
   const HomeShell({required this.shell, super.key});
 
   final StatefulNavigationShell shell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    // Keeps family Presence (online status) alive while the app is open.
+    ref.watch(onlineUsersProvider);
+    final unread = ref.watch(totalUnreadProvider);
     return Scaffold(
       body: shell,
       bottomNavigationBar: NavigationBar(
@@ -24,8 +29,16 @@ class HomeShell extends StatelessWidget {
             label: l10n.navHome,
           ),
           NavigationDestination(
-            icon: const Icon(Icons.chat_bubble_outline),
-            selectedIcon: const Icon(Icons.chat_bubble),
+            icon: Badge(
+              isLabelVisible: unread > 0,
+              label: Text(unread > 99 ? '99+' : '$unread'),
+              child: const Icon(Icons.chat_bubble_outline),
+            ),
+            selectedIcon: Badge(
+              isLabelVisible: unread > 0,
+              label: Text(unread > 99 ? '99+' : '$unread'),
+              child: const Icon(Icons.chat_bubble),
+            ),
             label: l10n.navChat,
           ),
           NavigationDestination(

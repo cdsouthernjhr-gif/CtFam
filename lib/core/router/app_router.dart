@@ -6,6 +6,8 @@ import '../../features/authentication/presentation/auth_screens.dart';
 import '../../features/authentication/presentation/verify_code_screen.dart';
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
+import '../../features/chat/presentation/conversation_screen.dart';
+import '../../features/chat/presentation/group_info_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/dashboard/presentation/home_shell.dart';
 import '../../features/family/presentation/activity_screen.dart';
@@ -126,7 +128,24 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [GoRoute(path: Routes.home, builder: (_, _) => const DashboardScreen())],
           ),
           StatefulShellBranch(
-            routes: [GoRoute(path: Routes.chat, builder: (_, _) => const ChatScreen())],
+            routes: [
+              GoRoute(
+                path: Routes.chat,
+                builder: (_, _) => const ChatScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':conversationId',
+                    builder: (_, state) => ConversationScreen(conversationId: state.pathParameters['conversationId']!),
+                    routes: [
+                      GoRoute(
+                        path: 'info',
+                        builder: (_, state) => GroupInfoScreen(conversationId: state.pathParameters['conversationId']!),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
           StatefulShellBranch(
             routes: [

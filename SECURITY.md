@@ -50,10 +50,25 @@
 - Brute force: more than 10 failed attempts in 15 minutes per user returns `rate_limited`, even for a valid
   code. Failures are returned rather than raised, so the attempt record commits.
 
+## Chat
+
+- Conversations and messages are readable only by **active members of both the family and the
+  conversation**. Family admins are not automatically members of other people's private chats.
+- `send_message` derives the sender from `auth.uid()`; message ids cannot be hijacked (an existing id
+  owned by someone else is rejected).
+- Attachment paths must be inside `{conversation}/{message}/` and must exist in Storage before sending.
+  Deleting the message removes the attachment rows, which revokes read access to the files.
+- Typing and online status use **private** Realtime channels. RLS on `realtime.messages` restricts
+  `conversation:{id}` to its members and `presence:family:{id}` to family members. Malformed topics grant
+  nothing.
+- Notifications (Phase 4) will hide message content on the lock screen by default
+  (`user_preferences.show_message_preview = false`).
+
 ## Rate limiting
 
 `private.enforce_rate_limit(action, max, window)` applies to `create_family` (5/day),
-`create_invitation` (30/h), `preview_invitation` (20/15 min) and `register_device_token` (30/h).
+`create_invitation` (30/h), `preview_invitation` (20/15 min), `register_device_token` (30/h),
+`create_todo_list` (60/h), `create_todo_item` (600/h), `create_conversation` (100/h) and `send_message` (60/min).
 Supabase Auth applies its own limits to sign-in, sign-up and email sending (see `supabase/config.toml`).
 
 ## Storage

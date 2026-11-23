@@ -10,6 +10,7 @@ Postgres 17 on Supabase. Migrations live in `supabase/migrations/` and are appli
 | `20261122000400_backfill_existing_users.sql` | profile + preferences for accounts that existed before install (idempotent) |
 | `20261122000500_fk_indexes.sql` | covering indexes for foreign keys |
 | `20261123000100_todo.sql` | shared To-Do: tables, RLS, RPCs, Realtime publication |
+| `20261123000200_chat.sql` | private and group chat, attachments bucket, Realtime Authorization policies |
 
 All timestamps are `timestamptz` (stored in UTC, displayed in the device's local time). All primary keys
 are UUIDs.
@@ -101,9 +102,40 @@ for every write).
 `todo:{list_id}` (filter `list_id` / `id`) and `todo-family:{family_id}` (filter `family_id`). Assignment
 changes bump the item's revision, so they arrive as `todo_items` updates.
 
+## Chat (Phase 3)
+
+| Table | Purpose | Client access |
+|---|---|---|
+| `conversations` | `kind` direct/group; `direct_key` UNIQUE (`family:least(uid):greatest(uid)`); last message preview | read if member; writes via RPC |
+| `conversation_members` | membership, `role` admin/member, `left_at`, own `muted_until`/`pinned_at` | read if member; update own mute/pin only |
+| `messages` | client UUID id; `kind` text/image/file/system; reply, edit, soft delete, pin | read if member (deleted rows stay readable, so Realtime delivers deletions); writes via RPC |
+| `message_attachments` | storage path, MIME, size, dimensions | read if member |
+| `message_receipts` | per-member `last_delivered_at` / `last_read_at` cursors | read if member; writes via RPC |
+
+Access: `private.is_conversation_member` (active family member and active conversation member);
+`private.can_moderate_conversation` (group admin or family owner/admin/moderator).
+
+| RPC | Notes |
+|---|---|
+| `get_or_create_direct_conversation(family_id, other_user_id)` | race-safe; both users must be active family members |
+| `create_group_conversation(id, family_id, name, description, member_ids)` | idempotent; creator becomes admin |
+| `update_group_conversation`, `add_conversation_members`, `remove_conversation_member`, `set_conversation_member_role` | moderators |
+| `leave_conversation(id)` | groups; ensures an admin remains |
+| `send_message(id, conversation_id, body, reply_to_id, attachments)` | idempotent; validation as above |
+| `edit_message`, `delete_message`, `set_message_pinned` | see SECURITY.md |
+| `mark_conversation_read(conversation_id, up_to)`, `mark_family_delivered(family_id)` | monotonic cursors |
+| `conversation_summaries(family_id)`, `search_messages(family_id, query)` | SECURITY INVOKER |
+
+**Storage:** private bucket `chat-attachments` (10 MB; images, PDF, text, Office). Path
+`{conversation_id}/{message_id}/{file}`. Upload and read are limited to conversation members; reads also
+require the file to belong to a non-deleted message (or be the uploader's own unsent upload).
+
+**Realtime Authorization** (RLS on `realtime.messages`, private channels only):
+`conversation:{id}` for conversation members (Broadcast typing; Postgres Changes) and
+`presence:family:{id}` for active family members (Presence).
+
 ## Planned tables (later phases)
 
-Chat (`conversations`, `conversation_members`, `messages`, `message_attachments`, `message_receipts`),
 Calendar (`family_events`,
 `event_participants`, `event_reminders`), notifications (`notifications`, `notification_queue`) and
 `sync_operations`. They will be added as new migrations, and existing migrations will not be edited once

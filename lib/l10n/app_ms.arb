@@ -711,5 +711,152 @@
   "statToday": "Hari ini",
   "statOverdue": "Lewat",
   "statMine": "Saya",
-  "statOpen": "Belum siap"
+  "statOpen": "Belum siap",
+  "newChat": "Sembang baharu",
+  "searchMessages": "Cari mesej",
+  "noChatsTitle": "Belum ada sembang",
+  "noChatsBody": "Tekan butang pensel untuk mula bersembang dengan ahli keluarga atau buat kumpulan.",
+  "noMessagesYet": "Belum ada mesej",
+  "messageDeleted": "Mesej ini telah dipadam",
+  "youPrefix": "Anda",
+  "noSearchResults": "Tiada hasil carian",
+  "privateChat": "Peribadi",
+  "newGroup": "Kumpulan",
+  "groupName": "Nama kumpulan",
+  "groupNameHint": "cth. Sepupu-sepapat",
+  "noOtherMembers": "Belum ada ahli lain dalam keluarga ini.",
+  "createGroupWithCount": "Cipta kumpulan ({count} ahli)",
+  "@createGroupWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sysGroupCreated": "{actor} mencipta kumpulan \"{name}\"",
+  "@sysGroupCreated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sysGroupRenamed": "{actor} menukar nama kumpulan kepada \"{name}\"",
+  "@sysGroupRenamed": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sysMembersAdded": "{actor} menambah {names}",
+  "@sysMembersAdded": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "sysMemberRemoved": "{actor} mengeluarkan {name}",
+  "@sysMemberRemoved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sysMemberLeft": "{actor} keluar daripada kumpulan",
+  "@sysMemberLeft": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "pinned": "Disemat",
+  "edited": "disunting",
+  "tapToRetry": "Gagal dihantar. Ketik untuk cuba lagi.",
+  "statusSending": "Menghantar",
+  "statusFailed": "Gagal",
+  "statusSent": "Dihantar",
+  "statusDelivered": "Diterima",
+  "statusRead": "Dibaca",
+  "attachPhoto": "Gambar dari galeri",
+  "attachCamera": "Ambil gambar",
+  "attachDocument": "Dokumen (PDF, Word, Excel…)",
+  "attachmentRejected": "Fail tidak disokong atau melebihi 10 MB.",
+  "reply": "Balas",
+  "editMessage": "Sunting",
+  "pinMessage": "Semat",
+  "unpinMessage": "Nyahsemat",
+  "deleteMessage": "Padam",
+  "deleteMessageTitle": "Padam mesej?",
+  "deleteMessageBody": "Mesej ini akan dipadam untuk semua orang.",
+  "mute8h": "Bisukan 8 jam",
+  "mute1w": "Bisukan 1 minggu",
+  "muteAlways": "Bisukan sentiasa",
+  "unmute": "Nyahbisu",
+  "mute": "Bisukan",
+  "groupInfo": "Maklumat kumpulan",
+  "typingNamed": "{names} sedang menaip…",
+  "@typingNamed": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "typing": "sedang menaip…",
+  "membersCount": "{count, plural, =1{1 ahli} other{{count} ahli}}",
+  "@membersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "online": "dalam talian",
+  "sayHello": "Mulakan perbualan 👋",
+  "editingMessage": "Menyunting mesej",
+  "replyingTo": "Membalas {name}",
+  "@replyingTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "attach": "Lampirkan",
+  "typeMessage": "Tulis mesej…",
+  "editGroup": "Sunting kumpulan",
+  "addMembers": "Tambah ahli",
+  "groupAdmin": "Pentadbir kumpulan",
+  "removeFromGroupTitle": "Keluarkan {name}?",
+  "@removeFromGroupTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeFromGroupBody": "Ahli ini tidak lagi dapat membaca atau menghantar mesej dalam kumpulan ini.",
+  "makeGroupAdmin": "Jadikan pentadbir kumpulan",
+  "removeGroupAdmin": "Buang peranan pentadbir",
+  "removeFromGroup": "Keluarkan dari kumpulan",
+  "leaveGroup": "Keluar kumpulan",
+  "leaveGroupTitle": "Keluar dari kumpulan?",
+  "leaveGroupBody": "Anda tidak akan menerima mesej kumpulan ini lagi.",
+  "dashboardRecentMessages": "Mesej terkini"
 }

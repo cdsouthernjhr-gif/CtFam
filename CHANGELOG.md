@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.3.0] - 2026-11-23: Phase 3, private and group chat
+
+### Added
+- **Database** (`20261123000200_chat.sql`): conversations, conversation_members, messages,
+  message_attachments, message_receipts with RLS. Access requires active membership of both the family
+  and the conversation.
+- **Direct chats** are unique per user pair (`direct_key` UNIQUE): concurrent "start chat" taps give
+  one conversation.
+- **Idempotent `send_message`** with client UUIDs; a message counts as sent only after the server stores it.
+  Validates replies, body length (4000), attachments (must already be uploaded under
+  `chat-attachments/{conversation}/{message}/`, allowed MIME types, 10 MB) and rate limit (60/min).
+- Edit own messages; delete own (moderators: any) with soft delete. Deleting removes attachment
+  rows, which also revokes Storage read access. Pin (direct: either participant; group: moderators).
+- **Receipts:** per-member delivered/read cursors (monotonic). Unread counts in
+  `conversation_summaries`; group "read by N".
+- **Groups:** create (idempotent), rename/describe, add/remove members, admin role, leave (an admin
+  always remains), system messages for group events.
+- **Realtime:** private channel `conversation:{id}` (Postgres Changes for messages, receipts and
+  members, plus Broadcast typing), `chats:{family}` for the list, Presence `presence:family:{id}` for
+  online status. Joining and sending are authorised by RLS policies on `realtime.messages`.
+- **App:** chat list with unread badges, online dot, mute and pin markers and message search; new private
+  chat or group sheet; conversation screen with pagination, date separators, reply, edit, delete, pin,
+  copy, image/camera/document attachments, Sending/Sent/Delivered/Read/Failed (tap to retry), typing
+  indicator and pinned banner; group info screen; unread badge on the Chat tab; recent messages on the
+  dashboard.
+- **Tests:** 76 pgTAP assertions, chat race test (direct chat ×10 concurrent gives 1; same message id ×10
+  concurrent gives 1; 12 members posting at once gives 12/12), 79 Flutter tests.
+
 ## [0.2.0] - 2026-11-23: Phase 2, real-time shared To-Do
 
 ### Added

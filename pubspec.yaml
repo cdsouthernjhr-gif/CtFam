@@ -3,7 +3,7 @@ description: "FamilySync - private family chat, shared to-do lists and calendar.
 publish_to: 'none'
 
 # versionName+versionCode. Bump the build number for every release upload.
-version: 0.2.0+8
+version: 0.3.0+9
 
 environment:
   sdk: ^3.14.0
@@ -29,6 +29,8 @@ dependencies:
   share_plus: 13.3.1
   uuid: 4.6.0
   package_info_plus: 10.2.2
+  file_picker: 13.4.1
+  url_launcher: 6.3.3
 
 dev_dependencies:
   flutter_test:

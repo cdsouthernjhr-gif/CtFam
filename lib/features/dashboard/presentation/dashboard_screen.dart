@@ -8,6 +8,8 @@ import '../../../core/utils/l10n_ext.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../core/widgets/user_avatar.dart';
 import '../../../shared/providers/session_controller.dart';
+import '../../chat/presentation/chat_providers.dart';
+import '../../chat/presentation/chat_screen.dart';
 import '../../family/domain/family_models.dart';
 import '../../family/domain/family_permissions.dart';
 import '../../family/presentation/activity_screen.dart';
@@ -113,6 +115,12 @@ class DashboardScreen extends ConsumerWidget {
               action: TextButton(onPressed: () => context.go(Routes.todo), child: Text(l10n.viewAllTasks)),
             ),
             _TodayTasks(familyId: familyId),
+            const SizedBox(height: AppSpacing.lg),
+            _SectionHeader(
+              title: l10n.dashboardRecentMessages,
+              action: TextButton(onPressed: () => context.go(Routes.chat), child: Text(l10n.dashboardSeeAll)),
+            ),
+            _RecentChats(familyId: familyId),
             const SizedBox(height: AppSpacing.lg),
             _SectionHeader(
               title: l10n.dashboardRecentActivity,
@@ -280,4 +288,43 @@ class _Stat extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// The three most recent conversations (live via the chat family channel).
+class _RecentChats extends ConsumerWidget {
+  const _RecentChats({required this.familyId});
+
+  final String familyId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final convs = ref.watch(conversationSummariesProvider(familyId));
+    final members = ref.watch(familyMembersProvider(familyId)).value ?? const <FamilyMember>[];
+    final online = ref.watch(onlineUsersProvider).value ?? const <String>{};
+    final me = ref.watch(currentUserIdProvider);
+    return convs.when(
+      loading: () => const SizedBox(height: 56, child: Center(child: CircularProgressIndicator())),
+      error: (e, _) => ListTile(leading: const Icon(Icons.error_outline), title: Text(context.errorText(e))),
+      data: (list) {
+        final recent = list.where((c) => c.lastMessageAt != null).take(3).toList();
+        if (recent.isEmpty) {
+          return Padding(padding: const EdgeInsets.all(AppSpacing.md), child: Text(l10n.noMessagesYet));
+        }
+        return Card(
+          child: Column(
+            children: [
+              for (final c in recent)
+                ConversationTile(
+                  summary: c,
+                  memberById: {for (final m in members) m.userId: m},
+                  online: online,
+                  me: me,
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
