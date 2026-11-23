@@ -27,7 +27,9 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
       - name: Migrations, RLS and concurrency tests
-        run: scripts/db_test.sh
+        run: KEEP_DB=1 scripts/db_test.sh
+      - name: Query budgets at family scale
+        run: scripts/perf_check.sh
 
   edge-functions:
     runs-on: ubuntu-latest

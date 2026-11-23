@@ -74,6 +74,7 @@ flutter analyze
 flutter test                 # unit + widget (offline tests use in-memory SQLite)
 scripts/db_test.sh           # migrations + pgTAP + concurrency tests (Docker)
 KEEP_DB=1 scripts/db_test.sh # leave the DB running on localhost:54329 (password: postgres)
+scripts/perf_check.sh        # after KEEP_DB=1: seeds a 100-member family, checks query budgets
 ```
 
 The DB tests run against the official `supabase/postgres` image. The Storage service's tables are not
@@ -90,10 +91,13 @@ cd supabase/functions && deno check delete-account/index.ts send-push/index.ts &
 
 ```bash
 flutter build apk --debug   --dart-define-from-file=env/dev.json
-flutter build apk --release --dart-define-from-file=env/prod.json
+flutter build apk --release --dart-define-from-file=env/prod.json \
+  --obfuscate --split-debug-info=build/symbols/$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
 ```
 
-Output: `build/app/outputs/flutter-apk/app-{debug,release}.apk`.
+Output: `build/app/outputs/flutter-apk/app-{debug,release}.apk`. Release builds obfuscate Dart code;
+keep the `build/symbols/<version>` folder (not in git) to decode crash stack traces with
+`flutter symbolize`.
 
 ### Release signing
 

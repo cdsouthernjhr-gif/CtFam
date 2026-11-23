@@ -44,7 +44,7 @@ Never paste service-role keys, keystore passwords or service-account JSON into c
 | 4 | FCM: token registration, `notification_queue`, Edge Function sender, preferences, lock-screen privacy, tap navigation, dedupe | **Done, deployed**. Push delivery waits for the owner's Firebase project (see §13) |
 | 5 | Calendar: events, participants, reminders, recurrence, month view + agenda | **Done, deployed** (see §14). Daily/weekly/monthly/yearly only (no full RRULE); no separate week/day views |
 | 6 | Offline: Drift (SQLite) cache, pending-operations queue with UUID op IDs, retry/backoff, conflict detection by revision, sync status UI | **Done** (see §15). No server change was needed |
-| 7 | Security and performance: full RLS audit with Supabase advisors, rate-limit pruning job, index review, multi-device tests (3+ accounts) | Not started |
+| 7 | Security and performance: full RLS audit with Supabase advisors, rate-limit pruning job, index review, multi-device tests (3+ accounts) | **Done, deployed** (see §16) |
 | 8 | Release: signed release APK, device install testing, final docs | Release config ready; signing key needed |
 
 ## 4. Module status
@@ -277,3 +277,35 @@ reminder texts show the event's own time zone.
 invitations and family management; message edit/delete. These show the normal "no connection" error.
 **Limitations:** the cache keeps the latest page of each conversation and the calendar ranges already
 viewed; the local database relies on Android storage encryption (no SQLCipher).
+
+## 16. Phase 7: security and performance (2026-11-24)
+
+### Performance (local, `scripts/perf_check.sh`, median of 15 runs through RLS)
+
+| Query | Before | After | Budget |
+|---|---|---|---|
+| Chat list (`conversation_summaries`) | 2,920 ms | 18 ms | 150 |
+| Message search | 3,544 ms | 63 ms | 300 |
+| To-Do overview | 286 ms | 3 ms | 100 |
+| 400 tasks with assignees | 108 ms | 3 ms | 100 |
+| Calendar month | 53 ms | 10 ms | 150 |
+| Message page (newest / 10k back) | 8 / 5 ms | 1 / 1 ms | 50 |
+| Send to 100-member group (+99 notifications) | 14 ms | 13 ms | 150 |
+| Reminder dispatch (5,000 reminders) | 158 ms | 242 ms | 1,000 |
+| Inbox / unread count / members / open tasks | ≤ 28 ms | ≤ 4 ms | 50–100 |
+
+Cause: per-row membership checks in read policies. Fix: set-based policies (same rules), trigram index for
+search, unread count capped at 100. All 359 DB assertions still pass, so access rules are unchanged.
+
+### Security
+
+| Check | Result |
+|---|---|
+| `08_security_audit` (18 assertions) | pass locally; hosted catalog re-checked: 0 tables without RLS, 0 anon grants, 0 anon functions, 0 PUBLIC definer functions, 0 public buckets |
+| Found and fixed | 7 trigger functions were executable by PUBLIC (not exploitable: Postgres refuses direct trigger calls) |
+| Supabase advisors | only the expected "RPC executable by authenticated" (40, reviewed allow-list), `notification_queue` without policy (service role only), leaked-password protection (paid plan) |
+| Auth | min 8 chars with letters + digits; JWT 1 h; refresh-token rotation; anonymous sign-ins off; **email confirmation off (owner action)** |
+| App | release obfuscation; backup and cleartext disabled; no secrets in APK; release logging silenced; dependencies at latest stable |
+
+**Recommendations:** turn email confirmation back on once SMTP works (e.g. Brevo); consider captcha on
+sign-up; verified App Links for invitations if a domain is available.

@@ -138,10 +138,25 @@ The `delete-account` Edge Function identifies the user only from the verified JW
 user still owns a family that has other members, removes their avatar files, and then deletes the auth
 user. Database rows cascade.
 
+## Automated audit
+
+`supabase/tests/database/08_security_audit.test.sql` checks the whole catalog on every CI run (RLS
+everywhere, no anon access, reviewed RPC allow-list, definer hygiene, no blanket write policies, private
+buckets, Realtime protected). Read policies use set-based helpers (`private.my_conversation_ids()`,
+`private.readable_todo_list_ids()`, `private.readable_event_ids()`) that encode the same rules as the
+per-id helpers used by RPCs.
+
 ## Known gaps (tracked in docs/STATUS.md)
 
-- The local DB tests use a storage shim. Storage policies must also be verified once against a real
-  Supabase project.
+- **Email confirmation is disabled** on the hosted project (`mailer_autoconfirm = true`) because the
+  SMTP provider rejects the login. Anyone can register with an address they do not own until SMTP works
+  and confirmation is turned back on.
+- Leaked-password protection (HaveIBeenPwned) requires a paid Supabase plan.
+- Deep links use a custom scheme (`familysync://`). Auth links are safe because of PKCE (the verifier
+  never leaves the app); for invitation links, verified Android App Links on an https domain would be
+  stronger.
+
+- The local DB tests use a storage shim; storage policies were re-checked on the hosted project.
 
 ## Reporting
 

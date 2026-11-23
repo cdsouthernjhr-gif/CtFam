@@ -104,7 +104,7 @@ class PushService {
 
       AuthRepository.beforeSignOut.add(_unregister);
     } catch (e) {
-      debugPrint('Push unavailable: $e');
+      if (kDebugMode) debugPrint('Push unavailable: $e');
       _started = false;
     }
   }

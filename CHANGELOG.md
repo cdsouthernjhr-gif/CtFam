@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.7.0] - 2026-11-24: Phase 7, security and performance review
+
+### Performance
+- Measured at family scale (`scripts/perf_check.sh`: 100 members, 25k messages, 2k tasks, 500 events,
+  20k notifications) through RLS as a signed-in member. Read policies called a membership function per
+  row; they now compare against the set of readable ids computed once per statement
+  (`20261124000200_performance.sql`), with identical rules:
+  chat list 2,920 → 18 ms, message search 3,544 → 63 ms (plus a trigram index), To-Do overview
+  286 → 3 ms, list of 400 tasks 108 → 3 ms, calendar month 53 → 10 ms. Unread counts stop at 100 ("99+").
+- Every measured query is within budget; CI fails if a budget is exceeded.
+
+### Security
+- Catalog-wide audit test (`08_security_audit`, 18 assertions): RLS on every table, nothing granted to
+  `anon`, the callable RPC set equals a reviewed allow-list, push RPCs service-role only, definer
+  functions use an empty `search_path` and are not executable by PUBLIC, no unconditional write policy,
+  private buckets, Realtime tables protected by RLS, no secret-looking columns, invite codes hashed.
+- `20261124000100_hardening.sql`: trigger functions no longer executable by PUBLIC; new functions are not
+  executable by default.
+- Release APK built with Dart obfuscation; push error logging limited to debug builds; APK scanned for
+  secrets (none).
+- Hosted re-check: 0 tables without RLS, 0 anon grants/functions, 0 public buckets.
+
+### Known (owner action)
+- Email confirmation is still off (`mailer_autoconfirm`) until SMTP works; leaked-password protection
+  needs a paid Supabase plan.
+
 ## [0.6.0] - 2026-11-23: Phase 6, offline mode
 
 ### Added
