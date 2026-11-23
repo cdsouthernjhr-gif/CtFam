@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:familysync/core/errors/app_failure.dart';
+import 'package:familysync/core/offline/offline_store.dart';
+import 'package:familysync/core/offline/sync_engine.dart';
 import 'package:familysync/features/family/data/family_repository.dart';
 import 'package:familysync/features/family/domain/family_models.dart';
 import 'package:familysync/features/todo/data/todo_repository.dart';
@@ -74,7 +76,12 @@ void main() {
   tearDown(() => changes.close());
 
   ProviderContainer container() {
-    final c = ProviderContainer(overrides: [todoRepositoryProvider.overrideWithValue(repo)]);
+    final c = ProviderContainer(
+      overrides: [
+        ...offlineOverrides(userId: 'u1'),
+        todoRepositoryProvider.overrideWithValue(repo),
+      ],
+    );
     addTearDown(c.dispose);
     return c;
   }
@@ -102,13 +109,56 @@ void main() {
       expect(after.pending, isEmpty);
     });
 
-    test('failed completion rolls back and rethrows', () async {
-      final c = container();
+    test('offline completion is kept, queued, survives a reload and replays later', () async {
+      final calls = <(String, Map<String, dynamic>)>[];
+      final c = ProviderContainer(
+        overrides: [
+          ...offlineOverrides(userId: 'u1', rpcCalls: calls),
+          todoRepositoryProvider.overrideWithValue(repo),
+        ],
+      );
+      addTearDown(c.dispose);
+      c.listen(syncEngineProvider, (_, _) {});
       final sub = c.listen(todoListControllerProvider('L1'), (_, _) {});
       addTearDown(sub.close);
       await c.read(todoListControllerProvider('L1').future);
       when(() => repo.setCompleted('a', completed: true))
           .thenAnswer((_) async => throw const AppFailure(FailureKind.network));
+      c.read(networkStatusProvider.notifier).report(reachable: false);
+
+      await c.read(todoListControllerProvider('L1').notifier).setCompleted(_item('a', 'Beli susu'), completed: true);
+      var s = c.read(todoListControllerProvider('L1')).requireValue;
+      expect(s.items['a']!.completed, isTrue, reason: 'no rollback when offline');
+      expect(c.read(syncEngineProvider).pending, 1);
+
+      // App restart / reload: the server still says "open", the queued write wins locally.
+      c.invalidate(todoListControllerProvider('L1'));
+      s = await c.read(todoListControllerProvider('L1').future);
+      expect(s.items['a']!.completed, isTrue);
+      expect(s.pending, contains('a'));
+
+      // A second change to the same item is queued behind the first (order kept).
+      await c.read(todoListControllerProvider('L1').notifier).setCompleted(s.items['a']!, completed: false);
+      verify(() => repo.setCompleted('a', completed: true)).called(1);
+      verifyNever(() => repo.setCompleted('a', completed: false));
+      expect(c.read(syncEngineProvider).pending, 2);
+
+      c.read(networkStatusProvider.notifier).report(reachable: true);
+      await c.read(syncEngineProvider.notifier).flush();
+      expect(calls.map((x) => (x.$1, x.$2['p_completed'])), [
+        ('set_todo_item_status', true),
+        ('set_todo_item_status', false),
+      ]);
+      expect(c.read(syncEngineProvider).pending, 0);
+    });
+
+    test('rejected completion rolls back and rethrows', () async {
+      final c = container();
+      final sub = c.listen(todoListControllerProvider('L1'), (_, _) {});
+      addTearDown(sub.close);
+      await c.read(todoListControllerProvider('L1').future);
+      when(() => repo.setCompleted('a', completed: true))
+          .thenAnswer((_) async => throw const AppFailure(FailureKind.forbidden));
 
       await expectLater(
         c.read(todoListControllerProvider('L1').notifier).setCompleted(_item('a', 'Beli susu'), completed: true),

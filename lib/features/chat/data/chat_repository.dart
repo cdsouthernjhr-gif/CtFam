@@ -5,11 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/errors/app_failure.dart';
+import '../../../core/offline/offline_store.dart';
 import '../../../shared/providers/supabase_providers.dart';
 import '../domain/chat_logic.dart';
 import '../domain/chat_models.dart';
 
-final chatRepositoryProvider = Provider<ChatRepository>((ref) => ChatRepository(ref.watch(supabaseClientProvider)));
+final chatRepositoryProvider = Provider<ChatRepository>(
+  (ref) => ChatRepository(ref.watch(supabaseClientProvider), offline: ref.watch(offlineStoreProvider)),
+);
 
 /// Events of one open conversation (channel `conversation:{id}`, private).
 sealed class ConversationEvent {
@@ -61,16 +64,27 @@ class _RealtimeConversationChannel implements ConversationChannel {
 }
 
 class ChatRepository {
-  ChatRepository(this._client);
+  ChatRepository(this._client, {this._offline});
 
   final SupabaseClient _client;
+  final OfflineStore? _offline;
+
+  // Offline: last successful responses are served when the network is down.
+  Future<List<Map<String, dynamic>>> _cachedRows(String key, Future<List<dynamic>> Function() fetch) {
+    final store = _offline;
+    if (store == null) return fetch().then((r) => [for (final x in r) Map<String, dynamic>.from(x as Map)]);
+    return store.rows(key, fetch);
+  }
 
   String? get currentUserId => _client.auth.currentUser?.id;
 
   // ------------------------------------------------------------ conversations
   Future<List<ConversationSummary>> summaries(String familyId) => _guard(() async {
-    final rows = await _client.rpc<List<dynamic>>('conversation_summaries', params: {'p_family_id': familyId});
-    return rows.map((r) => ConversationSummary.fromJson(r as Map<String, dynamic>)).toList();
+    final rows = await _cachedRows(
+      'chat:summaries:$familyId',
+      () => _client.rpc<List<dynamic>>('conversation_summaries', params: {'p_family_id': familyId}),
+    );
+    return rows.map(ConversationSummary.fromJson).toList();
   });
 
   Future<String> openDirect(String familyId, String otherUserId) => _guard(
@@ -140,7 +154,9 @@ class ChatRepository {
   Future<List<ChatMessage>> messages(String conversationId, {DateTime? before, int limit = 40}) => _guard(() async {
     var q = _client.from('messages').select(ChatMessage.select).eq('conversation_id', conversationId);
     if (before != null) q = q.lt('created_at', before.toUtc().toIso8601String());
-    final rows = await q.order('created_at', ascending: false).order('id', ascending: false).limit(limit);
+    final query = q.order('created_at', ascending: false).order('id', ascending: false).limit(limit);
+    // Only the latest page is kept for offline reading.
+    final rows = before == null ? await _cachedRows('chat:messages:$conversationId', () => query) : await query;
     return rows.map(ChatMessage.fromJson).toList();
   });
 
@@ -170,16 +186,31 @@ class ChatRepository {
   }) => _guard(() async {
     await _client.rpc<Map<String, dynamic>>(
       'send_message',
-      params: {
-        'p_id': id,
-        'p_conversation_id': conversationId,
-        'p_body': body,
-        'p_reply_to_id': replyToId,
-        'p_attachments': attachments.map((a) => a.toRpc()).toList(),
-      },
+      params: sendParams(
+        id: id,
+        conversationId: conversationId,
+        body: body,
+        replyToId: replyToId,
+        attachments: attachments,
+      ),
     );
     return (await message(id))!;
   });
+
+  /// RPC parameters for `send_message` (shared with the offline outbox).
+  static Map<String, dynamic> sendParams({
+    required String id,
+    required String conversationId,
+    String? body,
+    String? replyToId,
+    List<ChatAttachment> attachments = const [],
+  }) => {
+    'p_id': id,
+    'p_conversation_id': conversationId,
+    'p_body': body,
+    'p_reply_to_id': replyToId,
+    'p_attachments': attachments.map((a) => a.toRpc()).toList(),
+  };
 
   Future<String> uploadAttachment({
     required String conversationId,
@@ -214,10 +245,13 @@ class ChatRepository {
       _guard(() => _client.rpc<void>('mark_family_delivered', params: {'p_family_id': familyId}));
 
   Future<List<ChatReceipt>> receipts(String conversationId) => _guard(() async {
-    final rows = await _client
-        .from('message_receipts')
-        .select('user_id, last_delivered_at, last_read_at')
-        .eq('conversation_id', conversationId);
+    final rows = await _cachedRows(
+      'chat:receipts:$conversationId',
+      () => _client
+          .from('message_receipts')
+          .select('user_id, last_delivered_at, last_read_at')
+          .eq('conversation_id', conversationId),
+    );
     return rows.map(ChatReceipt.fromJson).toList();
   });
 

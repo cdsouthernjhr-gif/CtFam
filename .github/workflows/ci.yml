@@ -14,7 +14,9 @@ jobs:
           flutter-version: 3.50.1
           channel: stable
       - run: flutter pub get
-      - run: dart format --line-length 120 --output=none --set-exit-if-changed $(find lib test -name '*.dart' -not -path '*/generated/*')
+      - run: dart format --line-length 120 --output=none --set-exit-if-changed $(find lib test -name '*.dart' -not -path '*/generated/*' -not -name '*.g.dart')
+      # Drift code is generated and committed; fail if it is stale.
+      - run: dart run build_runner build --delete-conflicting-outputs && git diff --exit-code -- lib
       - run: flutter analyze
       - run: flutter test
 

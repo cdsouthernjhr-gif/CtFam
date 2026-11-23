@@ -69,9 +69,10 @@ key is supplied, the app shows a *Configuration required* screen instead of star
 ## 3. Tests
 
 ```bash
+dart run build_runner build --delete-conflicting-outputs   # Drift code (committed; CI checks it)
 flutter analyze
-flutter test                 # unit + widget
-scripts/db_test.sh           # migrations + pgTAP RLS tests + invitation race test (Docker)
+flutter test                 # unit + widget (offline tests use in-memory SQLite)
+scripts/db_test.sh           # migrations + pgTAP + concurrency tests (Docker)
 KEEP_DB=1 scripts/db_test.sh # leave the DB running on localhost:54329 (password: postgres)
 ```
 
@@ -82,7 +83,7 @@ part of that image, so `supabase/tests/support/00_storage_shim.sql` recreates th
 Edge Function checks (Deno):
 
 ```bash
-cd supabase/functions && deno check delete-account/index.ts && deno lint && deno fmt --check
+cd supabase/functions && deno check delete-account/index.ts send-push/index.ts && deno lint && deno fmt --check && deno test send-push/
 ```
 
 ## 4. Building APKs
@@ -127,8 +128,10 @@ Custom-scheme links are not clickable in some messaging apps. The share text the
 code, which can be typed into *Join with a code*. To get clickable `https://` links, host a verified
 Android App Link domain and set `INVITE_LINK_BASE` (see docs/STATUS.md).
 
-## 6. Firebase (Phase 4, not yet integrated)
+## 6. Firebase (push notifications)
 
-Not yet integrated. When Phase 4 starts, `flutterfire configure` will generate `google-services.json`
-for the `com.familysync.app` Android app. The FCM service account will be stored only as an Edge
-Function secret.
+No `google-services.json` is used. The app reads Firebase's public client identifiers from
+`--dart-define` (`FIREBASE_API_KEY`, `FIREBASE_APP_ID`, `FIREBASE_MESSAGING_SENDER_ID`,
+`FIREBASE_PROJECT_ID`; see `env/example.json`); push is disabled when they are empty. The FCM service
+account is stored only as the Edge Function secret `FCM_SERVICE_ACCOUNT_JSON`. Step-by-step guide:
+[docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md).

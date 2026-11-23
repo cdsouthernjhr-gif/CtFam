@@ -43,7 +43,7 @@ Never paste service-role keys, keystore passwords or service-account JSON into c
 | 3 | Chat: race-safe direct conversations, groups, idempotent send, receipts, Broadcast typing, Presence, attachments, pagination, search, pin, mute | **Done, deployed** (see §12) |
 | 4 | FCM: token registration, `notification_queue`, Edge Function sender, preferences, lock-screen privacy, tap navigation, dedupe | **Done, deployed**. Push delivery waits for the owner's Firebase project (see §13) |
 | 5 | Calendar: events, participants, reminders, recurrence, month view + agenda | **Done, deployed** (see §14). Daily/weekly/monthly/yearly only (no full RRULE); no separate week/day views |
-| 6 | Offline: Drift (SQLite) cache, pending-operations queue with UUID op IDs, retry/backoff, conflict detection by revision, sync status UI | Not started |
+| 6 | Offline: Drift (SQLite) cache, pending-operations queue with UUID op IDs, retry/backoff, conflict detection by revision, sync status UI | **Done** (see §15). No server change was needed |
 | 7 | Security and performance: full RLS audit with Supabase advisors, rate-limit pruning job, index review, multi-device tests (3+ accounts) | Not started |
 | 8 | Release: signed release APK, device install testing, final docs | Release config ready; signing key needed |
 
@@ -260,3 +260,20 @@ pg_net → `send-push`, and **accepted by FCM** (`sent:1, failed:0`, queue statu
 **Limitations:** recurrence covers the common patterns (no "2nd Tuesday" or custom intervals); editing a
 recurring event changes the whole series (single occurrences can be cancelled, not individually edited);
 reminder texts show the event's own time zone.
+
+## 15. Phase 6: offline mode (2026-11-23)
+
+| Check | Result |
+|---|---|
+| Flutter | **111 tests passed**; `flutter analyze` clean; Drift code generated and committed (CI checks it is fresh) |
+| Offline store | stored copy served on network failure only; permission errors not masked; per-user; wipe |
+| Sync engine | strict order (a real bug was found and fixed: same-second timestamps could reorder ops, now an autoincrement sequence); stops at network errors; conflicts marked failed while later ops continue; retry/discard; other users' ops never replayed |
+| Flows | To-Do completion offline survives a reload and replays both queued changes in order; offline chat message stays "sending", reappears after reload, is sent with the same id and becomes "sent" |
+| DB `07_offline_replay` | **11 assertions passed**: replayed create/status/delete/message/RSVP are idempotent (one row, one notification); a stale queued edit fails with `revision_conflict` |
+| All DB suites | 341 pgTAP assertions + 5 concurrency scripts passed |
+| APK | builds with the bundled SQLite (`libsqlite3.so` for arm64, armv7, x86_64) |
+
+**Not offline-capable (need a connection):** creating/editing lists, events and groups; attachments;
+invitations and family management; message edit/delete. These show the normal "no connection" error.
+**Limitations:** the cache keeps the latest page of each conversation and the calendar ranges already
+viewed; the local database relies on Android storage encryption (no SQLCipher).

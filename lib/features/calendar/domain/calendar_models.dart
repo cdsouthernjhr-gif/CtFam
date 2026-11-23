@@ -142,6 +142,38 @@ class FamilyEvent {
   }
 
   int countRsvp(Rsvp r) => participants.where((p) => p.rsvp == r).length;
+
+  /// Copy with [userId]'s RSVP replaced (added when not yet a participant).
+  FamilyEvent withRsvp(String userId, Rsvp rsvp) {
+    final me = participant(userId);
+    final next = [
+      for (final p in participants)
+        p.userId == userId
+            ? EventParticipant(userId: userId, rsvp: rsvp, displayName: p.displayName, avatarPath: p.avatarPath)
+            : p,
+      if (me == null) EventParticipant(userId: userId, rsvp: rsvp),
+    ];
+    return FamilyEvent(
+      id: id,
+      familyId: familyId,
+      title: title,
+      startsAt: startsAt,
+      endsAt: endsAt,
+      description: description,
+      location: location,
+      category: category,
+      allDay: allDay,
+      timezone: timezone,
+      recurrence: recurrence,
+      recurrenceUntil: recurrenceUntil,
+      participantsOnly: participantsOnly,
+      defaultReminders: defaultReminders,
+      createdBy: createdBy,
+      revision: revision,
+      deletedAt: deletedAt,
+      participants: next,
+    );
+  }
 }
 
 /// One concrete occurrence of an event (recurring events have many).

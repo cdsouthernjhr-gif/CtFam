@@ -5,11 +5,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/errors/app_failure.dart';
+import '../../../core/offline/offline_store.dart';
 import '../../../shared/providers/supabase_providers.dart';
 import '../../family/domain/family_models.dart';
 
 final profileRepositoryProvider = Provider<ProfileRepository>(
-  (ref) => ProfileRepository(ref.watch(supabaseClientProvider)),
+  (ref) => ProfileRepository(ref.watch(supabaseClientProvider), offline: ref.watch(offlineStoreProvider)),
 );
 
 /// Allowed upload types; the bucket enforces the same list and a 5 MB limit.
@@ -25,9 +26,10 @@ String? contentTypeForFileName(String name) {
 }
 
 class ProfileRepository {
-  ProfileRepository(this._client);
+  ProfileRepository(this._client, {this._offline});
 
   final SupabaseClient _client;
+  final OfflineStore? _offline;
   static const _uuid = Uuid();
 
   String get _uid {
@@ -37,8 +39,11 @@ class ProfileRepository {
   }
 
   Future<Profile> me() => _guard(() async {
-    final row = await _client.from('profiles').select().eq('id', _uid).single();
-    return Profile.fromJson(row);
+    final uid = _uid;
+    Future<Map<String, dynamic>?> fetch() => _client.from('profiles').select().eq('id', uid).single();
+    final store = _offline;
+    final row = store == null ? await fetch() : await store.row('profile:me', fetch);
+    return Profile.fromJson(row!);
   });
 
   Future<void> update({String? displayName, String? phone, String? bio, String? locale}) => _guard(() async {

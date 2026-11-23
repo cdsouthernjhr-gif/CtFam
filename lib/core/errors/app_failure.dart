@@ -50,11 +50,24 @@ class AppFailure implements Exception {
       return AppFailure(_kindForCode(code) ?? FailureKind.unknown, '$code ${error.status}');
     }
     final text = error.toString();
-    if (text.contains('SocketException') || text.contains('Failed host lookup')) {
+    if (isNetworkErrorText(text)) {
       return AppFailure(FailureKind.network, text);
     }
     return AppFailure(FailureKind.unknown, text);
   }
+
+  /// Transport failures (no route, DNS, TLS, dropped connection), as raised by
+  /// dart:io and package:http, possibly wrapped by the Supabase clients.
+  static bool isNetworkErrorText(String text) => const [
+    'SocketException',
+    'Failed host lookup',
+    'ClientException',
+    'HandshakeException',
+    'Connection refused',
+    'Connection closed',
+    'Connection reset',
+    'Network is unreachable',
+  ].any(text.contains);
 
   static AppFailure _fromAuth(AuthException e) {
     final code = e.code ?? '';

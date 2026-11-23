@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../../core/offline/sync_engine.dart';
 import '../../../core/router/routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/l10n_ext.dart';
@@ -222,7 +223,20 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
           ListTile(
             leading: const Icon(Icons.logout),
             title: Text(l10n.signOut),
-            onTap: () => _guard(() => auth.signOut()),
+            onTap: () async {
+              final queued = ref.read(syncEngineProvider).ops.length;
+              if (queued > 0) {
+                final ok = await confirmDialog(
+                  context,
+                  title: l10n.signOut,
+                  message: l10n.signOutUnsynced(queued),
+                  confirmLabel: l10n.signOut,
+                  destructive: true,
+                );
+                if (!ok) return;
+              }
+              await _guard(() => auth.signOut());
+            },
           ),
           ListTile(
             leading: const Icon(Icons.devices_other),

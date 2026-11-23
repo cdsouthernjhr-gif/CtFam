@@ -4,17 +4,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/errors/app_failure.dart';
+import '../../../core/offline/offline_store.dart';
 import '../../../shared/providers/supabase_providers.dart';
 import '../domain/calendar_models.dart';
 
 final calendarRepositoryProvider = Provider<CalendarRepository>(
-  (ref) => CalendarRepository(ref.watch(supabaseClientProvider)),
+  (ref) => CalendarRepository(ref.watch(supabaseClientProvider), offline: ref.watch(offlineStoreProvider)),
 );
 
 class CalendarRepository {
-  CalendarRepository(this._client);
+  CalendarRepository(this._client, {this._offline});
 
   final SupabaseClient _client;
+  final OfflineStore? _offline;
+
+  Future<Object?> _cached(String key, Future<Object?> Function() fetch) {
+    final store = _offline;
+    return store == null ? fetch() : store.value(key, fetch);
+  }
+
   String? _timezone;
 
   String? get _uid => _client.auth.currentUser?.id;
@@ -22,16 +30,29 @@ class CalendarRepository {
   /// Occurrences of visible events in [from, to). The server expands
   /// recurrences, so client and reminders always agree.
   Future<List<EventOccurrence>> occurrences(String familyId, DateTime from, DateTime to) => _guard(() async {
-    final rows = await _client.rpc<List<dynamic>>(
-      'calendar_occurrences',
-      params: {'p_family_id': familyId, 'p_from': from.toUtc().toIso8601String(), 'p_to': to.toUtc().toIso8601String()},
-    );
-    if (rows.isEmpty) return const [];
-    final ids = {for (final r in rows) (r as Map<String, dynamic>)['event_id'] as String};
-    final events = await _client.from('family_events').select(FamilyEvent.select).inFilter('id', ids.toList());
-    final byId = {for (final e in events.map(FamilyEvent.fromJson)) e.id: e};
+    final key = 'calendar:$familyId:${from.toUtc().toIso8601String()}:${to.toUtc().toIso8601String()}';
+    final data = await _cached(key, () async {
+      final rows = await _client.rpc<List<dynamic>>(
+        'calendar_occurrences',
+        params: {
+          'p_family_id': familyId,
+          'p_from': from.toUtc().toIso8601String(),
+          'p_to': to.toUtc().toIso8601String(),
+        },
+      );
+      final ids = {for (final r in rows) (r as Map<String, dynamic>)['event_id'] as String};
+      final events = ids.isEmpty
+          ? const <Map<String, dynamic>>[]
+          : await _client.from('family_events').select(FamilyEvent.select).inFilter('id', ids.toList());
+      return {'occurrences': rows, 'events': events};
+    });
+    final map = Map<String, dynamic>.from(data! as Map);
+    final byId = {
+      for (final e in (map['events'] as List).map((r) => FamilyEvent.fromJson(Map<String, dynamic>.from(r as Map))))
+        e.id: e,
+    };
     return [
-      for (final r in rows.cast<Map<String, dynamic>>())
+      for (final r in (map['occurrences'] as List).map((x) => Map<String, dynamic>.from(x as Map)))
         if (byId[r['event_id']] case final e?)
           EventOccurrence(
             event: e,
@@ -42,18 +63,20 @@ class CalendarRepository {
   });
 
   Future<FamilyEvent?> event(String id) => _guard(() async {
-    final row = await _client.from('family_events').select(FamilyEvent.select).eq('id', id).maybeSingle();
-    return row == null ? null : FamilyEvent.fromJson(row);
+    final row = await _cached(
+      'calendar:event:$id',
+      () => _client.from('family_events').select(FamilyEvent.select).eq('id', id).maybeSingle(),
+    );
+    return row == null ? null : FamilyEvent.fromJson(Map<String, dynamic>.from(row as Map));
   });
 
   /// The signed-in user's own reminders for [eventId] (RLS: own rows only).
   Future<List<int>> myReminders(String eventId) => _guard(() async {
-    final rows = await _client
-        .from('event_reminders')
-        .select('minutes_before')
-        .eq('event_id', eventId)
-        .order('minutes_before');
-    return [for (final r in rows) (r['minutes_before'] as num).toInt()];
+    final rows = await _cached(
+      'calendar:reminders:$eventId',
+      () => _client.from('event_reminders').select('minutes_before').eq('event_id', eventId).order('minutes_before'),
+    );
+    return [for (final r in rows! as List) ((r as Map)['minutes_before'] as num).toInt()];
   });
 
   /// IANA time zone used for recurrence and reminder texts (user preference).
@@ -128,9 +151,10 @@ class CalendarRepository {
     ),
   );
 
-  Future<void> setRsvp(String eventId, Rsvp rsvp) => _guard(
-    () => _client.rpc<Map<String, dynamic>>('set_event_rsvp', params: {'p_event_id': eventId, 'p_rsvp': rsvp.name}),
-  );
+  Future<void> setRsvp(String eventId, Rsvp rsvp) =>
+      _guard(() => _client.rpc<Map<String, dynamic>>('set_event_rsvp', params: rsvpParams(eventId, rsvp)));
+
+  static Map<String, dynamic> rsvpParams(String eventId, Rsvp rsvp) => {'p_event_id': eventId, 'p_rsvp': rsvp.name};
 
   Future<List<int>> setReminders(String eventId, List<int> minutes) => _guard(() async {
     final res = await _client.rpc<List<dynamic>>(

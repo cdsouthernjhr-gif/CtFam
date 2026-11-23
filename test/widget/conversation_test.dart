@@ -1,12 +1,16 @@
 import 'dart:async';
 
 import 'package:familysync/core/errors/app_failure.dart';
+import 'package:familysync/core/offline/offline_store.dart';
+import 'package:familysync/core/offline/sync_engine.dart';
 import 'package:familysync/features/chat/data/chat_repository.dart';
 import 'package:familysync/features/chat/domain/chat_models.dart';
 import 'package:familysync/features/chat/presentation/chat_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
+import '../helpers/pump_app.dart';
 
 class _MockChatRepo extends Mock implements ChatRepository {}
 
@@ -59,7 +63,12 @@ void main() {
   tearDown(() => channel.controller.close());
 
   Future<ProviderContainer> ready() async {
-    final c = ProviderContainer(overrides: [chatRepositoryProvider.overrideWithValue(repo)]);
+    final c = ProviderContainer(
+      overrides: [
+        ...offlineOverrides(userId: 'u1'),
+        chatRepositoryProvider.overrideWithValue(repo),
+      ],
+    );
     addTearDown(c.dispose);
     final sub = c.listen(conversationControllerProvider('C1'), (_, _) {});
     addTearDown(sub.close);
@@ -110,7 +119,7 @@ void main() {
       ),
     ).thenAnswer((inv) async {
       ids.add(inv.namedArguments[#id] as String);
-      if (attempt++ == 0) throw const AppFailure(FailureKind.network);
+      if (attempt++ == 0) throw const AppFailure(FailureKind.server);
       return _msg(inv.namedArguments[#id] as String, sender: 'me', body: 'ok', minute: 7);
     });
 
@@ -122,6 +131,56 @@ void main() {
     await ctrl.retry(failed.id);
     expect(state(c).messages.last.sendState, SendState.sent);
     expect(ids.toSet().length, 1, reason: 'idempotent retry with the same client id');
+  });
+
+  test('offline text message is queued (still "sending") and replayed with the same id', () async {
+    final calls = <(String, Map<String, dynamic>)>[];
+    final c = ProviderContainer(
+      overrides: [
+        ...offlineOverrides(userId: 'me', rpcCalls: calls),
+        chatRepositoryProvider.overrideWithValue(repo),
+      ],
+    );
+    addTearDown(c.dispose);
+    c.listen(syncEngineProvider, (_, _) {});
+    final sub = c.listen(conversationControllerProvider('C1'), (_, _) {});
+    addTearDown(sub.close);
+    await c.read(conversationControllerProvider('C1').future);
+    when(
+      () => repo.send(
+        id: any(named: 'id'),
+        conversationId: 'C1',
+        body: any(named: 'body'),
+        replyToId: any(named: 'replyToId'),
+        attachments: any(named: 'attachments'),
+      ),
+    ).thenAnswer((_) async => throw const AppFailure(FailureKind.network));
+    c.read(networkStatusProvider.notifier).report(reachable: false);
+
+    await c.read(conversationControllerProvider('C1').notifier).send(body: 'Saya dalam kereta api');
+    final local = c.read(conversationControllerProvider('C1')).requireValue.messages.last;
+    expect(local.sendState, SendState.sending, reason: 'not failed: it will be delivered later');
+    expect(c.read(syncEngineProvider).pending, 1);
+
+    // Restart: the queued message is shown again from the outbox.
+    c.invalidate(conversationControllerProvider('C1'));
+    final reloaded = await c.read(conversationControllerProvider('C1').future);
+    expect(reloaded.messages.where((m) => m.id == local.id).single.body, 'Saya dalam kereta api');
+
+    when(() => repo.message(local.id))
+        .thenAnswer((_) async => _msg(local.id, sender: 'me', body: 'Saya dalam kereta api', minute: 9));
+    c.read(networkStatusProvider.notifier).report(reachable: true);
+    await c.read(syncEngineProvider.notifier).flush();
+    await pumpEventQueue();
+    expect(calls.single.$1, 'send_message');
+    expect(calls.single.$2['p_id'], local.id, reason: 'same client id: the server deduplicates');
+    final sent = c
+        .read(conversationControllerProvider('C1'))
+        .requireValue
+        .messages
+        .where((m) => m.id == local.id)
+        .single;
+    expect(sent.sendState, SendState.sent, reason: 'replaced by the stored server copy');
   });
 
   test('realtime: incoming message is merged once; typing shows and clears', () async {

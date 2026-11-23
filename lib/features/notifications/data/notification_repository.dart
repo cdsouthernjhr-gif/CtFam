@@ -4,17 +4,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/errors/app_failure.dart';
+import '../../../core/offline/offline_store.dart';
 import '../../../shared/providers/supabase_providers.dart';
 import '../domain/notification_models.dart';
 
 final notificationRepositoryProvider = Provider<NotificationRepository>(
-  (ref) => NotificationRepository(ref.watch(supabaseClientProvider)),
+  (ref) => NotificationRepository(ref.watch(supabaseClientProvider), offline: ref.watch(offlineStoreProvider)),
 );
 
 class NotificationRepository {
-  NotificationRepository(this._client);
+  NotificationRepository(this._client, {this._offline});
 
   final SupabaseClient _client;
+  final OfflineStore? _offline;
+
+  // Offline: last successful responses are served when the network is down.
+  Future<List<Map<String, dynamic>>> _cachedRows(String key, Future<List<dynamic>> Function() fetch) {
+    final store = _offline;
+    if (store == null) return fetch().then((r) => [for (final x in r) Map<String, dynamic>.from(x as Map)]);
+    return store.rows(key, fetch);
+  }
+
+  Future<Object?> _offlineValue(String key, Future<Object?> Function() fetch) {
+    final store = _offline;
+    return store == null ? fetch() : store.value(key, fetch);
+  }
 
   String get _uid {
     final id = _client.auth.currentUser?.id;
@@ -23,23 +37,33 @@ class NotificationRepository {
   }
 
   Future<List<AppNotification>> list({int limit = 100}) => _guard(() async {
-    final rows = await _client
-        .from('notifications')
-        .select('id, type, title, body, data, read_at, created_at')
-        .eq('user_id', _uid)
-        .order('created_at', ascending: false)
-        .limit(limit);
+    final uid = _uid;
+    final rows = await _cachedRows(
+      'notifications:inbox',
+      () => _client
+          .from('notifications')
+          .select('id, type, title, body, data, read_at, created_at')
+          .eq('user_id', uid)
+          .order('created_at', ascending: false)
+          .limit(limit),
+    );
     return rows.map(AppNotification.fromJson).toList();
   });
 
   Future<int> unreadCount() => _guard(() async {
-    final res = await _client
-        .from('notifications')
-        .select('id')
-        .eq('user_id', _uid)
-        .isFilter('read_at', null)
-        .count(CountOption.exact);
-    return res.count;
+    final uid = _uid;
+    final count = await _offlineValue(
+      'notifications:unread',
+      () async =>
+          (await _client
+                  .from('notifications')
+                  .select('id')
+                  .eq('user_id', uid)
+                  .isFilter('read_at', null)
+                  .count(CountOption.exact))
+              .count,
+    );
+    return (count as num?)?.toInt() ?? 0;
   });
 
   Future<void> markRead([List<String>? ids]) =>

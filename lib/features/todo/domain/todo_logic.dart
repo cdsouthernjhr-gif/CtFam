@@ -88,3 +88,54 @@ TodoProgress progressOf(Iterable<TodoItem> items) {
   }
   return TodoProgress(done, total);
 }
+
+/// Re-applies writes still waiting in the offline outbox (oldest first) on
+/// top of server/cached [items], so local changes survive restarts and
+/// refreshes until they are synced. [ops] are (kind, RPC params) pairs.
+Map<String, TodoItem> applyQueuedTodoOps(
+  Map<String, TodoItem> items,
+  String listId,
+  Iterable<(String, Map<String, dynamic>)> ops,
+) {
+  final next = Map<String, TodoItem>.of(items);
+  for (final (kind, p) in ops) {
+    final id = p['p_id'] as String?;
+    if (id == null) continue;
+    switch (kind) {
+      case 'todo.upsert_item':
+        if (p['p_list_id'] != listId) continue;
+        final description = p['p_description'] as String?;
+        final due = p['p_due_at'] as String?;
+        final base =
+            next[id] ??
+            TodoItem(
+              id: id,
+              listId: listId,
+              title: p['p_title'] as String? ?? '',
+              completed: false,
+              priority: TodoPriority.normal,
+              recurrence: TodoRecurrence.none,
+              revision: 0,
+              position: DateTime.now().millisecondsSinceEpoch / 1000,
+            );
+        next[id] = base.copyWith(
+          title: p['p_title'] as String?,
+          description: description,
+          clearDescription: description == null || description.trim().isEmpty,
+          priority: TodoPriority.parse(p['p_priority'] as String?),
+          recurrence: TodoRecurrence.parse(p['p_recurrence'] as String?),
+          dueAt: due == null ? null : DateTime.parse(due).toLocal(),
+          clearDueAt: due == null,
+          assigneeIds: (p['p_assignee_ids'] as List?)?.cast<String>(),
+        );
+      case 'todo.set_status':
+        final item = next[id];
+        if (item == null) continue;
+        final done = p['p_completed'] == true;
+        next[id] = item.copyWith(completed: done, completedAt: done ? DateTime.now() : null);
+      case 'todo.delete_item':
+        next.remove(id);
+    }
+  }
+  return next;
+}

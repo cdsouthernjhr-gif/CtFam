@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.6.0] - 2026-11-23: Phase 6, offline mode
+
+### Added
+- **On-device database** (Drift/SQLite, `lib/core/offline/`): `cache_entries` (last server responses as raw
+  JSON, per user) and `outbox_ops` (queued writes, replayed strictly in insertion order).
+- **Offline reading:** network-first with fallback to the stored copy for memberships, family, members,
+  activity, profile, To-Do lists/items/summaries, chat list, latest messages and receipts, calendar
+  occurrences/events/reminders, notification inbox and unread count. Non-network errors are never hidden
+  by the cache. The app can start without a connection when it has been used before.
+- **Offline writes** (outbox): To-Do create/edit/complete/reopen/delete, text messages, event RSVP. The UI
+  stays optimistic (no rollback on network loss); queued changes are re-applied after restarts; later
+  writes to the same item queue behind earlier ones; chained offline edits drop the stale revision while a
+  queued edit based on an old server revision still fails with a conflict.
+- **Sync engine:** replays when connectivity returns, on app resume, every 20 s while work is queued, and
+  right after queueing. Network errors stop the replay (order kept); rejected ops (conflict, lost access)
+  are marked failed and shown for retry/discard.
+- **UI:** status strip above the navigation bar (offline, syncing, failed), Sync screen (`/sync`) with
+  "Sync now", per-change discard; sign-out warns when changes are unsynced.
+- **Privacy:** local data is per user; other accounts' data is removed at sign-in; everything is wiped
+  before sign-out and account deletion (after one last sync attempt).
+- **Tests:** offline store, sync engine ordering/failure handling, queued To-Do overlay, offline To-Do and
+  chat flows across a reload, sync UI (111 Flutter tests); `07_offline_replay` pgTAP (11 assertions) proves
+  every replayed RPC is idempotent and stale queued edits are rejected.
+
+### Fixed
+- Network errors raised by `package:http` (`ClientException`, TLS, dropped connections) are now
+  recognised as "no connection".
+
 ## [0.5.0] - 2026-11-23: Phase 5, family calendar
 
 ### Added

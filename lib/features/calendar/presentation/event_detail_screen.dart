@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/errors/app_failure.dart';
+import '../../../core/offline/sync_engine.dart';
 import '../../../core/router/routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/l10n_ext.dart';
@@ -216,11 +218,20 @@ class _Body extends ConsumerWidget {
           selected: {if (mine != null && mine.rsvp != Rsvp.pending) mine.rsvp},
           onSelectionChanged: (s) async {
             if (s.isEmpty) return;
+            final params = CalendarRepository.rsvpParams(event.id, s.first);
+            final sync = ref.read(syncEngineProvider.notifier);
+            Future<void> queue() async {
+              await sync.enqueue(kind: OutboxKind.eventRsvp, entityId: event.id, scope: event.id, params: params);
+              if (context.mounted) context.showMessage(l10n.savedOffline);
+            }
+
             try {
+              if (ref.read(syncEngineProvider).hasPendingFor(event.id)) return await queue();
               await ref.read(calendarRepositoryProvider).setRsvp(event.id, s.first);
               ref.invalidate(eventProvider((familyId: event.familyId, eventId: event.id)));
               ref.invalidate(myRemindersProvider(event.id));
             } catch (e) {
+              if (AppFailure.from(e).kind == FailureKind.network) return queue();
               if (context.mounted) context.showError(e);
             }
           },

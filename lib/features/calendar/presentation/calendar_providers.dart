@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/offline/sync_engine.dart';
+import '../../../shared/providers/session_controller.dart';
 import '../data/calendar_repository.dart';
 import '../domain/calendar_models.dart';
 
@@ -83,10 +85,26 @@ class CalendarViewController extends Notifier<CalendarViewState> {
   void setAgenda(bool agenda) => state = state.copyWith(agenda: agenda);
 }
 
-/// One event with live updates (detail screen).
-final eventProvider = FutureProvider.autoDispose.family<FamilyEvent?, ({String familyId, String eventId})>((ref, k) {
+/// One event with live updates (detail screen). An RSVP made offline and
+/// still queued is shown in place of the server value.
+final eventProvider = FutureProvider.autoDispose.family<FamilyEvent?, ({String familyId, String eventId})>((
+  ref,
+  k,
+) async {
   ref.watch(calendarTickProvider(k.familyId));
-  return ref.watch(calendarRepositoryProvider).event(k.eventId);
+  final queuedRsvp = ref.watch(
+    syncEngineProvider.select((s) {
+      String? last;
+      for (final o in s.ops) {
+        if (o.kind == OutboxKind.eventRsvp.key && o.entityId == k.eventId) last = opParams(o)['p_rsvp'] as String?;
+      }
+      return last;
+    }),
+  );
+  final event = await ref.watch(calendarRepositoryProvider).event(k.eventId);
+  final me = ref.read(currentUserIdProvider);
+  if (event == null || queuedRsvp == null || me == null) return event;
+  return event.withRsvp(me, Rsvp.parse(queuedRsvp));
 });
 
 final myRemindersProvider = FutureProvider.autoDispose.family<List<int>, String>(

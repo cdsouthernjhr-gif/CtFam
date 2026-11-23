@@ -6,17 +6,32 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/errors/app_failure.dart';
+import '../../../core/offline/offline_store.dart';
 import '../../../shared/providers/supabase_providers.dart';
 import '../domain/family_models.dart';
 
 final familyRepositoryProvider = Provider<FamilyRepository>(
-  (ref) => FamilyRepository(ref.watch(supabaseClientProvider)),
+  (ref) => FamilyRepository(ref.watch(supabaseClientProvider), offline: ref.watch(offlineStoreProvider)),
 );
 
 class FamilyRepository {
-  FamilyRepository(this._client);
+  FamilyRepository(this._client, {this._offline});
 
   final SupabaseClient _client;
+  final OfflineStore? _offline;
+
+  // Offline: last successful responses are served when the network is down.
+  Future<List<Map<String, dynamic>>> _cachedRows(String key, Future<List<dynamic>> Function() fetch) {
+    final store = _offline;
+    if (store == null) return fetch().then((r) => [for (final x in r) Map<String, dynamic>.from(x as Map)]);
+    return store.rows(key, fetch);
+  }
+
+  Future<Map<String, dynamic>?> _cachedRow(String key, Future<Map<String, dynamic>?> Function() fetch) {
+    final store = _offline;
+    return store == null ? fetch() : store.row(key, fetch);
+  }
+
   static const _uuid = Uuid();
 
   String get _uid {
@@ -26,20 +41,28 @@ class FamilyRepository {
   }
 
   Future<List<MyMembership>> myMemberships() => _guard(() async {
-    final rows = await _client
-        .from('family_members')
-        .select(
-          'family_id, role, status, '
-          'families(id, name, description, image_path, require_invite_approval, '
-          'allow_admin_invites, max_members, created_at)',
-        )
-        .eq('user_id', _uid)
-        .inFilter('status', ['active', 'pending']);
+    final uid = _uid;
+    final rows = await _cachedRows(
+      'family:memberships',
+      () => _client
+          .from('family_members')
+          .select(
+            'family_id, role, status, '
+            'families(id, name, description, image_path, require_invite_approval, '
+            'allow_admin_invites, max_members, created_at)',
+          )
+          .eq('user_id', uid)
+          .inFilter('status', ['active', 'pending']),
+    );
     return rows.map(MyMembership.fromJson).toList();
   });
 
   Future<String?> activeFamilyPreference() => _guard(() async {
-    final row = await _client.from('user_preferences').select('active_family_id').eq('user_id', _uid).maybeSingle();
+    final uid = _uid;
+    final row = await _cachedRow(
+      'family:active',
+      () => _client.from('user_preferences').select('active_family_id').eq('user_id', uid).maybeSingle(),
+    );
     return row?['active_family_id'] as String?;
   });
 
@@ -55,8 +78,11 @@ class FamilyRepository {
   });
 
   Future<Family> family(String familyId) => _guard(() async {
-    final row = await _client.from('families').select().eq('id', familyId).single();
-    return Family.fromJson(row);
+    final row = await _cachedRow(
+      'family:$familyId',
+      () => _client.from('families').select().eq('id', familyId).single(),
+    );
+    return Family.fromJson(row!);
   });
 
   Future<void> updateFamily(
@@ -89,9 +115,13 @@ class FamilyRepository {
   });
 
   Future<List<FamilyMember>> members(String familyId) => _guard(() async {
-    final rows = await _client.from('family_members').select(FamilyMember.select).eq('family_id', familyId).inFilter(
-      'status',
-      ['active', 'pending', 'suspended'],
+    final rows = await _cachedRows(
+      'family:members:$familyId',
+      () => _client.from('family_members').select(FamilyMember.select).eq('family_id', familyId).inFilter('status', [
+        'active',
+        'pending',
+        'suspended',
+      ]),
     );
     final list = rows.map(FamilyMember.fromJson).toList()
       ..sort((a, b) {
@@ -103,12 +133,15 @@ class FamilyRepository {
   });
 
   Future<List<ActivityEntry>> activity(String familyId, {int limit = 50}) => _guard(() async {
-    final rows = await _client
-        .from('audit_logs')
-        .select('id, action, created_at, actor_id, target_id, details, profiles(display_name)')
-        .eq('family_id', familyId)
-        .order('created_at', ascending: false)
-        .limit(limit);
+    final rows = await _cachedRows(
+      'family:activity:$familyId',
+      () => _client
+          .from('audit_logs')
+          .select('id, action, created_at, actor_id, target_id, details, profiles(display_name)')
+          .eq('family_id', familyId)
+          .order('created_at', ascending: false)
+          .limit(limit),
+    );
     return rows.map(ActivityEntry.fromJson).toList();
   });
 

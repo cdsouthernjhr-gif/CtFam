@@ -1057,5 +1057,77 @@
         "type": "String"
       }
     }
+  },
+  "offlineBanner": "Luar talian · memaparkan data terakhir yang disimpan",
+  "offlineBannerPending": "Luar talian · {count} perubahan akan disegerakkan bila talian kembali",
+  "@offlineBannerPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncingBanner": "Menyegerakkan {count} perubahan…",
+  "@syncingBanner": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncFailedBanner": "{count} perubahan tidak dapat disimpan. Tekan untuk semak.",
+  "@syncFailedBanner": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncTitle": "Penyegerakan",
+  "syncOnline": "Dalam talian",
+  "syncOffline": "Luar talian",
+  "syncExplain": "Perubahan yang dibuat tanpa internet disimpan dalam telefon dan dihantar secara automatik.",
+  "syncLastRun": "Penyegerakan terakhir: {time}",
+  "@syncLastRun": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncNow": "Segerakkan sekarang",
+  "syncNothing": "Semua perubahan sudah disegerakkan.",
+  "syncWaiting": "Menunggu sambungan",
+  "syncConflict": "Bertembung: orang lain telah mengubahnya dahulu. Perubahan anda tidak disimpan.",
+  "syncDiscard": "Buang perubahan",
+  "syncDiscardMessage": "Perubahan ini akan dibuang dan tidak dihantar.",
+  "syncOpTodoSave": "Simpan tugasan \"{title}\"",
+  "@syncOpTodoSave": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncOpTodoDone": "Tanda tugasan siap",
+  "syncOpTodoReopen": "Buka semula tugasan",
+  "syncOpTodoDelete": "Padam tugasan",
+  "syncOpMessage": "Mesej: {text}",
+  "@syncOpMessage": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "syncOpRsvp": "Jawapan RSVP acara",
+  "savedOffline": "Disimpan dalam telefon. Akan dihantar bila talian kembali.",
+  "signOutUnsynced": "{count} perubahan belum disegerakkan dan akan hilang jika anda log keluar sekarang.",
+  "@signOutUnsynced": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

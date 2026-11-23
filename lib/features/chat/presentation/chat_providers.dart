@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../shared/providers/session_controller.dart';
+import '../../../core/errors/app_failure.dart';
+import '../../../core/offline/local_database.dart';
+import '../../../core/offline/sync_engine.dart';
 import '../data/chat_repository.dart';
 import '../domain/chat_logic.dart';
 import '../domain/chat_models.dart';
@@ -153,8 +156,14 @@ class ConversationController extends AsyncNotifier<ConversationState> {
     _channel = channel;
     final sub = channel.events.listen(_onEvent, onError: (_) {});
     _typingPrune = Timer.periodic(const Duration(seconds: 2), (_) => _pruneTyping());
+    final synced = ref
+        .read(syncEngineProvider.notifier)
+        .results
+        .where((r) => r.op.scope == conversationId)
+        .listen((r) => unawaited(_onSynced(r)));
     ref.onDispose(() {
       sub.cancel();
+      synced.cancel();
       _typingPrune?.cancel();
     });
     final results = await Future.wait([
@@ -163,8 +172,12 @@ class ConversationController extends AsyncNotifier<ConversationState> {
       repo.members(conversationId),
     ]);
     final page = results[0] as List<ChatMessage>;
+    final queued = await ref
+        .read(syncEngineProvider.notifier)
+        .opsFor(conversationId)
+        .catchError((Object _) => <OutboxOp>[]);
     return ConversationState(
-      messages: mergePage(const [], page),
+      messages: [...mergePage(const [], page), for (final op in queued) _queuedMessage(op)]..sort(compareMessages),
       receipts: {for (final r in results[1] as List<ChatReceipt>) r.userId: r},
       members: results[2] as List<ConversationMember>,
       hasMore: page.length >= pageSize,
@@ -173,6 +186,37 @@ class ConversationController extends AsyncNotifier<ConversationState> {
 
   ConversationState? get _s => state.value;
   void _set(ConversationState s) => state = AsyncData(s);
+
+  /// A text message written offline and still waiting in the outbox.
+  ChatMessage _queuedMessage(OutboxOp op) {
+    final p = opParams(op);
+    return ChatMessage(
+      id: op.entityId,
+      conversationId: conversationId,
+      senderId: _me,
+      kind: MessageKind.text,
+      body: p['p_body'] as String?,
+      replyToId: p['p_reply_to_id'] as String?,
+      createdAt: op.createdAt,
+      sendState: op.status == 'failed' ? SendState.failed : SendState.sending,
+    );
+  }
+
+  Future<void> _onSynced(SyncResult r) async {
+    final s = _s;
+    if (s == null) return;
+    if (!r.ok) {
+      final local = s.byId(r.op.entityId);
+      if (local != null) {
+        _set(s.copyWith(messages: _replaceLocal(s.messages, local.copyWith(sendState: SendState.failed))));
+      }
+      return;
+    }
+    final saved = await _repo.message(r.op.entityId).catchError((_) => null);
+    final cur = _s;
+    if (saved == null || cur == null) return;
+    _set(cur.copyWith(messages: upsertMessage(cur.messages.where((m) => m.id != saved.id).toList(), saved)));
+  }
 
   Future<void> _onEvent(ConversationEvent e) async {
     switch (e) {
@@ -249,10 +293,23 @@ class ConversationController extends AsyncNotifier<ConversationState> {
     await _deliver(id);
   }
 
-  Future<void> retry(String messageId) => _deliver(messageId);
+  Future<void> retry(String messageId) async {
+    if (_outbox.containsKey(messageId)) return _deliver(messageId);
+    // Written offline: the payload lives in the persistent outbox.
+    final s = _s;
+    final local = s?.byId(messageId);
+    if (s != null && local != null) {
+      _set(s.copyWith(messages: _replaceLocal(s.messages, local.copyWith(sendState: SendState.sending))));
+    }
+    await ref.read(syncEngineProvider.notifier).retryFailed();
+  }
 
   void discardFailed(String messageId) {
     _outbox.remove(messageId);
+    final engine = ref.read(syncEngineProvider.notifier);
+    for (final op in ref.read(syncEngineProvider).ops.where((o) => o.entityId == messageId)) {
+      unawaited(engine.discard(op.id));
+    }
     final s = _s;
     if (s != null) _set(s.copyWith(messages: s.messages.where((m) => m.id != messageId).toList()));
   }
@@ -285,6 +342,18 @@ class ConversationController extends AsyncNotifier<ConversationState> {
       ],
     );
     _set(s.copyWith(messages: _replaceLocal(s.messages, local)));
+    final textOnly = payload.uploads.isEmpty;
+    final queueParams = ChatRepository.sendParams(
+      id: id,
+      conversationId: conversationId,
+      body: payload.body,
+      replyToId: payload.replyToId,
+    );
+    // Messages written offline are still queued: keep the order.
+    if (textOnly && ref.read(syncEngineProvider).ops.any((o) => o.scope == conversationId)) {
+      await _queueText(id, queueParams);
+      return;
+    }
     try {
       final attachments = <ChatAttachment>[];
       for (final u in payload.uploads) {
@@ -318,10 +387,21 @@ class ConversationController extends AsyncNotifier<ConversationState> {
       _set(cur.copyWith(messages: upsertMessage(cur.messages.where((m) => m.id != id).toList(), saved)));
       unawaited(sendTyping(false));
     } catch (e) {
+      if (textOnly && AppFailure.from(e).kind == FailureKind.network) {
+        await _queueText(id, queueParams); // stays "sending" until the outbox delivers it
+        return;
+      }
       final cur = _s!;
       _set(cur.copyWith(messages: _replaceLocal(cur.messages, local.copyWith(sendState: SendState.failed))));
       rethrow;
     }
+  }
+
+  Future<void> _queueText(String id, Map<String, dynamic> params) async {
+    await ref
+        .read(syncEngineProvider.notifier)
+        .enqueue(kind: OutboxKind.chatSendText, entityId: id, scope: conversationId, params: params);
+    _outbox.remove(id); // persisted now
   }
 
   List<ChatMessage> _replaceLocal(List<ChatMessage> list, ChatMessage local) {

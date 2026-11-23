@@ -23,6 +23,7 @@ import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/invitation/presentation/invitations_screen.dart';
 import '../../features/invitation/presentation/join_family_screen.dart';
 import '../../features/settings/presentation/profile_screen.dart';
+import '../../features/sync/presentation/sync_widgets.dart';
 import '../../features/todo/presentation/todo_activity_screen.dart';
 import '../../features/todo/presentation/todo_list_screen.dart';
 import '../../features/todo/presentation/todo_screen.dart';
@@ -129,6 +130,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.invitations, builder: (_, _) => const InvitationsScreen()),
       GoRoute(path: Routes.activity, builder: (_, _) => const ActivityScreen()),
       GoRoute(path: Routes.notifications, builder: (_, _) => const NotificationsScreen()),
+      GoRoute(path: Routes.sync, builder: (_, _) => const SyncScreen()),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => HomeShell(shell: shell),
         branches: [

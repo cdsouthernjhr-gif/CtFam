@@ -89,6 +89,18 @@
 - Reminders belong to participants (foreign key), are readable only by their owner, and stop when the user
   declines, leaves the family or loses access (checked at send time).
 
+## Offline data on the device
+
+- Cached responses and queued writes live in the app's private storage (SQLite), keyed by user id. They
+  contain the same data the user can already read through RLS; nothing extra is stored.
+- Signing in removes any other account's local data; signing out and deleting the account wipe the local
+  database (after one last sync attempt; the user is warned about unsynced changes).
+- Android backup and device-to-device transfer are disabled, so the database is not copied off the phone.
+- The database is **not encrypted by the app**; it relies on Android's file-based encryption of app
+  storage. SQLCipher could be added if a stricter threat model (rooted devices) is required.
+- Replayed writes go through the same RLS-checked RPCs as live ones; a queued write is re-authorised when
+  it is sent (lost access means it fails and is shown on the Sync screen).
+
 ## Rate limiting
 
 `private.enforce_rate_limit(action, max, window)` applies to `create_family` (5/day),

@@ -177,9 +177,20 @@ look-back; the dedupe key `remind:{event}:{occurrence}:{minutes}` makes each rem
 
 Realtime: `family_events`, `event_participants` (channel `calendar:{family_id}`, filter `family_id`).
 
-## Planned tables (later phases)
+## Offline replay (Phase 6)
 
-`sync_operations` (Phase 6, offline). They will be added as new migrations, and existing migrations will not be edited once
+No server table is needed for offline mode. The app's outbox re-sends writes, and every RPC it can replay
+is idempotent: client-generated ids (`upsert_todo_item`, `send_message`), "set" semantics
+(`set_todo_item_status`, `set_event_rsvp`) or no-op repeats (`delete_todo_item`). Edits carry
+`expected_revision`, so a queued edit made before someone else's change is rejected (`revision_conflict`)
+instead of overwriting it. Verified by `supabase/tests/database/07_offline_replay.test.sql`.
+
+On the device (Drift, `lib/core/offline/local_database.dart`):
+
+| Table | Purpose |
+|---|---|
+| `cache_entries(owner, key, json, updated_at)` | last successful response per query, per user |
+| `outbox_ops(seq, id, owner, kind, entity_id, scope, payload, created_at, attempts, status, last_error)` | queued writes; replayed by `seq` | They will be added as new migrations, and existing migrations will not be edited once
 deployed.
 
 ## Typed models

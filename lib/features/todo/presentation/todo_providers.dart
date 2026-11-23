@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/errors/app_failure.dart';
+import '../../../core/offline/sync_engine.dart';
 import '../../../shared/providers/session_controller.dart';
 import '../data/todo_repository.dart';
 import '../domain/todo_logic.dart';
@@ -113,16 +114,45 @@ class TodoListController extends AsyncNotifier<TodoListState> {
   Future<TodoListState> build() async {
     final repo = ref.watch(todoRepositoryProvider);
     final sub = repo.watchList(listId).listen(_onChange, onError: (_) {});
-    ref.onDispose(sub.cancel);
+    final synced = ref.read(syncEngineProvider.notifier).results.where((r) => r.op.scope == listId).listen((r) {
+      final cur = _s;
+      if (cur != null) _set(cur.copyWith(pending: _without(r.op.entityId)));
+      unawaited(refresh().catchError((Object _) {}));
+    });
+    ref.onDispose(() {
+      sub.cancel();
+      synced.cancel();
+    });
     final results = await Future.wait([repo.list(listId), repo.items(listId)]);
     final list = results[0] as TodoList;
-    final items = {for (final i in results[1] as List<TodoItem>) i.id: i};
-    return TodoListState(list: list, items: items, deleted: list.deletedAt != null);
+    final (items, queued) = await _withQueued({for (final i in results[1] as List<TodoItem>) i.id: i});
+    return TodoListState(list: list, items: items, pending: queued, deleted: list.deletedAt != null);
   }
 
   TodoListState? get _s => state.value;
 
   void _set(TodoListState s) => state = AsyncData(s);
+
+  SyncEngine get _sync => ref.read(syncEngineProvider.notifier);
+
+  /// Server/cached items + writes still queued offline (and their ids).
+  Future<(Map<String, TodoItem>, Set<String>)> _withQueued(Map<String, TodoItem> items) async {
+    final ops = await _sync.opsFor(listId).catchError((Object _) => <Never>[]);
+    if (ops.isEmpty) return (items, <String>{});
+    return (
+      applyQueuedTodoOps(items, listId, [for (final o in ops) (o.kind, opParams(o))]),
+      {for (final o in ops) o.entityId},
+    );
+  }
+
+  /// True when writes to [itemId] must go through the outbox: offline earlier
+  /// writes are still queued, so a direct call would overtake them.
+  bool _mustQueue(String itemId) => ref.read(syncEngineProvider).hasPendingFor(itemId);
+
+  static bool _isOffline(Object e) => AppFailure.from(e).kind == FailureKind.network;
+
+  Future<void> _queue(OutboxKind kind, String itemId, Map<String, dynamic> params) =>
+      _sync.enqueue(kind: kind, entityId: itemId, scope: listId, params: params);
 
   Future<void> _onChange(TodoChange c) async {
     final s = _s;
@@ -160,12 +190,12 @@ class TodoListController extends AsyncNotifier<TodoListState> {
     final s = _s;
     final results = await Future.wait([_repo.list(listId), _repo.items(listId)]);
     final list = results[0] as TodoList;
-    final items = {for (final i in results[1] as List<TodoItem>) i.id: i};
+    final (items, queued) = await _withQueued({for (final i in results[1] as List<TodoItem>) i.id: i});
     _set(
       TodoListState(
         list: list,
         items: items,
-        pending: s?.pending ?? const {},
+        pending: {...?_s?.pending, ...queued},
         commentsVersion: (s?.commentsVersion ?? 0) + 1,
         deleted: list.deletedAt != null,
       ),
@@ -189,6 +219,8 @@ class TodoListController extends AsyncNotifier<TodoListState> {
         pending: _with(item.id),
       ),
     );
+    final params = TodoRepository.setStatusParams(item.id, completed: completed);
+    if (_mustQueue(item.id)) return _queue(OutboxKind.todoSetStatus, item.id, params);
     try {
       final saved = await _repo.setCompleted(item.id, completed: completed);
       final cur = _s!;
@@ -197,6 +229,7 @@ class TodoListController extends AsyncNotifier<TodoListState> {
         await refresh(); // pick up the next occurrence immediately
       }
     } catch (e) {
+      if (_isOffline(e)) return _queue(OutboxKind.todoSetStatus, item.id, params); // keep the optimistic state
       final cur = _s!;
       _set(cur.copyWith(items: {...cur.items, item.id: before}, pending: _without(item.id)));
       rethrow;
@@ -241,6 +274,21 @@ class TodoListController extends AsyncNotifier<TodoListState> {
               assigneeIds: assigneeIds,
             );
     _set(s.copyWith(items: {...s.items, id: optimistic}, pending: _with(id)));
+    // While earlier offline writes to this item are queued, the server revision
+    // will move on when they sync, so the queued edit cannot carry a revision.
+    final queueFirst = _mustQueue(id);
+    Map<String, dynamic> params({required bool queued}) => TodoRepository.upsertItemParams(
+      id: id,
+      listId: listId,
+      title: title,
+      description: description,
+      priority: priority,
+      dueAt: dueAt,
+      recurrence: recurrence,
+      assigneeIds: assigneeIds,
+      expectedRevision: queued && queueFirst ? null : (original?.revision == 0 ? null : original?.revision),
+    );
+    if (queueFirst) return _queue(OutboxKind.todoUpsertItem, id, params(queued: true));
     try {
       final saved = await _repo.upsertItem(
         id: id,
@@ -256,6 +304,7 @@ class TodoListController extends AsyncNotifier<TodoListState> {
       final cur = _s!;
       _set(cur.copyWith(items: mergeServerItem(cur.items, saved), pending: _without(id)));
     } catch (e) {
+      if (_isOffline(e)) return _queue(OutboxKind.todoUpsertItem, id, params(queued: true));
       final cur = _s!;
       final rolledBack = Map<String, TodoItem>.of(cur.items);
       if (original == null) {
@@ -278,9 +327,12 @@ class TodoListController extends AsyncNotifier<TodoListState> {
     if (s == null) return;
     final next = Map<String, TodoItem>.of(s.items)..remove(item.id);
     _set(s.copyWith(items: next));
+    final params = TodoRepository.deleteItemParams(item.id);
+    if (_mustQueue(item.id)) return _queue(OutboxKind.todoDeleteItem, item.id, params);
     try {
       await _repo.deleteItem(item.id);
     } catch (e) {
+      if (_isOffline(e)) return _queue(OutboxKind.todoDeleteItem, item.id, params);
       final cur = _s!;
       _set(cur.copyWith(items: {...cur.items, item.id: item}));
       rethrow;
