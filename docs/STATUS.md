@@ -242,3 +242,7 @@ from a real device.
 **Follow-up:** firebase_messaging 17 deprecates `getToken`/`onTokenRefresh`/`deleteToken` in favour of
 Firebase Installation IDs (`register`/`onRegistered`). The app intentionally keeps registration tokens
 because `send-push` targets HTTP v1 `message.token`. Migrate both sides together later.
+
+**Update (2026-11-23):** Firebase project `familysync-c3dbf` configured; `FCM_SERVICE_ACCOUNT_JSON` set on the
+hosted project. End-to-end check: a test announcement to the owner's registered device was queued, sent by
+pg_net → `send-push`, and **accepted by FCM** (`sent:1, failed:0`, queue status `sent`). Push is live.
