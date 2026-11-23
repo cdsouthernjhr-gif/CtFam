@@ -13,6 +13,7 @@ Postgres 17 on Supabase. Migrations live in `supabase/migrations/` and are appli
 | `20261123000200_chat.sql` | private and group chat, attachments bucket, Realtime Authorization policies |
 | `20261123000300_notifications.sql` | inbox, push queue, notify triggers, announcements, service-role RPCs |
 | `20261123000400_push_dispatch.sql` | pg_net/pg_cron dispatch, Vault-verified webhook, housekeeping |
+| `20261123000500_calendar.sql` | family calendar: events, RSVP, reminders, recurrence, reminder cron |
 
 All timestamps are `timestamptz` (stored in UTC, displayed in the device's local time). All primary keys
 are UUIDs.
@@ -152,11 +153,33 @@ require the file to belong to a non-deleted message (or be the uploader's own un
 
 Realtime: `notifications` (channel `notifications:{uid}`, filter `user_id`).
 
+## Calendar (Phase 5)
+
+| Table | Purpose | Client access |
+|---|---|---|
+| `family_events` | client UUID id; times as `timestamptz` + IANA `timezone`; `all_day`; `recurrence` + `recurrence_until`; `cancelled_occurrences`; `default_reminders`; `visibility`; `revision`; soft delete | read via `can_read_event` (incl. deleted, for Realtime); writes via RPC |
+| `event_participants` | invitees + RSVP `pending/going/maybe/declined` | read if the event is readable; writes via RPC |
+| `event_reminders` | per participant, minutes before start (0 to 4 weeks, max 5) | own rows only; writes via RPC |
+
+| RPC | Notes |
+|---|---|
+| `upsert_family_event(id, family_id, title, starts_at, ends_at, all_day, timezone, description, location, category, recurrence, recurrence_until, visibility, participant_ids, reminder_minutes, expected_revision)` | create: any active member, 300/h, idempotent and race-safe; update: creator or owner/admin, `revision_conflict` (P0409) |
+| `delete_family_event(id)` | creator or owner/admin; soft delete; idempotent |
+| `cancel_event_occurrence(id, occurrence_start)` | must be a real occurrence; idempotent |
+| `set_event_rsvp(event_id, rsvp)` | anyone who can see the event; joining copies the default reminders |
+| `set_event_reminders(event_id, minutes[])` | participants only, own reminders |
+| `calendar_occurrences(family_id, from, to)` | SECURITY INVOKER; expands recurrences; max 400 days |
+
+`private.event_occurrences()` expands a series in the event's time zone, always from the first start
+(`local_start + n × step`), so there is no drift and DST keeps the wall-clock time.
+`private.dispatch_event_reminders()` runs every minute (`familysync-event-reminders`) with a 10-minute
+look-back; the dedupe key `remind:{event}:{occurrence}:{minutes}` makes each reminder fire once.
+
+Realtime: `family_events`, `event_participants` (channel `calendar:{family_id}`, filter `family_id`).
+
 ## Planned tables (later phases)
 
-Calendar (`family_events`,
-`event_participants`, `event_reminders`) and
-`sync_operations`. They will be added as new migrations, and existing migrations will not be edited once
+`sync_operations` (Phase 6, offline). They will be added as new migrations, and existing migrations will not be edited once
 deployed.
 
 ## Typed models

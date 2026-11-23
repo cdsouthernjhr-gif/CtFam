@@ -900,5 +900,162 @@
         "type": "String"
       }
     }
+  },
+  "evCatFamily": "Keluarga",
+  "evCatBirthday": "Hari jadi",
+  "evCatAppointment": "Temujanji",
+  "evCatHoliday": "Cuti",
+  "evCatReligious": "Keagamaan",
+  "evCatWork": "Kerja",
+  "evCatOther": "Lain-lain",
+  "rsvpPending": "Belum jawab",
+  "rsvpGoing": "Hadir",
+  "rsvpMaybe": "Mungkin",
+  "rsvpDeclined": "Tidak hadir",
+  "rsvpQuestion": "Anda akan hadir?",
+  "rsvpSummary": "{going} hadir · {maybe} mungkin · {declined} tidak",
+  "@rsvpSummary": {
+    "placeholders": {
+      "going": {
+        "type": "int"
+      },
+      "maybe": {
+        "type": "int"
+      },
+      "declined": {
+        "type": "int"
+      }
+    }
+  },
+  "reminderAtStart": "Pada masa mula",
+  "reminderMinutes": "{count} minit sebelum",
+  "@reminderMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reminderHours": "{count} jam sebelum",
+  "@reminderHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reminderDays": "{count} hari sebelum",
+  "@reminderDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reminderWeeks": "{count} minggu sebelum",
+  "@reminderWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "remindersMax": "Maksimum 5 peringatan.",
+  "remindersNeedRsvp": "Jawab RSVP untuk menetapkan peringatan anda sendiri.",
+  "remindersDefaultHint": "Peringatan ini juga diberikan kepada peserta yang dijemput. Setiap orang boleh mengubah peringatan sendiri.",
+  "eventAllDay": "Sepanjang hari",
+  "calendarMonthView": "Paparan bulan",
+  "calendarAgendaView": "Paparan agenda",
+  "calendarPrevMonth": "Bulan sebelumnya",
+  "calendarNextMonth": "Bulan berikutnya",
+  "calendarNoEventsDay": "Tiada acara pada hari ini.",
+  "calendarNoUpcoming": "Tiada acara dalam 60 hari akan datang.",
+  "calendarNoUpcomingWeek": "Tiada acara minggu ini.",
+  "dashboardUpcomingEvents": "Acara akan datang",
+  "newEvent": "Acara baharu",
+  "editEvent": "Edit acara",
+  "eventDetails": "Butiran acara",
+  "eventNotFound": "Acara tidak dijumpai atau telah dibatalkan.",
+  "eventDeleteTitle": "Padam acara?",
+  "eventDeleteMessage": "\"{title}\" akan dipadam dan peserta akan dimaklumkan.",
+  "@eventDeleteMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "eventCancelOccurrence": "Batalkan kejadian ini sahaja",
+  "eventDeleteSeries": "Padam semua kejadian",
+  "eventDeleted": "Acara dipadam.",
+  "eventSaved": "Acara disimpan.",
+  "eventConflictReloaded": "Acara ini baru diubah oleh orang lain. Versi terkini telah dimuatkan; sila semak dan simpan semula.",
+  "eventTitle": "Tajuk acara",
+  "eventStarts": "Mula",
+  "eventEnds": "Tamat",
+  "eventLocation": "Lokasi",
+  "eventNotes": "Catatan",
+  "eventEndBeforeStart": "Masa tamat mesti selepas masa mula.",
+  "eventTooLong": "Acara terlalu panjang (maksimum 1 tahun).",
+  "eventRepeatForever": "Berulang tanpa tarikh akhir",
+  "eventRepeatsUntil": "Berulang hingga {date}",
+  "@eventRepeatsUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "eventSetEndDate": "Tetapkan tarikh akhir",
+  "eventSeriesNote": "Ini acara berulang: perubahan terpakai kepada semua kejadian.",
+  "eventReminders": "Peringatan saya",
+  "eventParticipants": "Peserta",
+  "eventInviteEveryone": "Semua ahli",
+  "eventInviteHint": "Peserta yang dijemput akan menerima notifikasi. Anda sentiasa termasuk.",
+  "eventNoOtherMembers": "Belum ada ahli lain dalam keluarga ini.",
+  "eventVisibleFamily": "Semua ahli keluarga boleh melihat acara ini",
+  "eventVisibleParticipants": "Hanya peserta boleh melihat",
+  "eventVisibleParticipantsHint": "Contohnya untuk kejutan hari jadi. Pemilik dan pentadbir keluarga masih boleh melihatnya.",
+  "eventCreatedBy": "Dicipta oleh {name}",
+  "@eventCreatedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eventOpenMap": "Buka dalam peta",
+  "activityEventCreated": "{actor} menambah acara: {title}",
+  "@activityEventCreated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "activityEventUpdated": "{actor} mengemas kini acara: {title}",
+  "@activityEventUpdated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "activityEventDeleted": "{actor} membatalkan acara: {title}",
+  "@activityEventDeleted": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

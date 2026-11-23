@@ -80,11 +80,20 @@
 - Device tokens are deleted before sign-out and account deletion; unregistered tokens reported by FCM
   are deleted automatically.
 
+## Calendar
+
+- Events with visibility `participants` are readable only by the creator, participants and family
+  owner/admin; RSVP to such an event is refused for anyone else, so members cannot add themselves.
+- Only the creator or owner/admin can edit, delete or cancel occurrences; invitees must be active members
+  of the same family.
+- Reminders belong to participants (foreign key), are readable only by their owner, and stop when the user
+  declines, leaves the family or loses access (checked at send time).
+
 ## Rate limiting
 
 `private.enforce_rate_limit(action, max, window)` applies to `create_family` (5/day),
 `create_invitation` (30/h), `preview_invitation` (20/15 min), `register_device_token` (30/h),
-`create_todo_list` (60/h), `create_todo_item` (600/h), `create_conversation` (100/h) and `send_message` (60/min).
+`create_todo_list` (60/h), `create_todo_item` (600/h), `create_conversation` (100/h), `send_message` (60/min), `post_announcement` (10/day) and `create_event` (300/h).
 Supabase Auth applies its own limits to sign-in, sign-up and email sending (see `supabase/config.toml`).
 
 ## Storage

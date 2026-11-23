@@ -42,7 +42,7 @@ Never paste service-role keys, keystore passwords or service-account JSON into c
 | 2 | Realtime To-Do: lists, items with `revision`, idempotent RPCs, assignments, comments, activity, categories, filters, recurring tasks, `todo:{list_id}` channel, optimistic UI with rollback | **Done, deployed** (see §11) |
 | 3 | Chat: race-safe direct conversations, groups, idempotent send, receipts, Broadcast typing, Presence, attachments, pagination, search, pin, mute | **Done, deployed** (see §12) |
 | 4 | FCM: token registration, `notification_queue`, Edge Function sender, preferences, lock-screen privacy, tap navigation, dedupe | **Done, deployed**. Push delivery waits for the owner's Firebase project (see §13) |
-| 5 | Calendar: events, participants, reminders, recurrence (RRULE), month/week/day views | Not started |
+| 5 | Calendar: events, participants, reminders, recurrence, month view + agenda | **Done, deployed** (see §14). Daily/weekly/monthly/yearly only (no full RRULE); no separate week/day views |
 | 6 | Offline: Drift (SQLite) cache, pending-operations queue with UUID op IDs, retry/backoff, conflict detection by revision, sync status UI | Not started |
 | 7 | Security and performance: full RLS audit with Supabase advisors, rate-limit pruning job, index review, multi-device tests (3+ accounts) | Not started |
 | 8 | Release: signed release APK, device install testing, final docs | Release config ready; signing key needed |
@@ -57,7 +57,7 @@ Never paste service-role keys, keystore passwords or service-account JSON into c
 | D. Private chat | **Complete in code, verified by tests, deployed** | Not yet tested on two physical devices |
 | E. Group chat | **Complete in code, verified by tests, deployed** | Group image upload not implemented (name/description only) |
 | F. Shared To-Do | **Complete in code, verified by tests, deployed** | Not yet tested on two physical devices at once |
-| G. Calendar | Not implemented | |
+| G. Calendar | **Complete, verified, deployed** | Month + agenda views; see §14 for limitations |
 | H. Notifications | **Complete in code, verified, deployed** | In-app inbox works now; push needs Firebase values + `FCM_SERVICE_ACCOUNT_JSON` |
 | I. Offline | Not implemented | Network errors show a retry state |
 | Dashboard | Partial | Tasks, messages and events sections await their modules |
@@ -246,3 +246,17 @@ because `send-push` targets HTTP v1 `message.token`. Migrate both sides together
 **Update (2026-11-23):** Firebase project `familysync-c3dbf` configured; `FCM_SERVICE_ACCOUNT_JSON` set on the
 hosted project. End-to-end check: a test announcement to the owner's registered device was queued, sent by
 pg_net → `send-push`, and **accepted by FCM** (`sent:1, failed:0`, queue status `sent`). Push is live.
+
+## 14. Phase 5: family calendar (2026-11-23)
+
+| Check | Result |
+|---|---|
+| pgTAP `06_calendar.test.sql` | **65 assertions passed**: idempotent create, validation (times, time zone, reminders, non-member invitee), cross-family isolation and id hijack, invitation notice text in the event time zone, edit permissions, revision conflict, change notifications, participants-only visibility, RSVP and default reminders, monthly month-end clamping with end date, weekly across DST, open-ended series, occurrence cancel, overlap of running events, reminder dispatch (timing, dedupe, per participant, declined, cancelled occurrence, recurring), former member loses access, soft delete with cancellation notice, anon denied, definer search_path |
+| `calendar_races.sh` | same event id created ×10 concurrently gives **1 event, 0 errors**; 11 concurrent RSVPs give **11/11**; 3 overlapping reminder runs give **11/11** reminders (no duplicates) |
+| All DB suites | 330 pgTAP assertions + 5 concurrency scripts passed |
+| Flutter | **98 tests passed**; `flutter analyze` clean |
+| Hosted | migration `calendar` applied (HTTP 200); RLS on all 3 tables; cron `familysync-event-reminders` scheduled and runs; advisors: only the expected "RPC executable by authenticated" warnings and unused-index notices for the new tables |
+
+**Limitations:** recurrence covers the common patterns (no "2nd Tuesday" or custom intervals); editing a
+recurring event changes the whole series (single occurrences can be cancelled, not individually edited);
+reminder texts show the event's own time zone.

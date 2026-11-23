@@ -8,6 +8,9 @@ import '../../../core/utils/l10n_ext.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../core/widgets/user_avatar.dart';
 import '../../../shared/providers/session_controller.dart';
+import '../../calendar/presentation/calendar_providers.dart';
+import '../../calendar/presentation/calendar_screen.dart';
+import '../../calendar/presentation/calendar_ui.dart';
 import '../../chat/presentation/chat_providers.dart';
 import '../../chat/presentation/chat_screen.dart';
 import '../../family/domain/family_models.dart';
@@ -39,6 +42,7 @@ class DashboardScreen extends ConsumerWidget {
       ref.invalidate(familyActivityProvider(familyId));
       ref.invalidate(myProfileProvider);
       ref.invalidate(todoOverviewProvider(familyId));
+      ref.invalidate(occurrencesProvider(upcomingRange(familyId, days: 7)));
       await ref.read(familyMembersProvider(familyId).future);
     }
 
@@ -117,6 +121,12 @@ class DashboardScreen extends ConsumerWidget {
               action: TextButton(onPressed: () => context.go(Routes.todo), child: Text(l10n.viewAllTasks)),
             ),
             _TodayTasks(familyId: familyId),
+            const SizedBox(height: AppSpacing.lg),
+            _SectionHeader(
+              title: l10n.dashboardUpcomingEvents,
+              action: TextButton(onPressed: () => context.go(Routes.calendar), child: Text(l10n.dashboardSeeAll)),
+            ),
+            _UpcomingEvents(familyId: familyId),
             const SizedBox(height: AppSpacing.lg),
             _SectionHeader(
               title: l10n.dashboardRecentMessages,
@@ -322,6 +332,43 @@ class _RecentChats extends ConsumerWidget {
                   memberById: {for (final m in members) m.userId: m},
                   online: online,
                   me: me,
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _UpcomingEvents extends ConsumerWidget {
+  const _UpcomingEvents({required this.familyId});
+
+  final String familyId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final range = upcomingRange(familyId, days: 7);
+    final occ = ref.watch(occurrencesProvider(range));
+    final me = ref.watch(currentUserIdProvider);
+    return AsyncValueView(
+      value: occ,
+      onRetry: () => ref.invalidate(occurrencesProvider(range)),
+      data: (all) {
+        final upcoming = all.where((o) => o.end.isAfter(DateTime.now()) || o.event.allDay).take(4).toList();
+        if (upcoming.isEmpty) {
+          return Padding(padding: const EdgeInsets.all(AppSpacing.md), child: Text(l10n.calendarNoUpcomingWeek));
+        }
+        return Card(
+          child: Column(
+            children: [
+              for (final o in upcoming)
+                EventOccurrenceTile(
+                  occurrence: o,
+                  myUserId: me,
+                  showDate: true,
+                  onTap: () => openOccurrence(context, o),
                 ),
             ],
           ),

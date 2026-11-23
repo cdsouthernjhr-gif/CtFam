@@ -34,5 +34,20 @@ abstract final class Routes {
   static String verifyCodeFor(String email, {required bool recovery}) =>
       Uri(path: verifyCode, queryParameters: {'email': email, 'purpose': recovery ? 'recovery' : 'signup'}).toString();
 
+  static String newEventOn(DateTime day) => Uri(
+    path: '$calendar/new',
+    queryParameters: {
+      'date':
+          '${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}',
+    },
+  ).toString();
+
+  static String eventDetail(String id, {DateTime? occurrence}) => Uri(
+    path: '$calendar/$id',
+    queryParameters: occurrence == null ? null : {'at': occurrence.toUtc().toIso8601String()},
+  ).toString();
+
+  static String eventEdit(String id) => '$calendar/$id/edit';
+
   static String joinWithCode(String code) => Uri(path: join, queryParameters: {'code': code}).toString();
 }

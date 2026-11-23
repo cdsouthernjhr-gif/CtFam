@@ -5,6 +5,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../features/authentication/presentation/auth_screens.dart';
 import '../../features/authentication/presentation/verify_code_screen.dart';
 import '../../features/calendar/presentation/calendar_screen.dart';
+import '../../features/calendar/presentation/event_detail_screen.dart';
+import '../../features/calendar/presentation/event_form_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/chat/presentation/conversation_screen.dart';
 import '../../features/chat/presentation/group_info_screen.dart';
@@ -174,7 +176,34 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
           StatefulShellBranch(
-            routes: [GoRoute(path: Routes.calendar, builder: (_, _) => const CalendarScreen())],
+            routes: [
+              GoRoute(
+                path: Routes.calendar,
+                builder: (_, _) => const CalendarScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (_, state) =>
+                        EventFormScreen(initialDate: DateTime.tryParse(state.uri.queryParameters['date'] ?? '')),
+                  ),
+                  GoRoute(
+                    path: ':eventId',
+                    builder: (_, state) => EventDetailScreen(
+                      eventId: state.pathParameters['eventId']!,
+                      occurrenceStart: DateTime.tryParse(state.uri.queryParameters['at'] ?? '')?.toLocal(),
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (_, state) => EventFormScreen(eventId: state.pathParameters['eventId']),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: Routes.family, builder: (_, _) => const FamilyScreen())],

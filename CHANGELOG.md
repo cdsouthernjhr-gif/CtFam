@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.5.0] - 2026-11-23: Phase 5, family calendar
+
+### Added
+- **Database** (`20261123000500_calendar.sql`): `family_events`, `event_participants` (RSVP), `event_reminders`
+  (per participant) with RLS. Visibility `family` or `participants` (creator, participants, owner/admin).
+- **Recurrence** daily/weekly/monthly/yearly, optional end date, expanded on the server in the event's time
+  zone from the first occurrence (no drift, DST-correct, Jan 31 monthly gives Feb 28). Single occurrences
+  can be cancelled.
+- **RPCs:** `upsert_family_event` (idempotent create, race-safe; `revision_conflict` on stale edits),
+  `delete_family_event`, `cancel_event_occurrence`, `set_event_rsvp`, `set_event_reminders`,
+  `calendar_occurrences` (SECURITY INVOKER, max 400 days).
+- **Notifications:** invitation, change of time/place/title, cancellation (participants who did not
+  decline), and **reminders** every minute via pg_cron (`familysync-event-reminders`) through the Phase 4
+  pipeline (preferences, quiet hours, dedupe per occurrence and reminder, push).
+- **App:** month grid with event dots, day list, agenda (60 days), event form (all-day, start/end, location,
+  notes, category, repeat, end date, reminders, invitees, participants-only), event detail (RSVP, my
+  reminders, participants, map link, edit/delete, cancel one occurrence), live updates (`calendar:{family}`),
+  upcoming events on the dashboard, notification taps open the event, activity feed entries.
+- **Tests:** 65 pgTAP assertions, calendar race test (same id ×10 gives 1 event and 0 errors; 11 concurrent
+  RSVPs; 3 overlapping reminder runs give each reminder once), 98 Flutter tests.
+
 ## [0.4.1] - 2026-11-23: Firebase client configured
 
 ### Changed

@@ -102,7 +102,7 @@ String? safeNotificationRoute(Object? raw) {
   final parts = raw.split('/');
   if (parts.length == 3 &&
       parts[0].isEmpty &&
-      (parts[1] == 'chat' || parts[1] == 'todo') &&
+      (parts[1] == 'chat' || parts[1] == 'todo' || parts[1] == 'calendar') &&
       _uuidPart.hasMatch(parts[2])) {
     return raw;
   }
