@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -7,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/config/app_config.dart';
+import 'features/notifications/push/push_service.dart';
 import 'shared/providers/session_controller.dart';
 
 Future<void> bootstrap() async {
@@ -25,6 +27,9 @@ Future<void> bootstrap() async {
       authOptions: const FlutterAuthClientOptions(authFlowType: AuthFlowType.pkce),
       debug: kDebugMode,
     );
+  }
+  if (AppConfig.isPushConfigured) {
+    FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
   }
 
   runApp(

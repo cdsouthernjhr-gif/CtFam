@@ -60,13 +60,31 @@ class AuthRepository {
   Future<void> updatePassword(String newPassword) =>
       _guard(() => _auth.updateUser(UserAttributes(password: newPassword)));
 
+  /// Callbacks run while still signed in, right before signing out (e.g. the
+  /// push service removes this device's token so the signed-out account no
+  /// longer receives notifications on this phone).
+  static final List<Future<void> Function()> beforeSignOut = [];
+
+  Future<void> _runBeforeSignOut() async {
+    for (final hook in List.of(beforeSignOut)) {
+      try {
+        await hook().timeout(const Duration(seconds: 5));
+      } catch (_) {
+        // Never block signing out.
+      }
+    }
+  }
+
   /// [everywhere] revokes all refresh tokens of this user (all devices).
-  Future<void> signOut({bool everywhere = false}) =>
-      _guard(() => _auth.signOut(scope: everywhere ? SignOutScope.global : SignOutScope.local));
+  Future<void> signOut({bool everywhere = false}) => _guard(() async {
+    await _runBeforeSignOut();
+    await _auth.signOut(scope: everywhere ? SignOutScope.global : SignOutScope.local);
+  });
 
   /// Deletes the account through the `delete-account` Edge Function, which
   /// holds the service-role key server-side.
   Future<void> deleteAccount() => _guard(() async {
+    await _runBeforeSignOut();
     await _client.functions.invoke('delete-account', method: HttpMethod.post);
     await _auth.signOut(scope: SignOutScope.local);
   });

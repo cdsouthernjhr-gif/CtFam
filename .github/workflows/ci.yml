@@ -35,4 +35,4 @@ jobs:
         with:
           deno-version: v2.9.6
       - working-directory: supabase/functions
-        run: deno check delete-account/index.ts && deno lint && deno fmt --check
+        run: deno check delete-account/index.ts send-push/index.ts && deno lint && deno fmt --check && deno test send-push/

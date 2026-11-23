@@ -41,7 +41,7 @@ Never paste service-role keys, keystore passwords or service-account JSON into c
 | 1 | Flutter project, auth, profiles, families, roles, invitations, migrations, RLS | **Done** (not yet run against a hosted project or on a device) |
 | 2 | Realtime To-Do: lists, items with `revision`, idempotent RPCs, assignments, comments, activity, categories, filters, recurring tasks, `todo:{list_id}` channel, optimistic UI with rollback | **Done, deployed** (see §11) |
 | 3 | Chat: race-safe direct conversations, groups, idempotent send, receipts, Broadcast typing, Presence, attachments, pagination, search, pin, mute | **Done, deployed** (see §12) |
-| 4 | FCM: token registration (table + RPC already exist), `notification_queue`, Edge Function sender, preferences, lock-screen privacy, tap navigation, dedupe | Not started |
+| 4 | FCM: token registration, `notification_queue`, Edge Function sender, preferences, lock-screen privacy, tap navigation, dedupe | **Done, deployed**. Push delivery waits for the owner's Firebase project (see §13) |
 | 5 | Calendar: events, participants, reminders, recurrence (RRULE), month/week/day views | Not started |
 | 6 | Offline: Drift (SQLite) cache, pending-operations queue with UUID op IDs, retry/backoff, conflict detection by revision, sync status UI | Not started |
 | 7 | Security and performance: full RLS audit with Supabase advisors, rate-limit pruning job, index review, multi-device tests (3+ accounts) | Not started |
@@ -58,7 +58,7 @@ Never paste service-role keys, keystore passwords or service-account JSON into c
 | E. Group chat | **Complete in code, verified by tests, deployed** | Group image upload not implemented (name/description only) |
 | F. Shared To-Do | **Complete in code, verified by tests, deployed** | Not yet tested on two physical devices at once |
 | G. Calendar | Not implemented | |
-| H. Notifications | Partial: `device_tokens` + `register_device_token` RPC + preference columns only | No Firebase integration |
+| H. Notifications | **Complete in code, verified, deployed** | In-app inbox works now; push needs Firebase values + `FCM_SERVICE_ACCOUNT_JSON` |
 | I. Offline | Not implemented | Network errors show a retry state |
 | Dashboard | Partial | Tasks, messages and events sections await their modules |
 
@@ -224,3 +224,21 @@ while messages use `clock_timestamp()`; `mark_conversation_read` now uses `clock
 
 **Not yet verified:** typing, presence and live delivery between two physical phones; attachment upload
 from a real device.
+
+## 13. Phase 4: notifications (2026-11-23)
+
+| Check | Result |
+|---|---|
+| pgTAP `05_notifications.test.sql` | **44 assertions passed**: join notices, recipients, privacy default (no content), preview opt-in, mute, group locale (ms/en per recipient), preference off, task assigned/created/completed, dedupe, non-members never notified, quiet hours (inbox yes, push no), invalid time zone safe, announcement permissions, RLS own-only, queue and push RPCs denied to clients, claim without double hand-out, backoff, invalid token deletion |
+| `push_dispatch.sh` (local, real pg_net) | queue insert caused **1 HTTP POST** to `/functions/v1/send-push` with the **Vault secret** header; verify accepts only the right secret; clients denied |
+| Deno `send-push/fcm_test.ts` | **6 passed**: message shape and privacy, RS256 JWT verified with the public key, OAuth grant, FCM error mapping, partial delivery and invalid-token cleanup |
+| Flutter tests | **86 passed** (route allow-list, prefs, inbox, settings, sign-out hook order and resilience) |
+| Hosted | migrations `notifications`, `push_dispatch` applied; `send-push` deployed (verify_jwt off, own secret check); Vault secret created (64 hex, never displayed); pg_net and pg_cron active; external call without or with a wrong secret gives **401**; DB → function with the Vault secret gives **200 `{"configured":false}`** (correct until FCM is set up) |
+| Release APK | 0.4.0 (10), compileSdk 37, targetSdk 36, POST_NOTIFICATIONS, FCM default channel/icon |
+
+**Owner action required for push:** `docs/FIREBASE_SETUP.md` (4 public values + the
+`FCM_SERVICE_ACCOUNT_JSON` Edge Function secret).
+
+**Follow-up:** firebase_messaging 17 deprecates `getToken`/`onTokenRefresh`/`deleteToken` in favour of
+Firebase Installation IDs (`register`/`onRegistered`). The app intentionally keeps registration tokens
+because `send-push` targets HTTP v1 `message.token`. Migrate both sides together later.

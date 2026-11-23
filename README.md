@@ -7,9 +7,10 @@ Android app with **Flutter** on a **Supabase** backend.
 - **Languages:** Bahasa Melayu (primary), English
 - **Target:** private family groups of 20–100+ members
 
-> **Status: Phases 1 (foundation), 2 (real-time To-Do) and 3 (chat) complete and deployed. Phases 4–8 not started.**
+> **Status: Phases 1–4 (foundation, real-time To-Do, chat, notifications) complete and deployed. Phases 5–8 not started.**
+> Push delivery needs the owner's Firebase project (see [docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md)).
 > Authentication, profiles, families, roles, secure invitations and shared real-time To-Do lists work end to
-> end against the database, along with private and group chat. Calendar, push notifications and offline mode are
+> end against the database, along with private and group chat and notifications. Calendar and offline mode are
 > **not implemented yet**;
 > their tabs show an honest "coming soon" screen. See [docs/STATUS.md](docs/STATUS.md).
 
@@ -27,6 +28,7 @@ Android app with **Flutter** on a **Supabase** backend.
 | Realtime | Member list and family details update live through the `family:{id}` channel |
 | To-Do (Phase 2) | Shared lists (family-wide or members-only), tasks with priority, due date, recurrence, assignees and comments; live sync across devices; optimistic UI with rollback; revision conflict detection; filters by status, member and search; progress; activity history |
 | Chat (Phase 3) | Private and group chat; reply, edit, delete, pin; image and document attachments; Sending/Sent/Delivered/Read/Failed with retry; typing indicator; online status; unread counts; mute; message search; group admin tools |
+| Notifications (Phase 4) | In-app inbox with bell and badge; FCM push through a DB queue and Edge Function; per-type preferences; lock-screen privacy by default; quiet hours; mute; announcements; dedupe; tap navigation |
 | Dashboard | Family header, member overview, today's/overdue/my tasks, recent messages, recent activity, quick invite |
 
 ## Repository layout

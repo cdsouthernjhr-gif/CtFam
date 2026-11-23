@@ -13,6 +13,21 @@ abstract final class AppConfig {
   /// domain is verified.
   static const inviteLinkBase = String.fromEnvironment('INVITE_LINK_BASE', defaultValue: 'familysync://app/join');
 
+  /// Firebase (Cloud Messaging) client identifiers. These are public values
+  /// from the Firebase console (Project settings → Your apps → Android); the
+  /// FCM service account is never part of the app. Push is disabled when any
+  /// of them is missing.
+  static const firebaseApiKey = String.fromEnvironment('FIREBASE_API_KEY');
+  static const firebaseAppId = String.fromEnvironment('FIREBASE_APP_ID');
+  static const firebaseMessagingSenderId = String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID');
+  static const firebaseProjectId = String.fromEnvironment('FIREBASE_PROJECT_ID');
+
+  static bool get isPushConfigured =>
+      firebaseApiKey.isNotEmpty &&
+      firebaseAppId.isNotEmpty &&
+      firebaseMessagingSenderId.isNotEmpty &&
+      firebaseProjectId.isNotEmpty;
+
   /// Deep link Supabase Auth redirects to after email confirmation and
   /// password recovery. Must be added to Auth > URL Configuration.
   static const authRedirectUrl = 'familysync://auth-callback';

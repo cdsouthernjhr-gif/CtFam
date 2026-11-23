@@ -11,6 +11,8 @@ Postgres 17 on Supabase. Migrations live in `supabase/migrations/` and are appli
 | `20261122000500_fk_indexes.sql` | covering indexes for foreign keys |
 | `20261123000100_todo.sql` | shared To-Do: tables, RLS, RPCs, Realtime publication |
 | `20261123000200_chat.sql` | private and group chat, attachments bucket, Realtime Authorization policies |
+| `20261123000300_notifications.sql` | inbox, push queue, notify triggers, announcements, service-role RPCs |
+| `20261123000400_push_dispatch.sql` | pg_net/pg_cron dispatch, Vault-verified webhook, housekeeping |
 
 All timestamps are `timestamptz` (stored in UTC, displayed in the device's local time). All primary keys
 are UUIDs.
@@ -25,7 +27,7 @@ are UUIDs.
 | `invitations` | hashed code, limits, expiry, revocation | read: owner/admin |
 | `invitation_uses` | one row per redemption (unique per user and invitation) | read: self, owner/admin |
 | `audit_logs` | family activity (`members`) and admin audit (`admins`) | read by visibility |
-| `device_tokens` | FCM tokens (used in Phase 4) | own rows |
+| `device_tokens` | FCM registration tokens | own rows |
 | `user_preferences` | active family, notification toggles, theme | own row |
 | `private.invitation_attempts`, `private.rate_limit_events` | abuse protection | none (private schema) |
 
@@ -68,8 +70,7 @@ maps to localized messages (`lib/core/errors/app_failure.dart`).
 
 Subscriptions are opened only while a screen watches them (Riverpod `autoDispose`) and are removed on
 dispose. After every (re)subscribe the client re-fetches, so missed events while offline are reconciled.
-Planned channels: `todo:{list_id}` (Phase 2), `conversation:{id}` with Broadcast for typing and Presence
-for online status (Phase 3).
+Phase 2–4 channels are listed in their sections below.
 
 ## To-Do (Phase 2)
 
@@ -134,10 +135,27 @@ require the file to belong to a non-deleted message (or be the uploader's own un
 `conversation:{id}` for conversation members (Broadcast typing; Postgres Changes) and
 `presence:family:{id}` for active family members (Presence).
 
+## Notifications (Phase 4)
+
+| Object | Purpose | Access |
+|---|---|---|
+| `notifications` | per-user inbox; `type`, `title`, `body`, `data.route`, `dedupe_key` (unique per user), `read_at` | own rows; update `read_at` only |
+| `notification_queue` | push jobs: `pending → sending → sent/failed`, attempts, backoff | service role only |
+| `user_preferences.timezone` | quiet-hours time zone (default `Asia/Kuala_Lumpur`) | own row |
+| `private.notify(...)` | recipient filtering and texts (see SECURITY.md) | internal |
+| `post_announcement(family_id, title, body)` | owner/admin, 10/day | authenticated |
+| `mark_notifications_read(ids)` | null = all | authenticated |
+| `claim_push_batch(limit)`, `complete_push(...)`, `verify_push_secret(secret)` | used by `send-push` | service role only |
+| `private.push_config` | function URL | internal |
+| Vault secret `push_webhook_secret` | `x-push-secret` header | never leaves the DB |
+| cron `familysync-push` (every minute), `familysync-housekeeping` (03:17 daily) | dispatch retries, pruning | pg_cron |
+
+Realtime: `notifications` (channel `notifications:{uid}`, filter `user_id`).
+
 ## Planned tables (later phases)
 
 Calendar (`family_events`,
-`event_participants`, `event_reminders`), notifications (`notifications`, `notification_queue`) and
+`event_participants`, `event_reminders`) and
 `sync_operations`. They will be added as new migrations, and existing migrations will not be edited once
 deployed.
 

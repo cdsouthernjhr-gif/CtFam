@@ -208,6 +208,11 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
             ),
           ),
           const Divider(height: AppSpacing.xl),
+          ListTile(
+            leading: const Icon(Icons.notifications_outlined),
+            title: Text(l10n.notificationSettings),
+            onTap: () => context.push(Routes.notificationSettings),
+          ),
           ListTile(title: Text(l10n.security, style: Theme.of(context).textTheme.titleSmall)),
           ListTile(
             leading: const Icon(Icons.password),

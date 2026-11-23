@@ -18,7 +18,9 @@
 |---|---|
 | Supabase publishable key | App build (`--dart-define`). Safe to ship. |
 | Supabase service-role / secret key | Edge Function environment only. The app **refuses to start** if given an `sb_secret_` or `service_role` key. |
-| Firebase service account (Phase 4) | Edge Function secret only. |
+| Firebase service account | Edge Function secret `FCM_SERVICE_ACCOUNT_JSON` only. |
+| Firebase client identifiers | App build (`--dart-define`). Public by design. |
+| Push webhook secret | Supabase Vault (`push_webhook_secret`); never leaves the database. |
 | Release keystore | Developer machine / CI secret, `android/key.properties` (git-ignored). |
 
 ## Authorization rules (tested in `supabase/tests/database/01_family_security.test.sql`)
@@ -61,8 +63,22 @@
 - Typing and online status use **private** Realtime channels. RLS on `realtime.messages` restricts
   `conversation:{id}` to its members and `presence:family:{id}` to family members. Malformed topics grant
   nothing.
-- Notifications (Phase 4) will hide message content on the lock screen by default
-  (`user_preferences.show_message_preview = false`).
+
+## Notifications
+
+- Message content is **not** included in notifications unless the recipient enabled previews
+  (`show_message_preview`, default off). Android notifications also use `visibility = PRIVATE`.
+- Recipients are re-checked at send time: active family member, still in the conversation, not muted,
+  preference on.
+- `notification_queue` and the push RPCs are service-role only. The Edge Function authenticates the
+  database's call with a 64-hex secret kept in **Supabase Vault**; the function never stores it and asks
+  the database to compare it (`verify_push_secret`). Missing or wrong secret gives 401 (verified on the
+  hosted project).
+- The FCM service account is an Edge Function secret (`FCM_SERVICE_ACCOUNT_JSON`) and never part of the
+  app. The app only carries Firebase's public client identifiers.
+- Notification taps navigate only to allow-listed in-app routes (`safeNotificationRoute`).
+- Device tokens are deleted before sign-out and account deletion; unregistered tokens reported by FCM
+  are deleted automatically.
 
 ## Rate limiting
 
@@ -103,11 +119,8 @@ user. Database rows cascade.
 
 ## Known gaps (tracked in docs/STATUS.md)
 
-- Lock-screen privacy for notifications arrives with Phase 4 (the default `show_message_preview = false`
-  is already stored).
 - The local DB tests use a storage shim. Storage policies must also be verified once against a real
   Supabase project.
-- Rate-limit tables are not pruned yet. A scheduled cleanup job is planned for Phase 7.
 
 ## Reporting
 

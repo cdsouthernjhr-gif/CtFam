@@ -11,6 +11,7 @@ import '../../../shared/providers/session_controller.dart';
 import '../../chat/presentation/chat_providers.dart';
 import '../../chat/presentation/chat_screen.dart';
 import '../../family/domain/family_models.dart';
+import '../../notifications/presentation/notifications_screen.dart';
 import '../../family/domain/family_permissions.dart';
 import '../../family/presentation/activity_screen.dart';
 import '../../family/presentation/family_providers.dart';
@@ -45,6 +46,7 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(family.value?.name ?? l10n.appName, overflow: TextOverflow.ellipsis),
         actions: [
+          const NotificationBell(),
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: IconButton(

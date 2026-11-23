@@ -858,5 +858,47 @@
   "leaveGroup": "Keluar kumpulan",
   "leaveGroupTitle": "Keluar dari kumpulan?",
   "leaveGroupBody": "Anda tidak akan menerima mesej kumpulan ini lagi.",
-  "dashboardRecentMessages": "Mesej terkini"
+  "dashboardRecentMessages": "Mesej terkini",
+  "notificationsTitle": "Notifikasi",
+  "markAllRead": "Tandakan semua dibaca",
+  "notificationSettings": "Tetapan notifikasi",
+  "noNotifications": "Tiada notifikasi",
+  "pushNotConfigured": "Notifikasi tolak (push) belum disediakan untuk aplikasi ini. Notifikasi masih dipaparkan di sini dalam aplikasi.",
+  "notifyFor": "Beritahu saya tentang",
+  "prefPrivateMessages": "Mesej peribadi",
+  "prefGroupMessages": "Mesej kumpulan",
+  "prefTasks": "Tugasan (baharu, diberi, siap)",
+  "prefEvents": "Acara keluarga",
+  "prefAnnouncements": "Pengumuman penting",
+  "privacy": "Privasi",
+  "prefShowPreview": "Tunjukkan isi mesej dalam notifikasi",
+  "prefShowPreviewHint": "Mati secara lalai supaya isi mesej tidak kelihatan pada skrin kunci.",
+  "quietHours": "Waktu senyap",
+  "quietHoursEnable": "Senyapkan notifikasi tolak",
+  "quietHoursHint": "Notifikasi tetap disimpan dalam aplikasi, tetapi telefon tidak berbunyi (waktu Malaysia).",
+  "quietFrom": "Dari",
+  "quietUntil": "Hingga",
+  "newAnnouncement": "Pengumuman keluarga",
+  "announcementTitle": "Tajuk",
+  "announcementBody": "Mesej",
+  "sendAnnouncement": "Hantar kepada semua ahli",
+  "announcementSent": "Pengumuman dihantar kepada {count} ahli.",
+  "@announcementSent": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityAnnouncement": "{actor} membuat pengumuman: {title}",
+  "@activityAnnouncement": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

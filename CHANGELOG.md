@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.4.0] - 2026-11-23: Phase 4, notifications
+
+### Added
+- **Database** (`20261123000300_notifications.sql`): `notifications` (in-app inbox, RLS own rows) and
+  `notification_queue` (service role only). `private.notify()` applies preference toggles, conversation
+  mute, quiet hours (recipient time zone, inbox only), lock-screen privacy (content only with
+  `show_message_preview`), recipient language (ms/en), active-family check and dedupe
+  (`UNIQUE(user_id, dedupe_key)`).
+- **Triggers:** new private/group message, task created/assigned/completed, join request (admins),
+  member joined (admins). `post_announcement` RPC for owners/admins sends to every member.
+- **Dispatch** (`20261123000400_push_dispatch.sql`): pg_net kick on new queue rows, pg_cron every minute
+  for retries; webhook secret in Supabase Vault and verified in the database (`verify_push_secret`,
+  service role only); daily housekeeping (rate-limit events, invitation attempts, old queue rows, old read
+  notifications).
+- **Edge Function `send-push`:** FCM HTTP v1 with a service-account OAuth token (RS256 via WebCrypto),
+  claim with `FOR UPDATE SKIP LOCKED`, Android channels, collapse tags, `PRIVATE` visibility,
+  unregistered-token cleanup, exponential backoff (5 attempts).
+- **App:** Firebase from public `--dart-define` values (no google-services.json), notification
+  permission, token registration/refresh, token removal before sign-out and account deletion,
+  foreground display (deduplicated; suppressed for the open conversation), tap navigation through a
+  route allow-list, Android channels and monochrome status icon, in-app inbox with bell and unread badge,
+  notification settings (types, preview, quiet hours), announcement composer.
+- **Docs:** `docs/FIREBASE_SETUP.md`.
+- **Tests:** 44 pgTAP assertions; pg_net dispatch integration test (real HTTP call with the Vault
+  secret); 6 Deno tests (message, JWT signature, OAuth grant, error mapping, partial delivery); 86 Flutter
+  tests.
+
+### Changed
+- `compileSdk` 37 (required by flutter_local_notifications 23 / androidx.core 1.19); `targetSdk` unchanged.
+
 ## [0.3.0] - 2026-11-23: Phase 3, private and group chat
 
 ### Added

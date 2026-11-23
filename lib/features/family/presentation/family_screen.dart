@@ -10,6 +10,7 @@ import '../../../core/widgets/state_views.dart';
 import '../../../core/widgets/user_avatar.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/session_controller.dart';
+import '../../notifications/presentation/notification_settings_screen.dart';
 import '../data/family_repository.dart';
 import '../domain/family_models.dart';
 import '../domain/family_permissions.dart';
@@ -53,6 +54,12 @@ class FamilyScreen extends ConsumerWidget {
                     child: Text(m.family?.name ?? ''),
                   ),
               ],
+            ),
+          if (FamilyPermissions.canEditFamily(role))
+            IconButton(
+              tooltip: l10n.newAnnouncement,
+              icon: const Icon(Icons.campaign_outlined),
+              onPressed: () => showAnnouncementSheet(context, ref, familyId: familyId),
             ),
           IconButton(
             tooltip: l10n.activity,

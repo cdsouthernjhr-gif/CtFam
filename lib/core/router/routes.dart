@@ -12,6 +12,8 @@ abstract final class Routes {
   static const join = '/join';
   static const profile = '/profile';
   static const changePassword = '/profile/password';
+  static const notificationSettings = '/profile/notifications';
+  static const notifications = '/notifications';
 
   // Bottom navigation branches
   static const home = '/home';
@@ -27,7 +29,7 @@ abstract final class Routes {
   static const activity = '/activity';
 
   static const publicRoutes = {signIn, signUp, forgotPassword, verifyCode};
-  static const noFamilyRoutes = {onboarding, createFamily, join, profile, changePassword};
+  static const noFamilyRoutes = {onboarding, createFamily, join, profile, changePassword, notificationSettings};
 
   static String verifyCodeFor(String email, {required bool recovery}) =>
       Uri(path: verifyCode, queryParameters: {'email': email, 'purpose': recovery ? 'recovery' : 'signup'}).toString();

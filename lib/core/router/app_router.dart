@@ -16,6 +16,8 @@ import '../../features/family/presentation/family_screen.dart';
 import '../../features/family/presentation/family_settings_screen.dart';
 import '../../features/family/presentation/onboarding_screen.dart';
 import '../../features/invitation/presentation/create_invitation_screen.dart';
+import '../../features/notifications/presentation/notification_settings_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/invitation/presentation/invitations_screen.dart';
 import '../../features/invitation/presentation/join_family_screen.dart';
 import '../../features/settings/presentation/profile_screen.dart';
@@ -115,12 +117,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.profile,
         builder: (_, _) => const ProfileScreen(),
-        routes: [GoRoute(path: 'password', builder: (_, _) => const ResetPasswordScreen())],
+        routes: [
+          GoRoute(path: 'password', builder: (_, _) => const ResetPasswordScreen()),
+          GoRoute(path: 'notifications', builder: (_, _) => const NotificationSettingsScreen()),
+        ],
       ),
       GoRoute(path: Routes.familySettings, builder: (_, _) => const FamilySettingsScreen()),
       GoRoute(path: Routes.invite, builder: (_, _) => const CreateInvitationScreen()),
       GoRoute(path: Routes.invitations, builder: (_, _) => const InvitationsScreen()),
       GoRoute(path: Routes.activity, builder: (_, _) => const ActivityScreen()),
+      GoRoute(path: Routes.notifications, builder: (_, _) => const NotificationsScreen()),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => HomeShell(shell: shell),
         branches: [

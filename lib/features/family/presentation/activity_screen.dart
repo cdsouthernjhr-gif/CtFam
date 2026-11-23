@@ -25,15 +25,18 @@ String activityText(AppLocalizations l10n, ActivityEntry e) {
     'member.active' => l10n.activityMemberReactivated(actor),
     'invitation.created' => l10n.activityInvitationCreated(actor),
     'invitation.revoked' => l10n.activityInvitationRevoked(actor),
+    'family.announcement' => l10n.activityAnnouncement(actor, (e.details['title'] as String?) ?? ''),
     _ => l10n.activityGeneric(actor, e.action),
   };
 }
 
-IconData _iconFor(String action) => switch (action.split('.').first) {
-  'invitation' => Icons.mail_outline,
-  'family' => Icons.home_outlined,
-  _ => Icons.person_outline,
-};
+IconData _iconFor(String action) => action == 'family.announcement'
+    ? Icons.campaign_outlined
+    : switch (action.split('.').first) {
+        'invitation' => Icons.mail_outline,
+        'family' => Icons.home_outlined,
+        _ => Icons.person_outline,
+      };
 
 class ActivityTile extends StatelessWidget {
   const ActivityTile({required this.entry, super.key});
