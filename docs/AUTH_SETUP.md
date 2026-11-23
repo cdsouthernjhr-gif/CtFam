@@ -37,7 +37,11 @@ boleh lewat atau masuk ke folder Spam. Untuk kegunaan keluarga, pasang **SMTP se
 
 - **Gmail**: host `smtp.gmail.com`, port `587`, nama pengguna = alamat Gmail, kata laluan = *App Password*
   (Akaun Google → Keselamatan → Pengesahan 2 Langkah → App passwords).
-- **Resend / Brevo / SendGrid**: pelan percuma tersedia; ikut panduan SMTP mereka.
+- **Brevo (digunakan sekarang)**: host `smtp-relay.brevo.com`, port `587`, nama pengguna = *Login* SMTP
+  Brevo (`...@smtp-brevo.com`, bukan alamat e-mel), kata laluan = *SMTP key* (SMTP & API → SMTP).
+  E-mel penghantar mesti disahkan di Brevo (Senders). Di **Security → Authorized IPs**, matikan sekatan
+  IP: jika tidak, Brevo menolak pelayan Supabase dengan `525 5.7.1 Unauthorized IP address`.
+- **Resend / SendGrid**: pelan percuma tersedia; ikut panduan SMTP mereka.
 
 Sender name: `FamilySync`.
 
@@ -59,11 +63,11 @@ accepted`, salah satu daripada dua perkara ini masih salah. Selepas SMTP dipasan
 |---|---|
 | Site URL / Redirect URLs | ✅ `familysync://auth-callback` (ditetapkan oleh pemilik) |
 | Kata laluan minimum 8, huruf + nombor | ✅ ditetapkan melalui Management API |
-| SMTP sendiri (Gmail, pengirim "FamilySync") | ✅ dipasang oleh pemilik |
+| SMTP sendiri (Brevo, pengirim "FamilySync") | ✅ dipasang oleh pemilik, e-mel disahkan sampai (2026-11-24) |
 | Templat kod berjenama (BM) | ✅ dipasang melalui Management API |
 | Leaked password protection | ❌ hanya untuk pelan Pro |
 | Had e-mel | ✅ 30 sejam |
-| Pengesahan e-mel (Confirm email) | ⚠️ **DIMATIKAN SEMENTARA**. Hidupkan semula selepas App Password Gmail berfungsi |
+| Pengesahan e-mel (Confirm email) | ✅ **Dihidupkan semula** (`mailer_autoconfirm = false`) selepas SMTP Brevo berfungsi |
 
 ## Pilihan: biar Claude yang tetapkan
 

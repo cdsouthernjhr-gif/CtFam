@@ -148,9 +148,6 @@ per-id helpers used by RPCs.
 
 ## Known gaps (tracked in docs/STATUS.md)
 
-- **Email confirmation is disabled** on the hosted project (`mailer_autoconfirm = true`) because the
-  SMTP provider rejects the login. Anyone can register with an address they do not own until SMTP works
-  and confirmation is turned back on.
 - Leaked-password protection (HaveIBeenPwned) requires a paid Supabase plan.
 - Deep links use a custom scheme (`familysync://`). Auth links are safe because of PKCE (the verifier
   never leaves the app); for invitation links, verified Android App Links on an https domain would be

@@ -304,8 +304,8 @@ search, unread count capped at 100. All 359 DB assertions still pass, so access 
 | `08_security_audit` (18 assertions) | pass locally; hosted catalog re-checked: 0 tables without RLS, 0 anon grants, 0 anon functions, 0 PUBLIC definer functions, 0 public buckets |
 | Found and fixed | 7 trigger functions were executable by PUBLIC (not exploitable: Postgres refuses direct trigger calls) |
 | Supabase advisors | only the expected "RPC executable by authenticated" (40, reviewed allow-list), `notification_queue` without policy (service role only), leaked-password protection (paid plan) |
-| Auth | min 8 chars with letters + digits; JWT 1 h; refresh-token rotation; anonymous sign-ins off; **email confirmation off (owner action)** |
+| Auth | min 8 chars with letters + digits; JWT 1 h; refresh-token rotation; anonymous sign-ins off; email confirmation **back on** since 2026-11-24 (Brevo SMTP) |
 | App | release obfuscation; backup and cleartext disabled; no secrets in APK; release logging silenced; dependencies at latest stable |
 
-**Recommendations:** turn email confirmation back on once SMTP works (e.g. Brevo); consider captcha on
+**Recommendations:** consider captcha on
 sign-up; verified App Links for invitations if a domain is available.

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.1] - 2026-11-24: Email delivery fixed
+
+### Deployed
+- Custom SMTP switched to Brevo by the owner. Brevo initially rejected Supabase with
+  `525 5.7.1 Unauthorized IP address` (Authorized IPs blocking); fixed in Brevo. Recovery email received.
+- **Email confirmation turned back on** (`mailer_autoconfirm = false`): new accounts must confirm their
+  address with the code before signing in.
+
 ## [0.7.0] - 2026-11-24: Phase 7, security and performance review
 
 ### Performance
@@ -23,8 +31,7 @@
 - Hosted re-check: 0 tables without RLS, 0 anon grants/functions, 0 public buckets.
 
 ### Known (owner action)
-- Email confirmation is still off (`mailer_autoconfirm`) until SMTP works; leaked-password protection
-  needs a paid Supabase plan.
+- Leaked-password protection needs a paid Supabase plan. (Email confirmation: fixed in 0.7.1.)
 
 ## [0.6.0] - 2026-11-23: Phase 6, offline mode
 
