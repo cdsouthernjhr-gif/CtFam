@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.8.2] - 2026-11-24: Chat conversation stuck on loading (fixed)
+
+### Fixed
+- **Opening a conversation never finished loading.** The members query embedded `profiles` from
+  `conversation_members`, which has two foreign keys to `profiles` (`user_id`, `added_by`); PostgREST
+  rejected it as ambiguous (HTTP 300, PGRST201). The same problem affected event participants in the
+  calendar. Both now name the foreign key (`profiles!…_user_id_fkey`). The unit/widget tests used mocked
+  repositories and pgTAP tests SQL directly, so neither could see it.
+- Failed screens no longer spin for ~40 s: Riverpod's automatic retry now applies only to network errors
+  (3 tries: 0.5 s, 1 s, 2 s); other errors show at once with "Try again".
+
+### Added
+- `scripts/api_contract.sh` (in CI): extracts every `select` (23) and RPC call with its parameter names
+  (52) from the app source and runs them through a real PostgREST as a signed-in member. Verified to fail on
+  the old chat query.
+
 ## [0.8.1] - 2026-11-24: Family tree photos
 
 ### Added

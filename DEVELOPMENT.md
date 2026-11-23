@@ -75,6 +75,7 @@ flutter test                 # unit + widget (offline tests use in-memory SQLite
 scripts/db_test.sh           # migrations + pgTAP + concurrency tests (Docker)
 KEEP_DB=1 scripts/db_test.sh # leave the DB running on localhost:54329 (password: postgres)
 scripts/perf_check.sh        # after KEEP_DB=1: seeds a 100-member family, checks query budgets
+scripts/api_contract.sh      # after KEEP_DB=1: every app select/RPC through a real PostgREST
 ```
 
 The DB tests run against the official `supabase/postgres` image. The Storage service's tables are not

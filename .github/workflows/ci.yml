@@ -30,6 +30,8 @@ jobs:
         run: KEEP_DB=1 scripts/db_test.sh
       - name: Query budgets at family scale
         run: scripts/perf_check.sh
+      - name: API contract (every app select and RPC through PostgREST)
+        run: scripts/api_contract.sh
 
   edge-functions:
     runs-on: ubuntu-latest

@@ -111,7 +111,7 @@ class FamilyEvent {
   static const select =
       'id, family_id, title, description, location, category, all_day, starts_at, ends_at, timezone, recurrence, '
       'recurrence_until, visibility, default_reminders, created_by, revision, deleted_at, '
-      'event_participants(user_id, rsvp, profiles(display_name, avatar_path))';
+      'event_participants(user_id, rsvp, profiles!event_participants_user_id_fkey(display_name, avatar_path))';
 
   final String id;
   final String familyId;

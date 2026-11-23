@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/config/app_config.dart';
+import 'core/errors/retry_policy.dart';
 import 'features/notifications/push/push_service.dart';
 import 'shared/providers/session_controller.dart';
 
@@ -34,6 +35,7 @@ Future<void> bootstrap() async {
 
   runApp(
     ProviderScope(
+      retry: appRetry,
       overrides: [supabaseConfiguredProvider.overrideWithValue(configProblem == null)],
       child: const FamilySyncApp(),
     ),

@@ -135,7 +135,7 @@ class ChatRepository {
   Future<List<ConversationMember>> members(String conversationId) => _guard(() async {
     final rows = await _client
         .from('conversation_members')
-        .select('user_id, role, left_at, profiles(display_name, avatar_path)')
+        .select('user_id, role, left_at, profiles!conversation_members_user_id_fkey(display_name, avatar_path)')
         .eq('conversation_id', conversationId)
         .isFilter('left_at', null);
     return rows.map(ConversationMember.fromJson).toList();

@@ -322,3 +322,11 @@ birth date is required (also used for birthdays); no Long/Ngah titles.
 | All DB suites | 415 pgTAP assertions + 5 concurrency scripts passed; security audit allow-list updated |
 | Flutter | **121 tests passed**; analyze clean; a layout bug (full-width button in a list tile) found by widget tests and fixed |
 | Hosted | migrations applied; 0 tables without RLS, 0 anon functions, 0 PUBLIC definer functions; cron `familysync-birthdays` scheduled |
+
+## 18. Incident: chat conversation stuck on loading (2026-11-24)
+
+Reported by the owner after the first real conversation. Edge logs showed
+`GET /rest/v1/conversation_members` answering **300** (PGRST201, ambiguous embed: `user_id` and `added_by`
+both reference `profiles`). Riverpod's default retry (10 attempts) kept the screen on "loading".
+Same defect found in the calendar's `event_participants` embed. Fixed in 0.8.2, plus a network-only retry
+policy and a PostgREST API contract test that runs every app read and RPC (it fails on the old query).

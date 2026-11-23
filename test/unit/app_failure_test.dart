@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:familysync/core/errors/app_failure.dart';
+import 'package:familysync/core/errors/retry_policy.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -55,5 +56,17 @@ void main() {
 
   test('unknown errors never throw', () {
     expect(AppFailure.from(StateError('boom')).kind, FailureKind.unknown);
+  });
+
+  group('retry policy', () {
+    test('retries only network failures, at most 3 times', () {
+      const network = AppFailure(FailureKind.network);
+      expect(appRetry(0, network), const Duration(milliseconds: 500));
+      expect(appRetry(2, network), const Duration(seconds: 2));
+      expect(appRetry(3, network), isNull);
+      expect(appRetry(0, const AppFailure(FailureKind.forbidden)), isNull, reason: 'shown at once');
+      expect(appRetry(0, const PostgrestException(message: 'ambiguous', code: 'PGRST201')), isNull);
+      expect(appRetry(0, StateError('bug')), isNull);
+    });
   });
 }
