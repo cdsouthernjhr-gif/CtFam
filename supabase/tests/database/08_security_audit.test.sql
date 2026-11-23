@@ -41,15 +41,16 @@ select is(
   array[
     'account_deletion_blockers', 'add_conversation_members', 'calendar_occurrences', 'cancel_event_occurrence',
     'conversation_summaries', 'create_family', 'create_group_conversation', 'create_invitation',
-    'create_todo_list', 'delete_family', 'delete_family_event', 'delete_message', 'delete_todo_item',
+    'create_todo_list', 'delete_family', 'delete_family_event', 'delete_message', 'delete_person', 'delete_relation', 'delete_todo_item',
     'delete_todo_list', 'edit_message', 'get_or_create_direct_conversation', 'leave_conversation',
-    'leave_family', 'mark_conversation_read', 'mark_family_delivered', 'mark_notifications_read',
-    'post_announcement', 'preview_invitation', 'redeem_invitation', 'register_device_token',
-    'remove_conversation_member', 'review_membership', 'revoke_invitation', 'search_messages',
+    'leave_family', 'link_person_account', 'mark_conversation_read', 'mark_family_delivered', 'mark_notifications_read',
+    'post_announcement', 'preview_invitation', 'propose_relation', 'redeem_invitation', 'register_device_token',
+    'relationship_between',
+    'remove_conversation_member', 'review_membership', 'review_relation', 'revoke_invitation', 'search_messages',
     'send_message', 'set_conversation_member_role', 'set_event_reminders', 'set_event_rsvp',
     'set_member_role', 'set_member_status', 'set_message_pinned', 'set_todo_item_status',
     'set_todo_list_members', 'todo_list_summaries', 'transfer_ownership', 'update_group_conversation',
-    'update_todo_list', 'upsert_family_event', 'upsert_todo_item'
+    'update_todo_list', 'upsert_family_event', 'upsert_person', 'upsert_todo_item'
   ]::text[],
   'callable RPCs match the reviewed allow-list');
 

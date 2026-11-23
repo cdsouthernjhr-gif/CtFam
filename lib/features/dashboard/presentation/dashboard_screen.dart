@@ -12,6 +12,7 @@ import '../../calendar/presentation/calendar_providers.dart';
 import '../../calendar/presentation/calendar_screen.dart';
 import '../../calendar/presentation/calendar_ui.dart';
 import '../../chat/presentation/chat_providers.dart';
+import '../../family_tree/presentation/tree_providers.dart';
 import '../../chat/presentation/chat_screen.dart';
 import '../../family/domain/family_models.dart';
 import '../../notifications/presentation/notifications_screen.dart';
@@ -127,6 +128,7 @@ class DashboardScreen extends ConsumerWidget {
               action: TextButton(onPressed: () => context.go(Routes.calendar), child: Text(l10n.dashboardSeeAll)),
             ),
             _UpcomingEvents(familyId: familyId),
+            _UpcomingBirthdays(familyId: familyId),
             const SizedBox(height: AppSpacing.lg),
             _SectionHeader(
               title: l10n.dashboardRecentMessages,
@@ -374,6 +376,51 @@ class _UpcomingEvents extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Birthdays in the next 30 days (from the family tree); hidden when none.
+class _UpcomingBirthdays extends ConsumerWidget {
+  const _UpcomingBirthdays({required this.familyId});
+
+  final String familyId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final tree = ref.watch(treeDataProvider(familyId)).value;
+    if (tree == null) return const SizedBox.shrink();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final upcoming = tree.upcomingBirthdays(today).take(5).toList();
+    if (upcoming.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: AppSpacing.lg),
+        _SectionHeader(
+          title: l10n.dashboardBirthdays,
+          action: TextButton(onPressed: () => context.push(Routes.familyTree), child: Text(l10n.treeTitle)),
+        ),
+        Card(
+          child: Column(
+            children: [
+              for (final (p, day) in upcoming)
+                ListTile(
+                  leading: const Icon(Icons.cake_outlined),
+                  title: Text(p.fullName),
+                  subtitle: Text(
+                    day == today
+                        ? l10n.birthdayToday(p.ageOn(day))
+                        : l10n.birthdayOn(context.formatDate(day), p.ageOn(day)),
+                  ),
+                  onTap: () => context.push(Routes.treePerson(p.id)),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

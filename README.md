@@ -29,7 +29,8 @@ Android app with **Flutter** on a **Supabase** backend.
 | Notifications (Phase 4) | In-app inbox with bell and badge; FCM push through a DB queue and Edge Function; per-type preferences; lock-screen privacy by default; quiet hours; mute; announcements; dedupe; tap navigation |
 | Calendar (Phase 5) | Month grid and agenda; all-day and timed events; daily/weekly/monthly/yearly repeat with end date and per-occurrence cancel; invitees and RSVP; personal reminders via push; participants-only events; live updates |
 | Offline (Phase 6) | Last data readable without a connection; To-Do changes, text messages and RSVPs queued on the phone and synced in order; status strip and Sync screen; local data wiped on sign-out |
-| Dashboard | Family header, member overview, today's/overdue/my tasks, upcoming events, recent messages, recent activity, quick invite |
+| Family tree | Generational tree; relationship to you computed in BM/EN (anak saudara, cucu saudara, sepupu, ipar, mertua …); people without accounts; admin-confirmed proposals; birthday notifications |
+| Dashboard | Family header, member overview, today's/overdue/my tasks, upcoming events, upcoming birthdays, recent messages, recent activity, quick invite |
 
 ## Repository layout
 

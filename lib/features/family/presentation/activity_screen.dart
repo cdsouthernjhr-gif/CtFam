@@ -29,6 +29,8 @@ String activityText(AppLocalizations l10n, ActivityEntry e) {
     'event.created' => l10n.activityEventCreated(actor, (e.details['title'] as String?) ?? ''),
     'event.updated' => l10n.activityEventUpdated(actor, (e.details['title'] as String?) ?? ''),
     'event.deleted' => l10n.activityEventDeleted(actor, (e.details['title'] as String?) ?? ''),
+    'tree.person_added' => l10n.activityTreePersonAdded(actor, (e.details['name'] as String?) ?? ''),
+    'tree.person_removed' => l10n.activityTreePersonRemoved(actor, (e.details['name'] as String?) ?? ''),
     _ => l10n.activityGeneric(actor, e.action),
   };
 }
@@ -39,6 +41,7 @@ IconData _iconFor(String action) => action == 'family.announcement'
         'invitation' => Icons.mail_outline,
         'family' => Icons.home_outlined,
         'event' => Icons.event_outlined,
+        'tree' => Icons.account_tree_outlined,
         _ => Icons.person_outline,
       };
 

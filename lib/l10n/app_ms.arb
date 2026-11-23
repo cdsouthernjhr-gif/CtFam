@@ -1129,5 +1129,189 @@
         "type": "int"
       }
     }
+  },
+  "treeTitle": "Salasilah",
+  "treeAddPerson": "Tambah orang",
+  "treeEditPerson": "Edit maklumat",
+  "treeMyProfile": "Profil salasilah saya",
+  "treeFullName": "Nama penuh",
+  "treeMale": "Lelaki",
+  "treeFemale": "Perempuan",
+  "treeBirthDate": "Tarikh lahir",
+  "treeRequired": "Wajib diisi",
+  "treeBirthRequired": "Tarikh lahir wajib diisi.",
+  "treeDeathBeforeBirth": "Tarikh meninggal mesti selepas tarikh lahir.",
+  "treeDeceased": "Telah meninggal dunia",
+  "treeDeathDate": "Tarikh meninggal dunia",
+  "treeUnknown": "Tidak diketahui",
+  "treeNotes": "Catatan",
+  "treeAddRelationFor": "Hubungan untuk {name}",
+  "@treeAddRelationFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "treeChoiceParent": "Ibu/bapa",
+  "treeChoiceChild": "Anak",
+  "treeChoiceSpouse": "Pasangan",
+  "treeAdoptive": "Anak angkat / ibu bapa angkat",
+  "treeAdoptiveShort": "angkat",
+  "treeSearchPerson": "Cari nama",
+  "treeNewPersonForRelation": "Orang baharu (tiada dalam senarai)",
+  "treeProposalHint": "Cadangan anda akan disahkan oleh pentadbir keluarga.",
+  "treeAddRelation": "Tambah hubungan",
+  "treeProposeRelation": "Cadangkan hubungan",
+  "treeRelationAdded": "Hubungan ditambah.",
+  "treeRelationProposed": "Cadangan dihantar kepada pentadbir.",
+  "treeLinkAccount": "Pautkan kepada akaun ahli",
+  "treeUnlinkAccount": "Nyahpaut akaun",
+  "treeDeletePerson": "Buang daripada salasilah",
+  "treeDeletePersonMessage": "{name} dan semua hubungannya akan dibuang daripada salasilah.",
+  "@treeDeletePersonMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "treePersonNotFound": "Orang ini tiada dalam salasilah.",
+  "treeRelationIs": "{relation} anda",
+  "@treeRelationIs": {
+    "placeholders": {
+      "relation": {
+        "type": "String"
+      }
+    }
+  },
+  "treeRelationViaParent": "{relation} anda · anak kepada {name}",
+  "@treeRelationViaParent": {
+    "placeholders": {
+      "relation": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "treeRelationViaSpouse": "{relation} anda · melalui {name}",
+  "@treeRelationViaSpouse": {
+    "placeholders": {
+      "relation": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "treeNoRelation": "Tiada hubungan disahkan dengan anda lagi",
+  "treeNeedOwnProfile": "Lengkapkan profil salasilah anda untuk melihat hubungan",
+  "treeThisIsYou": "Ini anda",
+  "treeAge": "{age} tahun",
+  "@treeAge": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "treeDeceasedLabel": "{title}",
+  "@treeDeceasedLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "treeLateMale": "Allahyarham",
+  "treeLateFemale": "Allahyarhamah",
+  "treeHasAccount": "Ahli FamilySync",
+  "treeDiedOn": "Meninggal dunia: {date}",
+  "@treeDiedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "treeParents": "Ibu bapa",
+  "treeSpouses": "Pasangan",
+  "treeSiblings": "Adik-beradik",
+  "treeChildren": "Anak",
+  "treePendingTitle": "Cadangan menunggu pengesahan",
+  "treePendingSpouse": "{a} ↔ {b} (pasangan)",
+  "@treePendingSpouse": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      }
+    }
+  },
+  "treePendingParent": "{a} → {b} (ibu/bapa kepada)",
+  "@treePendingParent": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      }
+    }
+  },
+  "treeApprove": "Sahkan",
+  "treeReject": "Tolak",
+  "treeWithdraw": "Tarik balik",
+  "treeCreateOwnTitle": "Anda belum ada dalam salasilah",
+  "treeCreateOwnHint": "Tambah diri anda (nama, jantina, tarikh lahir) supaya hubungan dapat dikira.",
+  "treeCreateOwnAction": "Tambah",
+  "treeEmpty": "Salasilah masih kosong",
+  "treeEmptyHint": "Pentadbir boleh menambah ahli keluarga, termasuk yang tiada akaun atau telah meninggal dunia.",
+  "dashboardBirthdays": "Hari jadi akan datang",
+  "birthdayToday": "Hari ini 🎂 · {age} tahun",
+  "@birthdayToday": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "birthdayOn": "{date} · {age} tahun",
+  "@birthdayOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "activityTreePersonAdded": "{actor} menambah {name} ke salasilah",
+  "@activityTreePersonAdded": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityTreePersonRemoved": "{actor} membuang {name} daripada salasilah",
+  "@activityTreePersonRemoved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.8.0] - 2026-11-24: Family tree (salasilah) and birthdays
+
+### Added
+- **Family tree** (`20261124000300_family_tree.sql`): `family_persons` (optionally linked to an account;
+  people without an account and deceased relatives supported; birth date required) and
+  `family_relations` (only parent→child, biological or adoptive, and spouse links are stored).
+- **Computed relationships** (`relationship_between`): closest common ancestor gives (up, down), named in
+  Malay and English: abang/kakak/adik (from birth dates; seibu/sebapa for half-siblings), anak saudara,
+  cucu saudara, bapa/ibu saudara, sepupu (dua/tiga pupu), datuk, moyang, anak angkat, and by marriage:
+  suami/isteri, mertua, ipar, menantu, anak/ibu/bapa tiri, biras, besan. The person explaining the link is
+  returned ("anak saudara anda · anak kepada Hasan").
+- **Permissions:** owner/admin add and edit anyone, link a person to a member account, and confirm
+  relations; members create/edit only their own record and propose relations, which stay pending (and
+  unused) until an admin confirms. Validation: no cycles, one biological father and mother, parents born
+  before children, no spouse links between ancestor and descendant.
+- **Birthdays:** daily notification (08:05 Malaysia time) to the family and a greeting to the person;
+  29 February birthdays on 28 February in common years; deceased skipped; dashboard "Upcoming birthdays".
+- **App:** zoomable generational tree, person page with the relationship to you, parents/spouse/siblings/
+  children, add/propose relation, pending proposals for admins, own-record prompt, account linking.
+- **Tests:** 52 pgTAP assertions (`09_family_tree`), tree layout/birthday unit tests and widget tests
+  (121 Flutter tests).
+
+### Security
+- Fixed (found by the new tests): `delete_todo_item` and `delete_message` let any member delete a task or
+  message whose creator had deleted their account (NULL owner column made the permission check pass).
+  `20261124000250_null_safe_permissions.sql`, regression test `10_null_safety`.
+
 ## [0.7.1] - 2026-11-24: Email delivery fixed
 
 ### Deployed

@@ -14,6 +14,10 @@ Postgres 17 on Supabase. Migrations live in `supabase/migrations/` and are appli
 | `20261123000300_notifications.sql` | inbox, push queue, notify triggers, announcements, service-role RPCs |
 | `20261123000400_push_dispatch.sql` | pg_net/pg_cron dispatch, Vault-verified webhook, housekeeping |
 | `20261123000500_calendar.sql` | family calendar: events, RSVP, reminders, recurrence, reminder cron |
+| `20261124000100_hardening.sql` | trigger functions not executable by PUBLIC |
+| `20261124000200_performance.sql` | set-based read policies, trigram search index |
+| `20261124000250_null_safe_permissions.sql` | NULL-safe delete checks for tasks and messages |
+| `20261124000300_family_tree.sql` | family tree, relationship engine, birthday cron |
 
 All timestamps are `timestamptz` (stored in UTC, displayed in the device's local time). All primary keys
 are UUIDs.
@@ -176,6 +180,25 @@ Realtime: `notifications` (channel `notifications:{uid}`, filter `user_id`).
 look-back; the dedupe key `remind:{event}:{occurrence}:{minutes}` makes each reminder fire once.
 
 Realtime: `family_events`, `event_participants` (channel `calendar:{family_id}`, filter `family_id`).
+
+## Family tree
+
+| Table | Purpose | Client access |
+|---|---|---|
+| `family_persons` | name, gender, birth date (required), death date, notes, optional `user_id` (one per account per family) | family members read; writes via RPC |
+| `family_relations` | `parent` (person_a is parent of person_b; biological/adoptive) or `spouse`; status pending/confirmed/rejected | family members read; writes via RPC |
+
+| RPC | Who |
+|---|---|
+| `upsert_person(id, family_id, full_name, gender, birth_date, death_date, notes, link_self, expected_revision)` | owner/admin: anyone; member: own record only |
+| `link_person_account(person_id, user_id)`, `delete_person(person_id)` | owner/admin |
+| `propose_relation(id, family_id, kind, person_a, person_b, parent_type)` | member: pending; owner/admin: confirmed |
+| `review_relation(id, approve)` | owner/admin |
+| `delete_relation(id)` | owner/admin; proposer while pending |
+| `relationship_between(family_id, target, from default me)` | family members; returns `{kind, ms, en, up, down, via}` |
+
+Only confirmed links are used. Cron `familysync-birthdays` (00:05 UTC) runs `private.dispatch_birthdays()`.
+Realtime: channel `tree:{family_id}`.
 
 ## Offline replay (Phase 6)
 

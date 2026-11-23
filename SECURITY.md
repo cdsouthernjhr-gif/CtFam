@@ -89,6 +89,16 @@
 - Reminders belong to participants (foreign key), are readable only by their owner, and stop when the user
   declines, leaves the family or loses access (checked at send time).
 
+## Family tree
+
+- Only active members of the family can read its people and relations; outsiders cannot compute
+  relationships.
+- Members can only create/edit their own record and propose links; owner/admin confirm. Unconfirmed
+  proposals never influence computed relationships.
+- Birth dates are visible to family members (they drive birthday notices).
+- PL/pgSQL permission checks use `IS NOT DISTINCT FROM`: `if not (owner = me or …)` silently passes when
+  `owner` is NULL. Two existing functions had this bug (fixed, see CHANGELOG 0.8.0).
+
 ## Offline data on the device
 
 - Cached responses and queued writes live in the app's private storage (SQLite), keyed by user id. They

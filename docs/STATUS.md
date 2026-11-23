@@ -309,3 +309,16 @@ search, unread count capped at 100. All 359 DB assertions still pass, so access 
 
 **Recommendations:** consider captcha on
 sign-up; verified App Links for invitations if a domain is available.
+
+## 17. Family tree (salasilah) and birthdays (2026-11-24)
+
+Owner decisions: people without an account are supported and added by admins; admins confirm relations;
+birth date is required (also used for birthdays); no Long/Ngah titles.
+
+| Check | Result |
+|---|---|
+| pgTAP `09_family_tree` | **52 assertions**: 20-person test family; all computed names match in BM and EN (abang, kakak, adik perempuan, anak saudara ×2, cucu saudara, bapa, ibu, datuk, bapa saudara, sepupu, adik lelaki sebapa, anak perempuan (angkat), isteri, bapa mertua, adik ipar, biras, kakak ipar), explanation via the right person, other viewpoints; validation (cycle, dates, two fathers, spouse/parent, duplicates); member vs admin permissions; pending proposals ignored until confirmed and admins notified; outsiders blocked; birthdays (age text, greeting, dedupe, deceased skipped, 29 Feb) ; removal |
+| Security bug found and fixed | NULL-unsafe checks in `delete_todo_item` / `delete_message` (`10_null_safety`, 4 assertions) |
+| All DB suites | 415 pgTAP assertions + 5 concurrency scripts passed; security audit allow-list updated |
+| Flutter | **121 tests passed**; analyze clean; a layout bug (full-width button in a list tile) found by widget tests and fixed |
+| Hosted | migrations applied; 0 tables without RLS, 0 anon functions, 0 PUBLIC definer functions; cron `familysync-birthdays` scheduled |
