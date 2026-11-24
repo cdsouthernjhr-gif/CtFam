@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.9.5] - 2026-11-24: Print-ready family tree PDF; all descendants on the person page
+
+### Added
+- **Print the family tree (A4)**: the PDF button now asks what to print, then shows a print preview
+  with **Print** and **Share** buttons.
+  - Scope: the whole tree, one branch (pick the person), or each child's branch in its own section.
+  - Generations: all, 2, 3 or 4 (counting the top row).
+  - Style: **Chart** or **List** (an indented outline, portrait, flows over as many pages as needed).
+  - Photos on or off.
+- Chart printing: compact print cards (names at 8.5 pt). If the chart fits one landscape A4 page at
+  70 % or more it is printed on one page; otherwise it is printed at full size over several pages,
+  cut only in the gaps between cards (never through a card). Page 1 is then a page map: a small map with
+  labelled pages (A1, A2, B1…) and an index of page numbers with the first names on each page. Lines
+  cut at the page edge say "continues on page N". Empty pages are skipped.
+- Fonts: Noto Sans + Noto Naskh Arabic are bundled (SIL OFL), so names with accents and Jawi names print
+  correctly. Chinese, Japanese and Korean script is not supported yet (shown as boxes).
+- Person page: descendants are no longer limited to children. Grandchildren, great-grandchildren,
+  great-great-grandchildren and further generations are listed, grouped by generation.
+
 ## [0.9.4] - 2026-11-24: Blinking birthday reminders on the dashboard
 
 ### Added

@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:familysync/features/family_tree/domain/tree_layout.dart';
 import 'package:familysync/features/family_tree/domain/tree_models.dart';
 import 'package:familysync/features/family_tree/presentation/tree_pdf.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 TreePerson p(String id, int year, {Gender g = Gender.male, String? name, DateTime? died}) =>
     TreePerson(id: id, familyId: 'F', fullName: name ?? id, gender: g, birthDate: DateTime(year), deathDate: died);
@@ -78,12 +81,112 @@ void main() {
     expect(tree.relationBetween('anak', 'ibu'), isNull);
   });
 
-  test('PDF export renders the whole chart (also with non-Latin names)', () async {
-    final bytes = await buildTreePdf(
-      tree,
-      labels: const TreePdfLabels(title: 'Salasilah Keluarga', generated: 'Dijana', legend: 'Petunjuk'),
+  group('print PDF', () {
+    late TreePdfFonts fonts;
+    setUpAll(() {
+      pw.Font font(String n) => pw.Font.ttf(ByteData.sublistView(File('assets/fonts/$n').readAsBytesSync()));
+      fonts = TreePdfFonts(
+        regular: font('NotoSans-Regular.ttf'),
+        bold: font('NotoSans-Bold.ttf'),
+        fallback: [font('NotoNaskhArabic-Regular.ttf')],
+      );
+    });
+
+    final text = TreePdfText(
+      title: 'Salasilah Keluarga',
+      generated: 'Dijana',
+      legend: 'Petunjuk',
+      page: (p, t) => 'Halaman $p / $t',
+      pageShort: (p) => 'hlm. $p',
+      continues: (p) => 'sambungan di halaman $p',
+      overview: 'Peta halaman',
+      overviewHint: 'Susun mengikut label',
+      deceased: (g) => g == Gender.female ? 'Allahyarhamah' : 'Allahyarham',
+      branchOf: (n) => 'Cabang $n',
+      generationLabel: (n) => 'G${n + 1}',
     );
-    expect(ascii.decode(bytes.sublist(0, 5)), '%PDF-');
-    expect(bytes.length, greaterThan(2000));
+
+    int pages(Uint8List pdf) => RegExp(r'/Type\s*/Page[^s]').allMatches(latin1.decode(pdf)).length;
+
+    Future<Uint8List> build(TreeData t, TreePdfOptions o) async {
+      final bytes = await buildTreePdf(t, text: text, fonts: fonts, options: o);
+      final out = Platform.environment['TREE_PDF_OUT'];
+      if (out != null) {
+        File('$out/${o.scope.name}_${o.style.name}_${t.persons.length}_g${o.maxGenerations ?? 0}.pdf')
+            .writeAsBytesSync(bytes);
+      }
+      return bytes;
+    }
+
+    test('a small tree (also Jawi and non-Latin names) fits on one A4 page', () async {
+      final t = TreeData(
+        persons: [
+          ...tree.persons.values,
+          p('jawi', 1985, name: 'محمد علي'),
+        ],
+        relations: [...tree.relations, rel('ayah', 'jawi', RelationKind.parent)],
+      );
+      final bytes = await build(t, const TreePdfOptions());
+      expect(ascii.decode(bytes.sublist(0, 5)), '%PDF-');
+      expect(pages(bytes), 1);
+    });
+
+    test('a big tree is split into readable pages plus a page map', () async {
+      final big = bigTree(); // 4 generations, 5 children per couple
+      final bytes = await build(big, const TreePdfOptions());
+      expect(pages(bytes), greaterThan(3));
+      // Limiting to 2 generations fits on one page again.
+      expect(pages(await build(big, const TreePdfOptions(maxGenerations: 2))), 1);
+    });
+
+    test('branch, branch-per-page and list styles', () async {
+      final big = bigTree();
+      final branch = await build(big, const TreePdfOptions(scope: PdfScope.branch, rootId: 'c1_1'));
+      expect(pages(branch), 1, reason: 'a grandchild\'s branch (couple + 5 children) fits');
+      final perPage = await build(big, const TreePdfOptions(scope: PdfScope.branchPerPage, rootId: 'root'));
+      expect(pages(perPage), greaterThanOrEqualTo(6), reason: 'cover + one section per child');
+      final list = await build(big, const TreePdfOptions(style: PdfStyle.list));
+      expect(pages(list), greaterThan(1));
+    });
+
+    test('pages are cut only between cards and never wider than the page', () {
+      const card = 100.0, gap = 12.0, page = 786.0;
+      final starts = [for (var i = 0; i < 40; i++) i * (card + gap) + (i.isOdd ? 30.0 : 0)];
+      final total = starts.last + card;
+      final cuts = treePdfCuts(starts, card, gap, total, page);
+      expect(cuts.first.$1, 0);
+      expect(cuts.last.$2, total);
+      for (final (a, b) in cuts) {
+        expect(b - a, lessThanOrEqualTo(page));
+        for (final s in starts) {
+          expect(b > s && b < s + card && b != total, isFalse, reason: 'cut at $b goes through card at $s');
+        }
+      }
+    });
   });
+}
+
+/// root ∞ wife, 5 children (each married), 5 grandchildren each, 5 great-
+/// grandchildren each: 1+1 + 5*2 + 25*2 + 125 = 187 people.
+TreeData bigTree() {
+  final persons = <TreePerson>[p('root', 1930), p('wife', 1932, g: Gender.female)];
+  final relations = <TreeRelation>[rel('root', 'wife', RelationKind.spouse)];
+  void kids(String father, String mother, int year, int depth, String prefix) {
+    for (var i = 1; i <= 5; i++) {
+      final id = '$prefix$i';
+      persons.add(p(id, year + i, name: 'Anak $id bin $father'));
+      relations
+        ..add(rel(father, id, RelationKind.parent))
+        ..add(rel(mother, id, RelationKind.parent));
+      if (depth < 3) {
+        final sp = '${id}w';
+        persons.add(p(sp, year + i + 1, g: Gender.female, name: 'Isteri $id'));
+        relations.add(rel(id, sp, RelationKind.spouse));
+        kids(id, sp, year + 25, depth + 1, '${id}_');
+      }
+    }
+  }
+
+  kids('root', 'wife', 1955, 1, 'c');
+  return TreeData(persons: persons, relations: relations);
 }

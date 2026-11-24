@@ -1,7 +1,3 @@
-import 'dart:typed_data';
-
-import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -21,7 +17,7 @@ import '../domain/tree_models.dart';
 import 'person_form_sheet.dart';
 import 'person_screen.dart';
 import 'relation_sheet.dart';
-import 'tree_pdf.dart';
+import 'tree_print_screen.dart';
 import 'tree_photo.dart';
 import 'tree_providers.dart';
 
@@ -248,60 +244,10 @@ class FamilyTreeScreen extends ConsumerWidget {
     }
   }
 
-  /// Builds the chart as a PDF (with photos) and opens the share sheet, from
-  /// which it can be saved to Files/Drive, printed or sent.
-  Future<void> _exportPdf(BuildContext context, WidgetRef ref, String familyId, TreeData tree) async {
-    final l10n = context.l10n;
-    final familyName = ref.read(familyProvider(familyId)).value?.name ?? l10n.treeTitle;
-    final nav = Navigator.of(context, rootNavigator: true);
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        content: Row(
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(child: Text(l10n.treePdfPreparing)),
-          ],
-        ),
-      ),
-    );
-    try {
-      final repo = ref.read(treeRepositoryProvider);
-      final photos = <String, Uint8List>{};
-      final withPhotos = tree.persons.values.where((p) => p.photoPath != null).take(200).toList();
-      for (var i = 0; i < withPhotos.length; i += 6) {
-        final batch = withPhotos.skip(i).take(6).toList();
-        final bytes = await Future.wait(batch.map((p) => repo.downloadPhoto(p.photoPath!)));
-        for (var j = 0; j < batch.length; j++) {
-          if (bytes[j] != null) photos[batch[j].id] = bytes[j]!;
-        }
-      }
-      final now = DateTime.now();
-      final pdf = await buildTreePdf(
-        tree,
-        photos: photos,
-        labels: TreePdfLabels(
-          title: l10n.treePdfTitle(familyName),
-          generated: l10n.treePdfGenerated(DateFormat.yMMMd(l10n.localeName).format(now)),
-          legend: l10n.treePdfLegend,
-        ),
-      );
-      final safeName = familyName.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '_');
-      final file = await saveTreePdf(pdf, 'Salasilah_${safeName}_${now.year}${now.month}${now.day}.pdf');
-      nav.pop();
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(file.path, mimeType: 'application/pdf')],
-          subject: l10n.treePdfTitle(familyName),
-        ),
-      );
-    } catch (e) {
-      nav.pop();
-      if (context.mounted) context.showError(e);
-    }
-  }
+  /// Print options (scope, generations, style), then an A4 print preview
+  /// from which it can be printed or shared.
+  Future<void> _exportPdf(BuildContext context, WidgetRef ref, String familyId, TreeData tree) =>
+      printFamilyTree(context, tree, ref.read(familyProvider(familyId)).value?.name ?? context.l10n.treeTitle);
 
   Future<void> _showPending(
     BuildContext context,

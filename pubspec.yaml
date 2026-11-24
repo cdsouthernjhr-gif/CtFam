@@ -3,7 +3,7 @@ description: "FamilySync - private family chat, shared to-do lists and calendar.
 publish_to: 'none'
 
 # versionName+versionCode. Bump the build number for every release upload.
-version: 0.9.4+22
+version: 0.9.5+23
 
 environment:
   sdk: ^3.14.0
@@ -39,6 +39,7 @@ dependencies:
   connectivity_plus: 7.3.2
   pdf: 3.13.1
   path_provider: 2.1.6
+  printing: 5.15.1
 
 dev_dependencies:
   flutter_test:
@@ -51,6 +52,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    # Noto fonts (SIL OFL 1.1, see assets/fonts/OFL.txt) for printable PDFs
+    - assets/fonts/
   generate: true
 
 flutter_launcher_icons:

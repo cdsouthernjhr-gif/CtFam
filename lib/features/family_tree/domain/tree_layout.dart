@@ -3,17 +3,30 @@ import 'tree_models.dart';
 /// Positions of the tree cards (top-left corners) and the canvas size, shared
 /// by the on-screen chart and the PDF export so both look the same.
 class TreeLayout {
-  TreeLayout._(this.positions, this.width, this.height);
+  TreeLayout._(this.positions, this.width, this.height, this.cw, this.ch, this.gx);
 
+  // Screen card geometry (the defaults).
   static const cardW = 116.0;
   static const cardH = 108.0;
   static const gapX = 20.0;
   static const gapY = 64.0;
   static const pad = 24.0;
 
-  factory TreeLayout.of(TreeData tree) {
+  /// Card and gap sizes of this layout (print uses smaller cards).
+  final double cw;
+  final double ch;
+  final double gx;
+
+  factory TreeLayout.of(
+    TreeData tree, {
+    double cardW = cardW,
+    double cardH = cardH,
+    double gapX = gapX,
+    double gapY = gapY,
+    double pad = pad,
+  }) {
     final slots = tree.layoutSlots();
-    if (slots.isEmpty) return TreeLayout._(const {}, pad * 2, pad * 2);
+    if (slots.isEmpty) return TreeLayout._(const {}, pad * 2, pad * 2, cardW, cardH, gapX);
     final minCol = slots.values.map((s) => s.col).reduce((a, b) => a < b ? a : b);
     final maxCol = slots.values.map((s) => s.col).reduce((a, b) => a > b ? a : b) - minCol;
     final maxGen = slots.values.map((s) => s.gen).reduce((a, b) => a > b ? a : b);
@@ -25,6 +38,9 @@ class TreeLayout {
       pos,
       pad * 2 + (maxCol + 1) * cardW + maxCol * gapX,
       pad * 2 + (maxGen + 1) * cardH + maxGen * gapY,
+      cardW,
+      cardH,
+      gapX,
     );
   }
 
@@ -44,7 +60,7 @@ class TreeLayout {
       if (a == null || b == null) continue;
       final left = a.x < b.x ? a : b, right = a.x < b.x ? b : a;
       out.add((
-        points: [(x: left.x + cardW, y: left.y + cardH / 2), (x: right.x, y: right.y + cardH / 2)],
+        points: [(x: left.x + cw, y: left.y + ch / 2), (x: right.x, y: right.y + ch / 2)],
         kind: RelationKind.spouse,
         adoptive: false,
       ));
@@ -64,8 +80,8 @@ class TreeLayout {
         points: [
           (x: fromX, y: fromY),
           (x: fromX, y: midY),
-          (x: child.x + cardW / 2, y: midY),
-          (x: child.x + cardW / 2, y: child.y),
+          (x: child.x + cw / 2, y: midY),
+          (x: child.x + cw / 2, y: child.y),
         ],
         kind: RelationKind.parent,
         adoptive: adoptive,
@@ -79,16 +95,16 @@ class TreeLayout {
       if (parents.length == 2) {
         final p1 = positions[parents[0].personA]!, p2 = positions[parents[1].personA]!;
         final married = tree.spousesOf(parents[0].personA).any((s) => s.id == parents[1].personA);
-        final adjacent = p1.y == p2.y && ((p1.x - p2.x).abs() - (cardW + gapX)).abs() < 0.5;
+        final adjacent = p1.y == p2.y && ((p1.x - p2.x).abs() - (cw + gx)).abs() < 0.5;
         if (married && adjacent && parents[0].adoptive == parents[1].adoptive) {
           // from the middle of the spouse line
-          out.add(elbow((p1.x + p2.x) / 2 + cardW / 2, p1.y + cardH / 2, child, parents[0].adoptive));
+          out.add(elbow((p1.x + p2.x) / 2 + cw / 2, p1.y + ch / 2, child, parents[0].adoptive));
           continue;
         }
       }
       for (final r in parents) {
         final p = positions[r.personA]!;
-        out.add(elbow(p.x + cardW / 2, p.y + cardH, child, r.adoptive));
+        out.add(elbow(p.x + cw / 2, p.y + ch, child, r.adoptive));
       }
     }
     return out;

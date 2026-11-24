@@ -1507,5 +1507,75 @@
         "type": "int"
       }
     }
+  },
+  "treeGrandchildren": "Cucu",
+  "treeGreatGrandchildren": "Cicit",
+  "treeGreatGreatGrandchildren": "Piut",
+  "treeGenerationN": "Keturunan generasi ke-{n}",
+  "@treeGenerationN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "treePdfOptionsTitle": "Cetak salasilah",
+  "treePdfScope": "Apa yang hendak dicetak",
+  "treePdfScopeAll": "Seluruh salasilah",
+  "treePdfScopeBranch": "Satu cabang sahaja",
+  "treePdfScopeBranchPerPage": "Setiap cabang anak pada halaman sendiri",
+  "treePdfRoot": "Bermula daripada",
+  "treePdfGenerations": "Bilangan generasi",
+  "treePdfGenAll": "Semua",
+  "treePdfStyle": "Gaya",
+  "treePdfStyleChart": "Carta",
+  "treePdfStyleList": "Senarai",
+  "treePdfPhotos": "Sertakan gambar",
+  "treePdfFontNote": "Nama dalam tulisan Rumi dan Jawi dicetak dengan betul. Tulisan Cina, Jepun atau Korea belum disokong.",
+  "treePdfPreview": "Pratonton",
+  "treePdfPage": "Halaman {page} / {total}",
+  "@treePdfPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "treePdfPageShort": "hlm. {page}",
+  "@treePdfPageShort": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "treePdfContinues": "sambungan di halaman {page}",
+  "@treePdfContinues": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "treePdfOverview": "Peta halaman",
+  "treePdfOverviewHint": "Carta ini terlalu besar untuk satu halaman, jadi ia dicetak pada saiz penuh dalam beberapa halaman. Setiap kotak di bawah ialah satu halaman; susun mengikut label (A1, A2, B1…) untuk mencantumkannya.",
+  "treePdfBranchOf": "Cabang {name}",
+  "@treePdfBranchOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "treePdfGeneration": "G{n}",
+  "@treePdfGeneration": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   }
 }

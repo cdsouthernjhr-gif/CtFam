@@ -259,6 +259,54 @@ class TreeData {
     return _sorted(ids);
   }
 
+  /// All descendants by generation (1 = children, 2 = grandchildren, …),
+  /// without limit. Each person appears once, at the nearest generation;
+  /// cycles in bad data cannot loop.
+  Map<int, List<TreePerson>> descendantsByGeneration(String id) {
+    final out = <int, List<TreePerson>>{};
+    final seen = <String>{id};
+    var frontier = [id];
+    for (var gen = 1; frontier.isNotEmpty; gen++) {
+      final next = <TreePerson>[];
+      for (final p in frontier) {
+        for (final c in childrenOf(p)) {
+          if (seen.add(c.id)) next.add(c);
+        }
+      }
+      if (next.isEmpty) break;
+      next.sort((a, b) => a.birthDate.compareTo(b.birthDate));
+      out[gen] = next;
+      frontier = [for (final c in next) c.id];
+    }
+    return out;
+  }
+
+  /// The person, their spouses and every descendant with spouses, down to
+  /// [maxGenerations] below the person (null = all). Used to print a branch.
+  TreeData branch(String rootId, {int? maxGenerations}) {
+    final keep = <String>{rootId, ...spousesOf(rootId).map((s) => s.id)};
+    final byGen = descendantsByGeneration(rootId);
+    for (final e in byGen.entries) {
+      if (maxGenerations != null && e.key > maxGenerations) break;
+      for (final p in e.value) {
+        keep.add(p.id);
+        keep.addAll(spousesOf(p.id).map((s) => s.id));
+      }
+    }
+    return TreeData(
+      persons: [for (final id in keep) ?persons[id]],
+      relations: relations.where((r) => keep.contains(r.personA) && keep.contains(r.personB)).toList(),
+      familyNames: familyNames,
+    );
+  }
+
+  /// The oldest generation of the tree (people with no parents who are not
+  /// married into the tree), oldest first: the natural "root" of a print.
+  List<TreePerson> get roots {
+    bool inMarried(String id) => parentsOf(id).isEmpty && spousesOf(id).any((s) => parentsOf(s.id).isNotEmpty);
+    return _sorted(persons.keys.where((id) => parentsOf(id).isEmpty && !inMarried(id)));
+  }
+
   /// The confirmed link between two people (either direction), if any.
   TreeRelation? relationBetween(String a, String b) {
     for (final r in _confirmed) {

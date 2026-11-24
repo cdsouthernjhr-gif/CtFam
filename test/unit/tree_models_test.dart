@@ -195,6 +195,27 @@ void main() {
     expect(j.awaitingFamilies, ['C']);
   });
 
+  test('descendants without limit, by generation; branch extraction', () {
+    final t = TreeData(
+      persons: [
+        p('mak', 1930, g: Gender.female),
+        p('a', 1950),
+        p('b', 1975),
+        p('c', 2000),
+        p('d', 2024),
+        p('menantu', 1952),
+      ],
+      relations: [parent('mak', 'a'), parent('a', 'b'), parent('b', 'c'), parent('c', 'd'), spouse('a', 'menantu')],
+    );
+    final g = t.descendantsByGeneration('mak');
+    expect(g.keys, [1, 2, 3, 4]);
+    expect(g[4]!.single.id, 'd', reason: 'great-great-grandchild');
+    final br = t.branch('a', maxGenerations: 1);
+    expect(br.persons.keys.toSet(), {'a', 'menantu', 'b'});
+    expect(t.branch('a').persons.keys.toSet(), {'a', 'menantu', 'b', 'c', 'd'});
+    expect(t.roots.map((x) => x.id), ['mak']);
+  });
+
   test('notification taps may open the tree', () {
     const id = '0b9f3c9e-3f5e-4f0b-9d55-3c1c2b8d7e11';
     expect(safeNotificationRoute('/family-tree'), '/family-tree');

@@ -201,4 +201,15 @@ void main() {
     await tester.pumpAndSettle();
     verify(() => repo.deleteRelation('r3')).called(1);
   });
+
+  testWidgets('person page lists grandchildren (and deeper) by generation', (tester) async {
+    when(() => repo.relationship('F1', 'ayah')).thenAnswer((_) async => const Relationship(kind: 'blood', ms: 'bapa'));
+    tester.view.physicalSize = const Size(900, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await pumpLocalized(tester, const PersonScreen(personId: 'ayah'), overrides: overrides(FamilyRole.member));
+    expect(find.text('Anak'), findsOneWidget);
+    expect(find.text('Cucu (1)'), findsOneWidget);
+    expect(find.text('Faris'), findsOneWidget);
+  });
 }

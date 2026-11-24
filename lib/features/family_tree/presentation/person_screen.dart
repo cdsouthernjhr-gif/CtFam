@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/router/routes.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/l10n_ext.dart';
 import '../../../core/widgets/dialogs.dart';
@@ -17,6 +18,15 @@ import 'person_form_sheet.dart';
 import 'relation_sheet.dart';
 import 'tree_photo.dart';
 import 'tree_providers.dart';
+
+/// Malay/English name of the n-th generation below someone.
+String descendantLabel(AppLocalizations l10n, int generation) => switch (generation) {
+  1 => l10n.treeChildren,
+  2 => l10n.treeGrandchildren,
+  3 => l10n.treeGreatGrandchildren,
+  4 => l10n.treeGreatGreatGrandchildren,
+  _ => l10n.treeGenerationN(generation),
+};
 
 bool isTreeAdmin(FamilyRole? role) => role == FamilyRole.owner || role == FamilyRole.admin;
 
@@ -281,6 +291,9 @@ class _Body extends ConsumerWidget {
         group(l10n.treeSpouses, tree.spousesOf(person.id)),
         group(l10n.treeSiblings, tree.siblingsOf(person.id)),
         group(l10n.treeChildren, tree.childrenOf(person.id)),
+        // Grandchildren, great-grandchildren, … without limit.
+        for (final e in tree.descendantsByGeneration(person.id).entries.where((e) => e.key >= 2))
+          group('${descendantLabel(l10n, e.key)} (${e.value.length})', e.value),
         const SizedBox(height: AppSpacing.lg),
         OutlinedButton.icon(
           onPressed: () => showRelationSheet(
