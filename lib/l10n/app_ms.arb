@@ -1480,5 +1480,7 @@
       }
     }
   },
-  "treePdfLegend": "Garisan biru: pasangan · garisan putus-putus: anak angkat"
+  "treePdfLegend": "Garisan biru: pasangan · garisan putus-putus: anak angkat",
+  "myFamilies": "Keluarga saya",
+  "createAnotherFamily": "Cipta keluarga baharu"
 }

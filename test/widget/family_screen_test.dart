@@ -83,4 +83,13 @@ void main() {
     expect(find.text('Keluarkan daripada keluarga'), findsNothing);
     expect(find.text('Gantung ahli'), findsNothing);
   });
+
+  testWidgets('any member with one family can open "My families" to create or join another', (tester) async {
+    await pumpAs(tester, 'b', FamilyRole.member);
+    await tester.tap(find.byKey(const Key('family.menu')));
+    await tester.pumpAndSettle();
+    expect(find.text('Keluarga Abdullah'), findsWidgets, reason: 'current family listed');
+    expect(find.text('Cipta keluarga baharu'), findsOneWidget);
+    expect(find.text('Sertai dengan kod'), findsOneWidget);
+  });
 }

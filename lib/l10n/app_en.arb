@@ -614,5 +614,7 @@
   "treePdfPreparing": "Preparing the family tree PDF…",
   "treePdfTitle": "Family tree: {name}",
   "treePdfGenerated": "Generated on {date} by FamilySync",
-  "treePdfLegend": "Blue line: spouses · dashed line: adoptive"
+  "treePdfLegend": "Blue line: spouses · dashed line: adoptive",
+  "myFamilies": "My families",
+  "createAnotherFamily": "Create a new family"
 }

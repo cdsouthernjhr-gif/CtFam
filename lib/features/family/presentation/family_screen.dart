@@ -41,20 +41,47 @@ class FamilyScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(family.value?.name ?? l10n.navFamily),
         actions: [
-          if (session.activeMemberships.length > 1)
-            PopupMenuButton<String>(
-              tooltip: l10n.switchFamily,
-              icon: const Icon(Icons.swap_horiz),
-              onSelected: (id) => ref.read(sessionControllerProvider.notifier).switchFamily(id),
-              itemBuilder: (_) => [
-                for (final m in session.activeMemberships)
-                  CheckedPopupMenuItem(
-                    value: m.familyId,
-                    checked: m.familyId == familyId,
-                    child: Text(m.family?.name ?? ''),
-                  ),
-              ],
-            ),
+          // My families: switch, create another, or join one with a code.
+          PopupMenuButton<String>(
+            key: const Key('family.menu'),
+            tooltip: l10n.myFamilies,
+            icon: const Icon(Icons.swap_horiz),
+            onSelected: (value) {
+              switch (value) {
+                case '__create':
+                  context.push(Routes.createFamily);
+                case '__join':
+                  context.push(Routes.join);
+                default:
+                  ref.read(sessionControllerProvider.notifier).switchFamily(value);
+              }
+            },
+            itemBuilder: (_) => [
+              for (final m in session.activeMemberships)
+                CheckedPopupMenuItem(
+                  value: m.familyId,
+                  checked: m.familyId == familyId,
+                  child: Text(m.family?.name ?? ''),
+                ),
+              const PopupMenuDivider(),
+              PopupMenuItem(
+                value: '__create',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.add_home_outlined),
+                  title: Text(l10n.createAnotherFamily),
+                ),
+              ),
+              PopupMenuItem(
+                value: '__join',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.qr_code_scanner),
+                  title: Text(l10n.joinWithCode),
+                ),
+              ),
+            ],
+          ),
           if (FamilyPermissions.canEditFamily(role))
             IconButton(
               tooltip: l10n.newAnnouncement,

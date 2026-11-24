@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.3] - 2026-11-24: Create or join another family from the app
+
+### Fixed
+- Creating a second family was only possible from the first-run screen; once in a family there was no
+  menu for it. The Family tab's ⇄ menu ("My families") is now always shown and lists your families plus
+  **Create a new family** and **Join with a code**. A new family becomes the active one, with you as owner.
+
 ## [0.9.2] - 2026-11-24: Family tree layout follows relationships
 
 ### Fixed
