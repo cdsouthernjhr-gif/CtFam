@@ -70,13 +70,52 @@ void main() {
     expect(g['faris'], 3);
   });
 
-  test('layout rows keep spouses adjacent and siblings by birth', () {
-    final rows = tree.layoutRows();
-    expect(rows, hasLength(4));
-    expect(rows[1], ['ayah', 'ibu']);
-    final row2 = rows[2];
-    expect(row2.indexOf('salmah'), row2.indexOf('saya') + 1);
-    expect(row2.indexOf('hasan') < row2.indexOf('siti'), isTrue);
+  test('layout: spouses adjacent, siblings by birth, every card in its own slot', () {
+    final slots = tree.layoutSlots();
+    expect(slots['ibu']!.col, slots['ayah']!.col + 1);
+    expect(slots['salmah']!.col, slots['saya']!.col + 1, reason: 'in-married spouse right of the partner');
+    expect(slots['hasan']!.col < slots['siti']!.col && slots['siti']!.col < slots['saya']!.col, isTrue);
+    expect(slots['faris']!.gen, 3);
+    final taken = <String>{};
+    for (final s in slots.values) {
+      expect(taken.add('${s.gen}:${s.col}'), isTrue, reason: 'no two cards in the same slot');
+    }
+  });
+
+  test('older in-married spouse of the youngest sibling stays beside them; children sit under the couple', () {
+    // Ayah + Ibu -> Along (1980), Angah (1985), Adik (1990). Adik marries Suami (1970, older than everyone).
+    final t = TreeData(
+      persons: [
+        p('ayah', 1950),
+        p('ibu', 1952, g: Gender.female),
+        p('along', 1980),
+        p('angah', 1985),
+        p('adik', 1990, g: Gender.female),
+        p('suami', 1970),
+        p('cucu1', 2015),
+        p('cucu2', 2018),
+        p('anakAlong', 2010),
+      ],
+      relations: [
+        spouse('ayah', 'ibu'),
+        for (final c in ['along', 'angah', 'adik']) ...[parent('ayah', c), parent('ibu', c)],
+        spouse('adik', 'suami'),
+        parent('adik', 'cucu1'),
+        parent('suami', 'cucu1'),
+        parent('adik', 'cucu2'),
+        parent('suami', 'cucu2'),
+        parent('along', 'anakAlong'),
+      ],
+    );
+    final s = t.layoutSlots();
+    expect(s['suami']!.col, s['adik']!.col + 1, reason: 'not placed by age among the siblings');
+    expect(s['along']!.col < s['angah']!.col && s['angah']!.col < s['adik']!.col, isTrue);
+    final coupleMid = (s['adik']!.col + s['suami']!.col) / 2;
+    final kidsMid = (s['cucu1']!.col + s['cucu2']!.col) / 2;
+    expect(kidsMid, coupleMid, reason: 'children centred under their parents');
+    expect(s['anakAlong']!.col < s['cucu1']!.col, isTrue, reason: 'cousins stay under their own parents');
+    final parentsMid = (s['ayah']!.col + s['ibu']!.col) / 2;
+    expect(parentsMid > s['along']!.col && parentsMid < s['suami']!.col, isTrue, reason: 'grandparents centred');
   });
 
   test('age and birthdays (29 Feb on 28 Feb in common years); deceased skipped', () {

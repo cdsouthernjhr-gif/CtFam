@@ -12,50 +12,85 @@ class TreeLayout {
   static const pad = 24.0;
 
   factory TreeLayout.of(TreeData tree) {
-    final rows = tree.layoutRows();
-    final widest = rows.fold<int>(0, (m, r) => r.length > m ? r.length : m);
-    final width = pad * 2 + widest * cardW + (widest > 0 ? widest - 1 : 0) * gapX;
-    final height = pad * 2 + rows.length * cardH + (rows.isNotEmpty ? rows.length - 1 : 0) * gapY;
-    final pos = <String, ({double x, double y})>{};
-    for (var g = 0; g < rows.length; g++) {
-      final rowW = rows[g].length * cardW + (rows[g].length - 1) * gapX;
-      final startX = (width - rowW) / 2;
-      for (var i = 0; i < rows[g].length; i++) {
-        pos[rows[g][i]] = (x: startX + i * (cardW + gapX), y: pad + g * (cardH + gapY));
-      }
-    }
-    return TreeLayout._(pos, width, height);
+    final slots = tree.layoutSlots();
+    if (slots.isEmpty) return TreeLayout._(const {}, pad * 2, pad * 2);
+    final minCol = slots.values.map((s) => s.col).reduce((a, b) => a < b ? a : b);
+    final maxCol = slots.values.map((s) => s.col).reduce((a, b) => a > b ? a : b) - minCol;
+    final maxGen = slots.values.map((s) => s.gen).reduce((a, b) => a > b ? a : b);
+    final pos = {
+      for (final e in slots.entries)
+        e.key: (x: pad + (e.value.col - minCol) * (cardW + gapX), y: pad + e.value.gen * (cardH + gapY)),
+    };
+    return TreeLayout._(
+      pos,
+      pad * 2 + (maxCol + 1) * cardW + maxCol * gapX,
+      pad * 2 + (maxGen + 1) * cardH + maxGen * gapY,
+    );
   }
 
   final Map<String, ({double x, double y})> positions;
   final double width;
   final double height;
 
-  /// Connector polylines: parent→child as an elbow (4 points), spouses as a
-  /// straight line (2 points) between facing card edges.
-  List<({List<({double x, double y})> points, RelationKind kind, bool adoptive})> links(TreeData tree) => [
-    for (final r in tree.relations.where((r) => r.confirmed))
-      if (positions[r.personA] case final a?)
-        if (positions[r.personB] case final b?)
-          if (r.kind == RelationKind.spouse)
-            (
-              points: [
-                (x: (a.x < b.x ? a.x : b.x) + cardW, y: a.y + cardH / 2),
-                (x: a.x < b.x ? b.x : a.x, y: b.y + cardH / 2),
-              ],
-              kind: r.kind,
-              adoptive: false,
-            )
-          else
-            (
-              points: [
-                (x: a.x + cardW / 2, y: a.y + cardH),
-                (x: a.x + cardW / 2, y: a.y + cardH + (b.y - a.y - cardH) / 2),
-                (x: b.x + cardW / 2, y: a.y + cardH + (b.y - a.y - cardH) / 2),
-                (x: b.x + cardW / 2, y: b.y),
-              ],
-              kind: r.kind,
-              adoptive: r.adoptive,
-            ),
-  ];
+  /// Connector polylines. Spouses: a straight line between facing card
+  /// edges. Children: one elbow per child, starting from the middle of their
+  /// parents' couple when both parents are married and side by side
+  /// (classic family-tree style), otherwise from each parent.
+  List<({List<({double x, double y})> points, RelationKind kind, bool adoptive})> links(TreeData tree) {
+    final out = <({List<({double x, double y})> points, RelationKind kind, bool adoptive})>[];
+    final confirmed = tree.relations.where((r) => r.confirmed).toList();
+    for (final r in confirmed.where((r) => r.kind == RelationKind.spouse)) {
+      final a = positions[r.personA], b = positions[r.personB];
+      if (a == null || b == null) continue;
+      final left = a.x < b.x ? a : b, right = a.x < b.x ? b : a;
+      out.add((
+        points: [(x: left.x + cardW, y: left.y + cardH / 2), (x: right.x, y: right.y + cardH / 2)],
+        kind: RelationKind.spouse,
+        adoptive: false,
+      ));
+    }
+    final byChild = <String, List<TreeRelation>>{};
+    for (final r in confirmed.where((r) => r.kind == RelationKind.parent)) {
+      byChild.putIfAbsent(r.personB, () => []).add(r);
+    }
+    ({List<({double x, double y})> points, RelationKind kind, bool adoptive}) elbow(
+      double fromX,
+      double fromY,
+      ({double x, double y}) child,
+      bool adoptive,
+    ) {
+      final midY = fromY + (child.y - fromY) / 2;
+      return (
+        points: [
+          (x: fromX, y: fromY),
+          (x: fromX, y: midY),
+          (x: child.x + cardW / 2, y: midY),
+          (x: child.x + cardW / 2, y: child.y),
+        ],
+        kind: RelationKind.parent,
+        adoptive: adoptive,
+      );
+    }
+
+    for (final e in byChild.entries) {
+      final child = positions[e.key];
+      if (child == null) continue;
+      final parents = e.value.where((r) => positions[r.personA] != null).toList();
+      if (parents.length == 2) {
+        final p1 = positions[parents[0].personA]!, p2 = positions[parents[1].personA]!;
+        final married = tree.spousesOf(parents[0].personA).any((s) => s.id == parents[1].personA);
+        final adjacent = p1.y == p2.y && ((p1.x - p2.x).abs() - (cardW + gapX)).abs() < 0.5;
+        if (married && adjacent && parents[0].adoptive == parents[1].adoptive) {
+          // from the middle of the spouse line
+          out.add(elbow((p1.x + p2.x) / 2 + cardW / 2, p1.y + cardH / 2, child, parents[0].adoptive));
+          continue;
+        }
+      }
+      for (final r in parents) {
+        final p = positions[r.personA]!;
+        out.add(elbow(p.x + cardW / 2, p.y + cardH, child, r.adoptive));
+      }
+    }
+    return out;
+  }
 }

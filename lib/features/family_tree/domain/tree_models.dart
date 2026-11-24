@@ -309,44 +309,70 @@ class TreeData {
     return {for (final e in gen.entries) e.key: e.value - minGen};
   }
 
-  /// Rows of person ids, top generation first; siblings ordered by birth,
-  /// grouped under their parents; spouses placed next to each other.
-  List<List<String>> layoutRows() {
+  /// Card slots for the chart, decided by the relationships (not by age):
+  ///  * a person and their in-married spouse(s) (spouses with no parents in
+  ///    the tree) form a unit and always sit side by side;
+  ///  * a unit's children are laid out below it, siblings in birth order, and
+  ///    the unit is centred over them;
+  ///  * separate trees (e.g. the in-laws' parents) sit side by side.
+  /// [col] is in card slots (fractional when centred); [gen] is the row.
+  Map<String, ({double col, int gen})> layoutSlots() {
     final gen = generations();
-    if (gen.isEmpty) return const [];
-    final maxGen = gen.values.reduce((a, b) => a > b ? a : b);
-    final rows = <List<String>>[];
-    for (var g = 0; g <= maxGen; g++) {
-      final ids = gen.entries.where((e) => e.value == g).map((e) => e.key).toList();
-      double anchor(String id) {
-        // Position of the parents in the row above (or of a spouse's parents).
-        if (rows.isEmpty) return 0;
-        final above = rows.last;
-        final candidates = [
-          ...parentsOf(id).map((p) => above.indexOf(p.id)),
-          for (final s in spousesOf(id)) ...parentsOf(s.id).map((p) => above.indexOf(p.id)),
-        ].where((i) => i >= 0).toList();
-        if (candidates.isEmpty) return double.infinity;
-        return candidates.reduce((a, b) => a < b ? a : b).toDouble();
-      }
+    final col = <String, double>{};
+    final placed = <String>{};
+    int byBirth(String a, String b) {
+      final c = persons[a]!.birthDate.compareTo(persons[b]!.birthDate);
+      return c != 0 ? c : a.compareTo(b);
+    }
 
-      ids.sort((a, b) {
-        final c = anchor(a).compareTo(anchor(b));
-        if (c != 0) return c;
-        return persons[a]!.birthDate.compareTo(persons[b]!.birthDate);
-      });
-      // Keep spouses adjacent: place each in-married spouse right after their partner.
-      final ordered = <String>[];
-      for (final id in ids) {
-        if (ordered.contains(id)) continue;
-        ordered.add(id);
-        for (final s in spousesOf(id)) {
-          if (gen[s.id] == g && !ordered.contains(s.id) && parentsOf(s.id).isEmpty) ordered.add(s.id);
+    bool inMarried(String id) => parentsOf(id).isEmpty && spousesOf(id).any((s) => parentsOf(s.id).isNotEmpty);
+
+    // Places [id]'s unit and all descendants from column [left]; returns the width used.
+    double place(String id, double left) {
+      final unit = <String>[id];
+      placed.add(id);
+      for (final s in spousesOf(id)) {
+        if (!placed.contains(s.id) && parentsOf(s.id).isEmpty) {
+          unit.add(s.id);
+          placed.add(s.id);
         }
       }
-      rows.add(ordered);
+      final kids = {for (final m in unit) ...childrenOf(m).map((c) => c.id)}.where((k) => !placed.contains(k)).toList()
+        ..sort(byBirth);
+      var cursor = left;
+      final below = <String>[];
+      for (final k in kids) {
+        if (placed.contains(k)) continue;
+        final before = col.keys.toSet();
+        cursor += place(k, cursor);
+        below.addAll(col.keys.where((x) => !before.contains(x)));
+      }
+      final childWidth = cursor - left;
+      final unitWidth = unit.length.toDouble();
+      if (childWidth >= unitWidth) {
+        final start = left + (childWidth - unitWidth) / 2;
+        for (var i = 0; i < unit.length; i++) {
+          col[unit[i]] = start + i;
+        }
+        return childWidth;
+      }
+      for (var i = 0; i < unit.length; i++) {
+        col[unit[i]] = left + i;
+      }
+      final shift = (unitWidth - childWidth) / 2;
+      for (final x in below) {
+        col[x] = col[x]! + shift;
+      }
+      return unitWidth;
     }
-    return rows;
+
+    var cursor = 0.0;
+    final roots = persons.keys.where((id) => parentsOf(id).isEmpty && !inMarried(id)).toList()..sort(byBirth);
+    for (final r in [...roots, ...persons.keys]) {
+      if (placed.contains(r)) continue;
+      cursor += place(r, cursor) + 0.5; // a little air between separate trees
+    }
+    return {for (final e in col.entries) e.key: (col: e.value, gen: gen[e.key] ?? 0)};
   }
 
   /// Living people whose birthday falls within [days] days from [today]

@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.2] - 2026-11-24: Family tree layout follows relationships
+
+### Fixed
+- **Spouse placed far from their partner, lines crossing** (reported by the owner): rows were sorted by
+  birth date, so an in-married spouse older than the siblings was put before the eldest sibling. The chart
+  now uses a relationship-based ("tidy tree") layout: a person and their in-married spouse(s) are one unit
+  and always side by side; children are laid out under their parents in birth order and the couple is
+  centred over them; separate trees (e.g. in-laws) sit side by side. Age only orders siblings.
+- Children of a married couple get **one** connector from the middle of the couple (instead of one from
+  each parent), so lines no longer cross.
+- PDF: initials in the avatar circles were invisible (PDF ignores the fill's alpha); now a light tint.
+- Verified by rendering the owner's scenario (older husband of the youngest sibling) to PDF/PNG.
+
 ## [0.9.1] - 2026-11-24: Family tree chart editing, PDF, zoom
 
 ### Added

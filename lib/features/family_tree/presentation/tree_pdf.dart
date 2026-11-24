@@ -106,7 +106,12 @@ pw.Widget _card(TreePerson p, Uint8List? photo, PdfColor male, PdfColor female) 
           height: 34,
           decoration: pw.BoxDecoration(
             shape: pw.BoxShape.circle,
-            color: PdfColor(accent.red, accent.green, accent.blue, 0.15),
+            // light tint (PDF fills ignore alpha here)
+            color: PdfColor(
+              accent.red + (1 - accent.red) * 0.85,
+              accent.green + (1 - accent.green) * 0.85,
+              accent.blue + (1 - accent.blue) * 0.85,
+            ),
             image: photo == null ? null : pw.DecorationImage(image: pw.MemoryImage(photo), fit: pw.BoxFit.cover),
           ),
           alignment: pw.Alignment.center,

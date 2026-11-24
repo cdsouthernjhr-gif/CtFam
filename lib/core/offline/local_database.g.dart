@@ -3,8 +3,7 @@
 part of 'local_database.dart';
 
 // ignore_for_file: type=lint
-class $CacheEntriesTable extends CacheEntries
-    with TableInfo<$CacheEntriesTable, CacheEntry> {
+class $CacheEntriesTable extends CacheEntries with TableInfo<$CacheEntriesTable, CacheEntry> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -36,9 +35,7 @@ class $CacheEntriesTable extends CacheEntries
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta('updatedAt');
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
     'updated_at',
@@ -55,41 +52,26 @@ class $CacheEntriesTable extends CacheEntries
   String get actualTableName => $name;
   static const String $name = 'cache_entries';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<CacheEntry> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<CacheEntry> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('owner')) {
-      context.handle(
-        _ownerMeta,
-        owner.isAcceptableOrUnknown(data['owner']!, _ownerMeta),
-      );
+      context.handle(_ownerMeta, owner.isAcceptableOrUnknown(data['owner']!, _ownerMeta));
     } else if (isInserting) {
       context.missing(_ownerMeta);
     }
     if (data.containsKey('key')) {
-      context.handle(
-        _keyMeta,
-        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
-      );
+      context.handle(_keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
     } else if (isInserting) {
       context.missing(_keyMeta);
     }
     if (data.containsKey('json')) {
-      context.handle(
-        _jsonMeta,
-        json.isAcceptableOrUnknown(data['json']!, _jsonMeta),
-      );
+      context.handle(_jsonMeta, json.isAcceptableOrUnknown(data['json']!, _jsonMeta));
     } else if (isInserting) {
       context.missing(_jsonMeta);
     }
     if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
+      context.handle(_updatedAtMeta, updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
@@ -102,22 +84,10 @@ class $CacheEntriesTable extends CacheEntries
   CacheEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CacheEntry(
-      owner: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}owner'],
-      )!,
-      key: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}key'],
-      )!,
-      json: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}json'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
+      owner: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}owner'])!,
+      key: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}key'])!,
+      json: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}json'])!,
+      updatedAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
     );
   }
 
@@ -132,12 +102,7 @@ class CacheEntry extends DataClass implements Insertable<CacheEntry> {
   final String key;
   final String json;
   final DateTime updatedAt;
-  const CacheEntry({
-    required this.owner,
-    required this.key,
-    required this.json,
-    required this.updatedAt,
-  });
+  const CacheEntry({required this.owner, required this.key, required this.json, required this.updatedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -149,18 +114,10 @@ class CacheEntry extends DataClass implements Insertable<CacheEntry> {
   }
 
   CacheEntriesCompanion toCompanion(bool nullToAbsent) {
-    return CacheEntriesCompanion(
-      owner: Value(owner),
-      key: Value(key),
-      json: Value(json),
-      updatedAt: Value(updatedAt),
-    );
+    return CacheEntriesCompanion(owner: Value(owner), key: Value(key), json: Value(json), updatedAt: Value(updatedAt));
   }
 
-  factory CacheEntry.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory CacheEntry.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CacheEntry(
       owner: serializer.fromJson<String>(json['owner']),
@@ -180,12 +137,7 @@ class CacheEntry extends DataClass implements Insertable<CacheEntry> {
     };
   }
 
-  CacheEntry copyWith({
-    String? owner,
-    String? key,
-    String? json,
-    DateTime? updatedAt,
-  }) => CacheEntry(
+  CacheEntry copyWith({String? owner, String? key, String? json, DateTime? updatedAt}) => CacheEntry(
     owner: owner ?? this.owner,
     key: key ?? this.key,
     json: json ?? this.json,
@@ -312,8 +264,7 @@ class CacheEntriesCompanion extends UpdateCompanion<CacheEntry> {
   }
 }
 
-class $OutboxOpsTable extends OutboxOps
-    with TableInfo<$OutboxOpsTable, OutboxOp> {
+class $OutboxOpsTable extends OutboxOps with TableInfo<$OutboxOpsTable, OutboxOp> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -327,9 +278,7 @@ class $OutboxOpsTable extends OutboxOps
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    defaultConstraints: GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
   );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
@@ -359,9 +308,7 @@ class $OutboxOpsTable extends OutboxOps
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _entityIdMeta = const VerificationMeta(
-    'entityId',
-  );
+  static const VerificationMeta _entityIdMeta = const VerificationMeta('entityId');
   @override
   late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
     'entity_id',
@@ -379,9 +326,7 @@ class $OutboxOpsTable extends OutboxOps
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _payloadMeta = const VerificationMeta(
-    'payload',
-  );
+  static const VerificationMeta _payloadMeta = const VerificationMeta('payload');
   @override
   late final GeneratedColumn<String> payload = GeneratedColumn<String>(
     'payload',
@@ -390,9 +335,7 @@ class $OutboxOpsTable extends OutboxOps
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
     'created_at',
@@ -401,9 +344,7 @@ class $OutboxOpsTable extends OutboxOps
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _attemptsMeta = const VerificationMeta(
-    'attempts',
-  );
+  static const VerificationMeta _attemptsMeta = const VerificationMeta('attempts');
   @override
   late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
     'attempts',
@@ -423,9 +364,7 @@ class $OutboxOpsTable extends OutboxOps
     requiredDuringInsert: false,
     defaultValue: const Constant('pending'),
   );
-  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
-    'lastError',
-  );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta('lastError');
   @override
   late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
     'last_error',
@@ -454,17 +393,11 @@ class $OutboxOpsTable extends OutboxOps
   String get actualTableName => $name;
   static const String $name = 'outbox_ops';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<OutboxOp> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<OutboxOp> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('seq')) {
-      context.handle(
-        _seqMeta,
-        seq.isAcceptableOrUnknown(data['seq']!, _seqMeta),
-      );
+      context.handle(_seqMeta, seq.isAcceptableOrUnknown(data['seq']!, _seqMeta));
     }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
@@ -472,70 +405,43 @@ class $OutboxOpsTable extends OutboxOps
       context.missing(_idMeta);
     }
     if (data.containsKey('owner')) {
-      context.handle(
-        _ownerMeta,
-        owner.isAcceptableOrUnknown(data['owner']!, _ownerMeta),
-      );
+      context.handle(_ownerMeta, owner.isAcceptableOrUnknown(data['owner']!, _ownerMeta));
     } else if (isInserting) {
       context.missing(_ownerMeta);
     }
     if (data.containsKey('kind')) {
-      context.handle(
-        _kindMeta,
-        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
-      );
+      context.handle(_kindMeta, kind.isAcceptableOrUnknown(data['kind']!, _kindMeta));
     } else if (isInserting) {
       context.missing(_kindMeta);
     }
     if (data.containsKey('entity_id')) {
-      context.handle(
-        _entityIdMeta,
-        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
-      );
+      context.handle(_entityIdMeta, entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta));
     } else if (isInserting) {
       context.missing(_entityIdMeta);
     }
     if (data.containsKey('scope')) {
-      context.handle(
-        _scopeMeta,
-        scope.isAcceptableOrUnknown(data['scope']!, _scopeMeta),
-      );
+      context.handle(_scopeMeta, scope.isAcceptableOrUnknown(data['scope']!, _scopeMeta));
     } else if (isInserting) {
       context.missing(_scopeMeta);
     }
     if (data.containsKey('payload')) {
-      context.handle(
-        _payloadMeta,
-        payload.isAcceptableOrUnknown(data['payload']!, _payloadMeta),
-      );
+      context.handle(_payloadMeta, payload.isAcceptableOrUnknown(data['payload']!, _payloadMeta));
     } else if (isInserting) {
       context.missing(_payloadMeta);
     }
     if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
+      context.handle(_createdAtMeta, createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
     if (data.containsKey('attempts')) {
-      context.handle(
-        _attemptsMeta,
-        attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta),
-      );
+      context.handle(_attemptsMeta, attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta));
     }
     if (data.containsKey('status')) {
-      context.handle(
-        _statusMeta,
-        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
-      );
+      context.handle(_statusMeta, status.isAcceptableOrUnknown(data['status']!, _statusMeta));
     }
     if (data.containsKey('last_error')) {
-      context.handle(
-        _lastErrorMeta,
-        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
-      );
+      context.handle(_lastErrorMeta, lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta));
     }
     return context;
   }
@@ -546,50 +452,17 @@ class $OutboxOpsTable extends OutboxOps
   OutboxOp map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return OutboxOp(
-      seq: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}seq'],
-      )!,
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      owner: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}owner'],
-      )!,
-      kind: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}kind'],
-      )!,
-      entityId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}entity_id'],
-      )!,
-      scope: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}scope'],
-      )!,
-      payload: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}payload'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      attempts: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}attempts'],
-      )!,
-      status: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}status'],
-      )!,
-      lastError: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}last_error'],
-      ),
+      seq: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}seq'])!,
+      id: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      owner: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}owner'])!,
+      kind: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}kind'])!,
+      entityId: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}entity_id'])!,
+      scope: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}scope'])!,
+      payload: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}payload'])!,
+      createdAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      attempts: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}attempts'])!,
+      status: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      lastError: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}last_error']),
     );
   }
 
@@ -662,16 +535,11 @@ class OutboxOp extends DataClass implements Insertable<OutboxOp> {
       createdAt: Value(createdAt),
       attempts: Value(attempts),
       status: Value(status),
-      lastError: lastError == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastError),
+      lastError: lastError == null && nullToAbsent ? const Value.absent() : Value(lastError),
     );
   }
 
-  factory OutboxOp.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory OutboxOp.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return OutboxOp(
       seq: serializer.fromJson<int>(json['seq']),
@@ -765,19 +633,8 @@ class OutboxOp extends DataClass implements Insertable<OutboxOp> {
   }
 
   @override
-  int get hashCode => Object.hash(
-    seq,
-    id,
-    owner,
-    kind,
-    entityId,
-    scope,
-    payload,
-    createdAt,
-    attempts,
-    status,
-    lastError,
-  );
+  int get hashCode =>
+      Object.hash(seq, id, owner, kind, entityId, scope, payload, createdAt, attempts, status, lastError);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -959,31 +816,27 @@ abstract class _$LocalDatabase extends GeneratedDatabase {
   late final $CacheEntriesTable cacheEntries = $CacheEntriesTable(this);
   late final $OutboxOpsTable outboxOps = $OutboxOpsTable(this);
   @override
-  Iterable<TableInfo<Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  Iterable<TableInfo<Table, Object?>> get allTables => allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [cacheEntries, outboxOps];
 }
 
-typedef $$CacheEntriesTableCreateCompanionBuilder =
-    CacheEntriesCompanion Function({
-      required String owner,
-      required String key,
-      required String json,
-      required DateTime updatedAt,
-      Value<int> rowid,
-    });
-typedef $$CacheEntriesTableUpdateCompanionBuilder =
-    CacheEntriesCompanion Function({
-      Value<String> owner,
-      Value<String> key,
-      Value<String> json,
-      Value<DateTime> updatedAt,
-      Value<int> rowid,
-    });
+typedef $$CacheEntriesTableCreateCompanionBuilder = CacheEntriesCompanion Function({
+  required String owner,
+  required String key,
+  required String json,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$CacheEntriesTableUpdateCompanionBuilder = CacheEntriesCompanion Function({
+  Value<String> owner,
+  Value<String> key,
+  Value<String> json,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
 
-class $$CacheEntriesTableFilterComposer
-    extends Composer<_$LocalDatabase, $CacheEntriesTable> {
+class $$CacheEntriesTableFilterComposer extends Composer<_$LocalDatabase, $CacheEntriesTable> {
   $$CacheEntriesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -991,29 +844,18 @@ class $$CacheEntriesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get owner => $composableBuilder(
-    column: $table.owner,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get owner =>
+      $composableBuilder(column: $table.owner, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get key => $composableBuilder(column: $table.key, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get json => $composableBuilder(
-    column: $table.json,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get json => $composableBuilder(column: $table.json, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnFilters(column));
 }
 
-class $$CacheEntriesTableOrderingComposer
-    extends Composer<_$LocalDatabase, $CacheEntriesTable> {
+class $$CacheEntriesTableOrderingComposer extends Composer<_$LocalDatabase, $CacheEntriesTable> {
   $$CacheEntriesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1021,29 +863,20 @@ class $$CacheEntriesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get owner => $composableBuilder(
-    column: $table.owner,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get owner =>
+      $composableBuilder(column: $table.owner, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get json => $composableBuilder(
-    column: $table.json,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get json =>
+      $composableBuilder(column: $table.json, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 }
 
-class $$CacheEntriesTableAnnotationComposer
-    extends Composer<_$LocalDatabase, $CacheEntriesTable> {
+class $$CacheEntriesTableAnnotationComposer extends Composer<_$LocalDatabase, $CacheEntriesTable> {
   $$CacheEntriesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1051,17 +884,13 @@ class $$CacheEntriesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get owner =>
-      $composableBuilder(column: $table.owner, builder: (column) => column);
+  GeneratedColumn<String> get owner => $composableBuilder(column: $table.owner, builder: (column) => column);
 
-  GeneratedColumn<String> get key =>
-      $composableBuilder(column: $table.key, builder: (column) => column);
+  GeneratedColumn<String> get key => $composableBuilder(column: $table.key, builder: (column) => column);
 
-  GeneratedColumn<String> get json =>
-      $composableBuilder(column: $table.json, builder: (column) => column);
+  GeneratedColumn<String> get json => $composableBuilder(column: $table.json, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+  GeneratedColumn<DateTime> get updatedAt => $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 }
 
 class $$CacheEntriesTableTableManager
@@ -1075,10 +904,7 @@ class $$CacheEntriesTableTableManager
           $$CacheEntriesTableAnnotationComposer,
           $$CacheEntriesTableCreateCompanionBuilder,
           $$CacheEntriesTableUpdateCompanionBuilder,
-          (
-            CacheEntry,
-            BaseReferences<_$LocalDatabase, $CacheEntriesTable, CacheEntry>,
-          ),
+          (CacheEntry, BaseReferences<_$LocalDatabase, $CacheEntriesTable, CacheEntry>),
           CacheEntry,
           PrefetchHooks Function()
         > {
@@ -1087,49 +913,28 @@ class $$CacheEntriesTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$CacheEntriesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$CacheEntriesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$CacheEntriesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> owner = const Value.absent(),
-                Value<String> key = const Value.absent(),
-                Value<String> json = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CacheEntriesCompanion(
-                owner: owner,
-                key: key,
-                json: json,
-                updatedAt: updatedAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String owner,
-                required String key,
-                required String json,
-                required DateTime updatedAt,
-                Value<int> rowid = const Value.absent(),
-              }) => CacheEntriesCompanion.insert(
-                owner: owner,
-                key: key,
-                json: json,
-                updatedAt: updatedAt,
-                rowid: rowid,
-              ),
+          createFilteringComposer: () => $$CacheEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$CacheEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => $$CacheEntriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> owner = const Value.absent(),
+            Value<String> key = const Value.absent(),
+            Value<String> json = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) => CacheEntriesCompanion(owner: owner, key: key, json: json, updatedAt: updatedAt, rowid: rowid),
+          createCompanionCallback: ({
+            required String owner,
+            required String key,
+            required String json,
+            required DateTime updatedAt,
+            Value<int> rowid = const Value.absent(),
+          }) => CacheEntriesCompanion.insert(owner: owner, key: key, json: json, updatedAt: updatedAt, rowid: rowid),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
                   e.readTable<$CacheEntriesTable, CacheEntry>(table),
-                  BaseReferences<
-                    _$LocalDatabase,
-                    $CacheEntriesTable,
-                    CacheEntry
-                  >(db, table, e),
+                  BaseReferences<_$LocalDatabase, $CacheEntriesTable, CacheEntry>(db, table, e),
                 ),
               )
               .toList(),
@@ -1148,10 +953,7 @@ typedef $$CacheEntriesTableProcessedTableManager =
       $$CacheEntriesTableAnnotationComposer,
       $$CacheEntriesTableCreateCompanionBuilder,
       $$CacheEntriesTableUpdateCompanionBuilder,
-      (
-        CacheEntry,
-        BaseReferences<_$LocalDatabase, $CacheEntriesTable, CacheEntry>,
-      ),
+      (CacheEntry, BaseReferences<_$LocalDatabase, $CacheEntriesTable, CacheEntry>),
       CacheEntry,
       PrefetchHooks Function()
     >;
@@ -1182,8 +984,7 @@ typedef $$OutboxOpsTableUpdateCompanionBuilder = OutboxOpsCompanion Function({
   Value<String?> lastError,
 });
 
-class $$OutboxOpsTableFilterComposer
-    extends Composer<_$LocalDatabase, $OutboxOpsTable> {
+class $$OutboxOpsTableFilterComposer extends Composer<_$LocalDatabase, $OutboxOpsTable> {
   $$OutboxOpsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1191,64 +992,38 @@ class $$OutboxOpsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get seq => $composableBuilder(
-    column: $table.seq,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get seq => $composableBuilder(column: $table.seq, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get owner => $composableBuilder(
-    column: $table.owner,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get owner =>
+      $composableBuilder(column: $table.owner, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get kind => $composableBuilder(
-    column: $table.kind,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get kind => $composableBuilder(column: $table.kind, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get entityId => $composableBuilder(
-    column: $table.entityId,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get scope => $composableBuilder(
-    column: $table.scope,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get scope =>
+      $composableBuilder(column: $table.scope, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get payload => $composableBuilder(
-    column: $table.payload,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get payload =>
+      $composableBuilder(column: $table.payload, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get attempts => $composableBuilder(
-    column: $table.attempts,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get lastError => $composableBuilder(
-    column: $table.lastError,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => ColumnFilters(column));
 }
 
-class $$OutboxOpsTableOrderingComposer
-    extends Composer<_$LocalDatabase, $OutboxOpsTable> {
+class $$OutboxOpsTableOrderingComposer extends Composer<_$LocalDatabase, $OutboxOpsTable> {
   $$OutboxOpsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1256,64 +1031,39 @@ class $$OutboxOpsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get seq => $composableBuilder(
-    column: $table.seq,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get seq => $composableBuilder(column: $table.seq, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get owner => $composableBuilder(
-    column: $table.owner,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get owner =>
+      $composableBuilder(column: $table.owner, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get kind => $composableBuilder(
-    column: $table.kind,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get entityId => $composableBuilder(
-    column: $table.entityId,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get scope => $composableBuilder(
-    column: $table.scope,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get scope =>
+      $composableBuilder(column: $table.scope, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get payload => $composableBuilder(
-    column: $table.payload,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get payload =>
+      $composableBuilder(column: $table.payload, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get attempts => $composableBuilder(
-    column: $table.attempts,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get lastError => $composableBuilder(
-    column: $table.lastError,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => ColumnOrderings(column));
 }
 
-class $$OutboxOpsTableAnnotationComposer
-    extends Composer<_$LocalDatabase, $OutboxOpsTable> {
+class $$OutboxOpsTableAnnotationComposer extends Composer<_$LocalDatabase, $OutboxOpsTable> {
   $$OutboxOpsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1321,38 +1071,27 @@ class $$OutboxOpsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get seq =>
-      $composableBuilder(column: $table.seq, builder: (column) => column);
+  GeneratedColumn<int> get seq => $composableBuilder(column: $table.seq, builder: (column) => column);
 
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
+  GeneratedColumn<String> get id => $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get owner =>
-      $composableBuilder(column: $table.owner, builder: (column) => column);
+  GeneratedColumn<String> get owner => $composableBuilder(column: $table.owner, builder: (column) => column);
 
-  GeneratedColumn<String> get kind =>
-      $composableBuilder(column: $table.kind, builder: (column) => column);
+  GeneratedColumn<String> get kind => $composableBuilder(column: $table.kind, builder: (column) => column);
 
-  GeneratedColumn<String> get entityId =>
-      $composableBuilder(column: $table.entityId, builder: (column) => column);
+  GeneratedColumn<String> get entityId => $composableBuilder(column: $table.entityId, builder: (column) => column);
 
-  GeneratedColumn<String> get scope =>
-      $composableBuilder(column: $table.scope, builder: (column) => column);
+  GeneratedColumn<String> get scope => $composableBuilder(column: $table.scope, builder: (column) => column);
 
-  GeneratedColumn<String> get payload =>
-      $composableBuilder(column: $table.payload, builder: (column) => column);
+  GeneratedColumn<String> get payload => $composableBuilder(column: $table.payload, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+  GeneratedColumn<DateTime> get createdAt => $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  GeneratedColumn<int> get attempts =>
-      $composableBuilder(column: $table.attempts, builder: (column) => column);
+  GeneratedColumn<int> get attempts => $composableBuilder(column: $table.attempts, builder: (column) => column);
 
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
+  GeneratedColumn<String> get status => $composableBuilder(column: $table.status, builder: (column) => column);
 
-  GeneratedColumn<String> get lastError =>
-      $composableBuilder(column: $table.lastError, builder: (column) => column);
+  GeneratedColumn<String> get lastError => $composableBuilder(column: $table.lastError, builder: (column) => column);
 }
 
 class $$OutboxOpsTableTableManager
@@ -1366,10 +1105,7 @@ class $$OutboxOpsTableTableManager
           $$OutboxOpsTableAnnotationComposer,
           $$OutboxOpsTableCreateCompanionBuilder,
           $$OutboxOpsTableUpdateCompanionBuilder,
-          (
-            OutboxOp,
-            BaseReferences<_$LocalDatabase, $OutboxOpsTable, OutboxOp>,
-          ),
+          (OutboxOp, BaseReferences<_$LocalDatabase, $OutboxOpsTable, OutboxOp>),
           OutboxOp,
           PrefetchHooks Function()
         > {
@@ -1378,12 +1114,9 @@ class $$OutboxOpsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$OutboxOpsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$OutboxOpsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$OutboxOpsTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () => $$OutboxOpsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$OutboxOpsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => $$OutboxOpsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<int> seq = const Value.absent(),
@@ -1440,11 +1173,7 @@ class $$OutboxOpsTableTableManager
               .map(
                 (e) => (
                   e.readTable<$OutboxOpsTable, OutboxOp>(table),
-                  BaseReferences<_$LocalDatabase, $OutboxOpsTable, OutboxOp>(
-                    db,
-                    table,
-                    e,
-                  ),
+                  BaseReferences<_$LocalDatabase, $OutboxOpsTable, OutboxOp>(db, table, e),
                 ),
               )
               .toList(),
@@ -1471,8 +1200,6 @@ typedef $$OutboxOpsTableProcessedTableManager =
 class $LocalDatabaseManager {
   final _$LocalDatabase _db;
   $LocalDatabaseManager(this._db);
-  $$CacheEntriesTableTableManager get cacheEntries =>
-      $$CacheEntriesTableTableManager(_db, _db.cacheEntries);
-  $$OutboxOpsTableTableManager get outboxOps =>
-      $$OutboxOpsTableTableManager(_db, _db.outboxOps);
+  $$CacheEntriesTableTableManager get cacheEntries => $$CacheEntriesTableTableManager(_db, _db.cacheEntries);
+  $$OutboxOpsTableTableManager get outboxOps => $$OutboxOpsTableTableManager(_db, _db.outboxOps);
 }
