@@ -1482,5 +1482,30 @@
   },
   "treePdfLegend": "Garisan biru: pasangan · garisan putus-putus: anak angkat",
   "myFamilies": "Keluarga saya",
-  "createAnotherFamily": "Cipta keluarga baharu"
+  "createAnotherFamily": "Cipta keluarga baharu",
+  "birthdayTomorrow": "Esok 🎉 · {date} · {age} tahun",
+  "@birthdayTomorrow": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "birthdayInDays": "{days} hari lagi · {date} · {age} tahun",
+  "@birthdayInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      },
+      "age": {
+        "type": "int"
+      }
+    }
+  }
 }

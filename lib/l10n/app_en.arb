@@ -616,5 +616,7 @@
   "treePdfGenerated": "Generated on {date} by FamilySync",
   "treePdfLegend": "Blue line: spouses · dashed line: adoptive",
   "myFamilies": "My families",
-  "createAnotherFamily": "Create a new family"
+  "createAnotherFamily": "Create a new family",
+  "birthdayTomorrow": "Tomorrow 🎉 · {date} · turns {age}",
+  "birthdayInDays": "In {days} days · {date} · turns {age}"
 }

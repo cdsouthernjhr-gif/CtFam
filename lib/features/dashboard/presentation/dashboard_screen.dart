@@ -12,6 +12,7 @@ import '../../calendar/presentation/calendar_providers.dart';
 import '../../calendar/presentation/calendar_screen.dart';
 import '../../calendar/presentation/calendar_ui.dart';
 import '../../chat/presentation/chat_providers.dart';
+import '../../family_tree/presentation/birthday_tile.dart';
 import '../../family_tree/presentation/tree_providers.dart';
 import '../../chat/presentation/chat_screen.dart';
 import '../../family/domain/family_models.dart';
@@ -407,14 +408,10 @@ class _UpcomingBirthdays extends ConsumerWidget {
           child: Column(
             children: [
               for (final (p, day) in upcoming)
-                ListTile(
-                  leading: const Icon(Icons.cake_outlined),
-                  title: Text(p.fullName),
-                  subtitle: Text(
-                    day == today
-                        ? l10n.birthdayToday(p.ageOn(day))
-                        : l10n.birthdayOn(context.formatDate(day), p.ageOn(day)),
-                  ),
+                BirthdayTile(
+                  person: p,
+                  birthday: day,
+                  today: today,
                   onTap: () => context.push(Routes.treePerson(p.id)),
                 ),
             ],

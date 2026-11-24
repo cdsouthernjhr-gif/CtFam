@@ -50,6 +50,23 @@ Future<void> pumpLocalized(
   await tester.pumpAndSettle();
 }
 
+/// Like [pumpLocalized] but without settling (for never-ending animations).
+Future<void> pumpLocalizedNoSettle(WidgetTester tester, Widget child, {List<Override> overrides = const []}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [...offlineOverrides(), ...overrides],
+      child: MaterialApp(
+        theme: AppTheme.light(),
+        locale: const Locale('ms'),
+        supportedLocales: const [Locale('ms'), Locale('en')],
+        localizationsDelegates: const [AppLocalizations.delegate, ...GlobalMaterialLocalizations.delegates],
+        home: child,
+      ),
+    ),
+  );
+  await tester.pump();
+}
+
 User fakeUser(String id) => User(
   id: id,
   appMetadata: const {},

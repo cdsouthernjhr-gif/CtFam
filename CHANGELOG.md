@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.4] - 2026-11-24: Blinking birthday reminders on the dashboard
+
+### Added
+- "Upcoming birthdays": birthdays 7 days away or closer pulse (soft highlight behind the row, cake icon
+  grows and brightens; faster on the day) and show a countdown: "Hari ini 🎂", "Esok 🎉", "3 hari lagi".
+  Birthdays 8–30 days away stay plain. With the system "remove animations" setting on, the row is
+  highlighted without animating.
+
 ## [0.9.3] - 2026-11-24: Create or join another family from the app
 
 ### Fixed
