@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.9.1] - 2026-11-24: Family tree chart editing, PDF, zoom
+
+### Added
+- **Edit from the chart:** owner/admin long-press a card for View, Edit, Add parent / child / spouse and
+  Remove from tree (editing and removal only for people of a family they administer). Relations can be
+  removed from the person page (✕ on the chip) by an owner/admin of either family; both people stay.
+- **Download PDF:** the whole chart (same layout, photos, years, adoptive and spouse lines) as a PDF,
+  opened in the share sheet to save to Files/Drive, print or send. Page sized to the tree; names outside
+  Latin-1 are replaced so the built-in font can render them.
+- **Zoom:** pinch (0.2×–3×), + / − / fit-to-screen buttons, double-tap to zoom in or back to fit; the chart
+  opens fitted to the screen width.
+
+### Fixed (found by the new tests)
+- Zoom level was read with `getMaxScaleOnAxis()`, which includes the z axis (always 1), so zooming out
+  below 100% was miscalculated.
+- The long-press menu overflowed on small screens; it now scrolls.
+
 ## [0.9.0] - 2026-11-24: Linked families (rumpun)
 
 Owner decisions: owner/admin approve links (1b); everyone in the clan sees the whole tree incl. birth dates

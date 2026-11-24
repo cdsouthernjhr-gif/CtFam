@@ -600,5 +600,19 @@
   "eventShareClanHint": "Every family in the clan can see it and RSVP. Only your family can edit it.",
   "eventVisibleClan": "Shared with the whole clan",
   "calendarAllFamilies": "All my families",
-  "calendarThisFamily": "This family only"
+  "calendarThisFamily": "This family only",
+  "treeZoomIn": "Zoom in",
+  "treeZoomOut": "Zoom out",
+  "treeZoomFit": "Fit to screen",
+  "treeOpenPerson": "View details",
+  "treeAddParent": "Add parent",
+  "treeAddChild": "Add child",
+  "treeAddSpouse": "Add spouse",
+  "treeRemoveRelation": "Remove relation",
+  "treeRemoveRelationMessage": "The relation between {a} and {b} will be removed. Both people stay in the tree.",
+  "treeDownloadPdf": "Download PDF",
+  "treePdfPreparing": "Preparing the family tree PDF…",
+  "treePdfTitle": "Family tree: {name}",
+  "treePdfGenerated": "Generated on {date} by FamilySync",
+  "treePdfLegend": "Blue line: spouses · dashed line: adoptive"
 }

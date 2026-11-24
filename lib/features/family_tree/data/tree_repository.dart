@@ -206,6 +206,18 @@ class TreeRepository {
     await _removeQuietly(person.photoPath);
   });
 
+  /// Photo bytes for the PDF export; only JPEG/PNG (what PDF can embed).
+  Future<Uint8List?> downloadPhoto(String path) async {
+    try {
+      final bytes = await _client.storage.from(photoBucket).download(path);
+      final jpeg = bytes.length > 3 && bytes[0] == 0xFF && bytes[1] == 0xD8;
+      final png = bytes.length > 8 && bytes[0] == 0x89 && bytes[1] == 0x50;
+      return jpeg || png ? bytes : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> removePersonPhoto(TreePerson person) => _guard(() async {
     await _client.rpc<Map<String, dynamic>>('set_person_photo', params: {'p_person_id': person.id, 'p_path': null});
     await _removeQuietly(person.photoPath);

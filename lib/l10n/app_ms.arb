@@ -1442,5 +1442,43 @@
   "eventShareClanHint": "Semua keluarga dalam rumpun boleh melihat dan menjawab RSVP. Hanya keluarga anda boleh mengedit.",
   "eventVisibleClan": "Dikongsi dengan seluruh rumpun",
   "calendarAllFamilies": "Semua keluarga saya",
-  "calendarThisFamily": "Keluarga ini sahaja"
+  "calendarThisFamily": "Keluarga ini sahaja",
+  "treeZoomIn": "Zum masuk",
+  "treeZoomOut": "Zum keluar",
+  "treeZoomFit": "Muat skrin",
+  "treeOpenPerson": "Lihat butiran",
+  "treeAddParent": "Tambah ibu/bapa",
+  "treeAddChild": "Tambah anak",
+  "treeAddSpouse": "Tambah pasangan",
+  "treeRemoveRelation": "Buang hubungan",
+  "treeRemoveRelationMessage": "Hubungan antara {a} dan {b} akan dibuang. Kedua-dua orang kekal dalam salasilah.",
+  "@treeRemoveRelationMessage": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      }
+    }
+  },
+  "treeDownloadPdf": "Muat turun PDF",
+  "treePdfPreparing": "Menyediakan PDF salasilah…",
+  "treePdfTitle": "Salasilah {name}",
+  "@treePdfTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "treePdfGenerated": "Dijana pada {date} oleh FamilySync",
+  "@treePdfGenerated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "treePdfLegend": "Garisan biru: pasangan · garisan putus-putus: anak angkat"
 }

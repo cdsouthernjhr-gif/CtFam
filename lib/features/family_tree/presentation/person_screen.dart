@@ -144,6 +144,32 @@ class _Body extends ConsumerWidget {
           : l10n.treeRelationViaParent(label, via.fullName);
     }
 
+    final memberships = ref.watch(sessionControllerProvider.select((s) => s.activeMemberships));
+    bool adminOf(String? familyId) => memberships.any((m) => m.familyId == familyId && isTreeAdmin(m.role));
+    bool canUnlink(TreePerson other) {
+      final r = tree.relationBetween(person.id, other.id);
+      return r != null && (adminOf(r.familyId) || adminOf(r.otherFamilyId));
+    }
+
+    Future<void> unlink(TreePerson other) async {
+      final r = tree.relationBetween(person.id, other.id);
+      if (r == null) return;
+      final ok = await confirmDialog(
+        context,
+        title: l10n.treeRemoveRelation,
+        message: l10n.treeRemoveRelationMessage(person.fullName, other.fullName),
+        confirmLabel: l10n.actionDelete,
+        destructive: true,
+      );
+      if (!ok) return;
+      try {
+        await ref.read(treeRepositoryProvider).deleteRelation(r.id);
+        ref.invalidate(treeDataProvider(familyId));
+      } catch (e) {
+        if (context.mounted) context.showError(e);
+      }
+    }
+
     Widget group(String title, List<TreePerson> people) => people.isEmpty
         ? const SizedBox.shrink()
         : Padding(
@@ -158,15 +184,25 @@ class _Body extends ConsumerWidget {
                   runSpacing: AppSpacing.xs,
                   children: [
                     for (final p in people)
-                      ActionChip(
-                        avatar: Icon(p.gender == Gender.male ? Icons.male : Icons.female, size: 16),
-                        label: Text(
-                          tree.isAdoptiveChild(person.id, p.id) || tree.isAdoptiveChild(p.id, person.id)
-                              ? '${p.fullName} (${l10n.treeAdoptiveShort})'
-                              : p.fullName,
+                      if (canUnlink(p))
+                        InputChip(
+                          key: ValueKey('rel-${p.id}'),
+                          avatar: Icon(p.gender == Gender.male ? Icons.male : Icons.female, size: 16),
+                          label: Text(p.fullName),
+                          onPressed: () => context.push(Routes.treePerson(p.id)),
+                          deleteButtonTooltipMessage: l10n.treeRemoveRelation,
+                          onDeleted: () => unlink(p),
+                        )
+                      else
+                        ActionChip(
+                          avatar: Icon(p.gender == Gender.male ? Icons.male : Icons.female, size: 16),
+                          label: Text(
+                            tree.isAdoptiveChild(person.id, p.id) || tree.isAdoptiveChild(p.id, person.id)
+                                ? '${p.fullName} (${l10n.treeAdoptiveShort})'
+                                : p.fullName,
+                          ),
+                          onPressed: () => context.push(Routes.treePerson(p.id)),
                         ),
-                        onPressed: () => context.push(Routes.treePerson(p.id)),
-                      ),
                   ],
                 ),
               ],

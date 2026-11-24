@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+
+import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -12,9 +16,12 @@ import '../../../shared/providers/session_controller.dart';
 import '../../family/domain/family_models.dart';
 import '../../family/presentation/family_providers.dart';
 import '../data/tree_repository.dart';
+import '../domain/tree_layout.dart';
 import '../domain/tree_models.dart';
 import 'person_form_sheet.dart';
 import 'person_screen.dart';
+import 'relation_sheet.dart';
+import 'tree_pdf.dart';
 import 'tree_photo.dart';
 import 'tree_providers.dart';
 
@@ -50,6 +57,13 @@ class FamilyTreeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.treeTitle),
         actions: [
+          if (t != null && t.persons.isNotEmpty)
+            IconButton(
+              key: const Key('tree.pdf'),
+              tooltip: l10n.treeDownloadPdf,
+              icon: const Icon(Icons.picture_as_pdf_outlined),
+              onPressed: () => _exportPdf(context, ref, familyId, t),
+            ),
           if (adminFamilies.isNotEmpty && t != null)
             IconButton(
               tooltip: l10n.treeMergeTitle,
@@ -123,13 +137,170 @@ class FamilyTreeScreen extends ConsumerWidget {
               Expanded(
                 child: data.persons.isEmpty
                     ? MessageView(icon: Icons.account_tree_outlined, title: l10n.treeEmpty, message: l10n.treeEmptyHint)
-                    : TreeCanvas(tree: data, highlightId: mine?.id),
+                    : TreeCanvas(
+                        tree: data,
+                        highlightId: mine?.id,
+                        onLongPress: adminFamilies.isEmpty
+                            ? null
+                            : (p) =>
+                                  _personActions(context, ref, familyId, data, p, adminFamilies.contains(p.familyId)),
+                      ),
               ),
             ],
           );
         },
       ),
     );
+  }
+
+  /// Owner/admin quick editing from the chart (long-press on a card).
+  Future<void> _personActions(
+    BuildContext context,
+    WidgetRef ref,
+    String familyId,
+    TreeData tree,
+    TreePerson person,
+    bool homeAdmin,
+  ) async {
+    final l10n = context.l10n;
+    final activeAdmin = isTreeAdmin(ref.read(myRoleProvider));
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(title: Text(person.fullName, style: Theme.of(ctx).textTheme.titleMedium)),
+              ListTile(
+                leading: const Icon(Icons.open_in_new),
+                title: Text(l10n.treeOpenPerson),
+                onTap: () => Navigator.of(ctx).pop('open'),
+              ),
+              if (homeAdmin)
+                ListTile(
+                  leading: const Icon(Icons.edit_outlined),
+                  title: Text(l10n.treeEditPerson),
+                  onTap: () => Navigator.of(ctx).pop('edit'),
+                ),
+              ListTile(
+                leading: const Icon(Icons.north),
+                title: Text(l10n.treeAddParent),
+                onTap: () => Navigator.of(ctx).pop('parent'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.south),
+                title: Text(l10n.treeAddChild),
+                onTap: () => Navigator.of(ctx).pop('child'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.favorite_border),
+                title: Text(l10n.treeAddSpouse),
+                onTap: () => Navigator.of(ctx).pop('spouse'),
+              ),
+              if (homeAdmin)
+                ListTile(
+                  leading: Icon(Icons.delete_outline, color: Theme.of(ctx).colorScheme.error),
+                  title: Text(l10n.treeDeletePerson, style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
+                  onTap: () => Navigator.of(ctx).pop('delete'),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (action == null || !context.mounted) return;
+    switch (action) {
+      case 'open':
+        await context.push(Routes.treePerson(person.id));
+      case 'edit':
+        await showPersonForm(context, familyId: person.familyId, person: person);
+      case 'parent' || 'child' || 'spouse':
+        await showRelationSheet(
+          context,
+          familyId: familyId,
+          person: person,
+          tree: tree,
+          isAdmin: activeAdmin,
+          initial: switch (action) {
+            'parent' => RelationChoice.parent,
+            'spouse' => RelationChoice.spouse,
+            _ => RelationChoice.child,
+          },
+        );
+      case 'delete':
+        final ok = await confirmDialog(
+          context,
+          title: l10n.treeDeletePerson,
+          message: l10n.treeDeletePersonMessage(person.fullName),
+          confirmLabel: l10n.actionDelete,
+          destructive: true,
+        );
+        if (!ok) return;
+        try {
+          await ref.read(treeRepositoryProvider).deletePerson(person.id, photoPath: person.photoPath);
+          ref.invalidate(treeDataProvider(familyId));
+        } catch (e) {
+          if (context.mounted) context.showError(e);
+        }
+    }
+  }
+
+  /// Builds the chart as a PDF (with photos) and opens the share sheet, from
+  /// which it can be saved to Files/Drive, printed or sent.
+  Future<void> _exportPdf(BuildContext context, WidgetRef ref, String familyId, TreeData tree) async {
+    final l10n = context.l10n;
+    final familyName = ref.read(familyProvider(familyId)).value?.name ?? l10n.treeTitle;
+    final nav = Navigator.of(context, rootNavigator: true);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(child: Text(l10n.treePdfPreparing)),
+          ],
+        ),
+      ),
+    );
+    try {
+      final repo = ref.read(treeRepositoryProvider);
+      final photos = <String, Uint8List>{};
+      final withPhotos = tree.persons.values.where((p) => p.photoPath != null).take(200).toList();
+      for (var i = 0; i < withPhotos.length; i += 6) {
+        final batch = withPhotos.skip(i).take(6).toList();
+        final bytes = await Future.wait(batch.map((p) => repo.downloadPhoto(p.photoPath!)));
+        for (var j = 0; j < batch.length; j++) {
+          if (bytes[j] != null) photos[batch[j].id] = bytes[j]!;
+        }
+      }
+      final now = DateTime.now();
+      final pdf = await buildTreePdf(
+        tree,
+        photos: photos,
+        labels: TreePdfLabels(
+          title: l10n.treePdfTitle(familyName),
+          generated: l10n.treePdfGenerated(DateFormat.yMMMd(l10n.localeName).format(now)),
+          legend: l10n.treePdfLegend,
+        ),
+      );
+      final safeName = familyName.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '_');
+      final file = await saveTreePdf(pdf, 'Salasilah_${safeName}_${now.year}${now.month}${now.day}.pdf');
+      nav.pop();
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path, mimeType: 'application/pdf')],
+          subject: l10n.treePdfTitle(familyName),
+        ),
+      );
+    } catch (e) {
+      nav.pop();
+      if (context.mounted) context.showError(e);
+    }
   }
 
   Future<void> _showPending(
@@ -279,69 +450,172 @@ class FamilyTreeScreen extends ConsumerWidget {
 }
 
 /// Generations drawn as rows of cards with parent→child connectors and
-/// spouse links. Pinch to zoom, drag to pan.
-class TreeCanvas extends StatelessWidget {
-  const TreeCanvas({required this.tree, this.highlightId, super.key});
+/// spouse links. Pinch or use the buttons to zoom, drag to pan, double-tap to
+/// zoom in/out. Starts fitted to the screen width.
+class TreeCanvas extends StatefulWidget {
+  const TreeCanvas({required this.tree, this.highlightId, this.onLongPress, super.key});
 
   final TreeData tree;
   final String? highlightId;
 
-  static const cardW = 116.0;
-  static const cardH = 108.0;
-  static const gapX = 20.0;
-  static const gapY = 64.0;
-  static const pad = 24.0;
+  /// Long-press on a card (owner/admin editing menu); null = disabled.
+  final void Function(TreePerson person)? onLongPress;
+
+  static const cardW = TreeLayout.cardW;
+  static const cardH = TreeLayout.cardH;
+
+  @override
+  State<TreeCanvas> createState() => _TreeCanvasState();
+}
+
+class _TreeCanvasState extends State<TreeCanvas> {
+  static const minScale = 0.2;
+  static const maxScale = 3.0;
+  final _ctrl = TransformationController();
+  Size? _viewport;
+  bool _fitted = false;
+  Offset? _doubleTapAt;
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  // getMaxScaleOnAxis() also looks at the z axis (always 1), so read x directly.
+  double get _scale => _ctrl.value.storage[0];
+
+  void _fit(TreeLayout layout) {
+    final vp = _viewport;
+    if (vp == null || layout.width == 0) return;
+    final s = (vp.width / layout.width).clamp(minScale, 1.0);
+    final dx = ((vp.width - layout.width * s) / 2).clamp(0.0, double.infinity);
+    _ctrl.value = Matrix4.identity()
+      ..translateByDouble(dx, 0, 0, 1)
+      ..scaleByDouble(s, s, 1, 1);
+  }
+
+  /// Zooms by [factor] around the centre of the screen.
+  void _zoom(double factor) {
+    final vp = _viewport;
+    if (vp == null) return;
+    final target = (_scale * factor).clamp(minScale, maxScale);
+    final f = target / _scale;
+    final c = Offset(vp.width / 2, vp.height / 2);
+    _ctrl.value = Matrix4.identity()
+      ..translateByDouble(c.dx, c.dy, 0, 1)
+      ..scaleByDouble(f, f, 1, 1)
+      ..translateByDouble(-c.dx, -c.dy, 0, 1)
+      ..multiply(_ctrl.value);
+  }
+
+  void _onDoubleTap() {
+    final at = _doubleTapAt;
+    if (at == null) return;
+    if (_scale >= 1.4) {
+      _fit(TreeLayout.of(widget.tree));
+      return;
+    }
+    final f = (2.0 / _scale).clamp(1.0, maxScale / _scale);
+    _ctrl.value = Matrix4.identity()
+      ..translateByDouble(at.dx, at.dy, 0, 1)
+      ..scaleByDouble(f, f, 1, 1)
+      ..translateByDouble(-at.dx, -at.dy, 0, 1)
+      ..multiply(_ctrl.value);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final rows = tree.layoutRows();
-    final widest = rows.fold<int>(0, (m, r) => r.length > m ? r.length : m);
-    final width = pad * 2 + widest * cardW + (widest - 1).clamp(0, 1 << 20) * gapX;
-    final height = pad * 2 + rows.length * cardH + (rows.length - 1).clamp(0, 1 << 20) * gapY;
-    final pos = <String, Offset>{};
-    for (var g = 0; g < rows.length; g++) {
-      final rowW = rows[g].length * cardW + (rows[g].length - 1) * gapX;
-      final startX = (width - rowW) / 2;
-      for (var i = 0; i < rows[g].length; i++) {
-        pos[rows[g][i]] = Offset(startX + i * (cardW + gapX), pad + g * (cardH + gapY));
-      }
-    }
+    final l10n = context.l10n;
+    final layout = TreeLayout.of(widget.tree);
     final scheme = Theme.of(context).colorScheme;
-    return InteractiveViewer(
-      constrained: false,
-      minScale: 0.25,
-      maxScale: 2.5,
-      boundaryMargin: const EdgeInsets.all(200),
-      child: SizedBox(
-        width: width,
-        height: height,
-        child: Stack(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        _viewport = constraints.biggest;
+        if (!_fitted) {
+          _fitted = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _fit(layout);
+          });
+        }
+        return Stack(
           children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _LinksPainter(tree: tree, pos: pos, color: scheme.outline, spouseColor: scheme.primary),
+            GestureDetector(
+              onDoubleTapDown: (d) => _doubleTapAt = d.localPosition,
+              onDoubleTap: _onDoubleTap,
+              child: InteractiveViewer(
+                key: const Key('tree.viewer'),
+                transformationController: _ctrl,
+                constrained: false,
+                minScale: minScale,
+                maxScale: maxScale,
+                boundaryMargin: const EdgeInsets.all(400),
+                child: SizedBox(
+                  width: layout.width,
+                  height: layout.height,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _LinksPainter(
+                            links: layout.links(widget.tree),
+                            color: scheme.outline,
+                            spouseColor: scheme.primary,
+                          ),
+                        ),
+                      ),
+                      for (final e in layout.positions.entries)
+                        Positioned(
+                          left: e.value.x,
+                          top: e.value.y,
+                          width: TreeLayout.cardW,
+                          height: TreeLayout.cardH,
+                          child: _PersonCard(
+                            person: widget.tree.persons[e.key]!,
+                            highlight: e.key == widget.highlightId,
+                            onLongPress: widget.onLongPress,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            for (final e in pos.entries)
-              Positioned(
-                left: e.value.dx,
-                top: e.value.dy,
-                width: cardW,
-                height: cardH,
-                child: _PersonCard(person: tree.persons[e.key]!, highlight: e.key == highlightId),
+            Positioned(
+              right: AppSpacing.sm,
+              bottom: AppSpacing.sm + 72, // above the "Add person" button
+              child: Card(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(tooltip: l10n.treeZoomIn, icon: const Icon(Icons.add), onPressed: () => _zoom(1.3)),
+                    IconButton(
+                      tooltip: l10n.treeZoomOut,
+                      icon: const Icon(Icons.remove),
+                      onPressed: () => _zoom(1 / 1.3),
+                    ),
+                    IconButton(
+                      tooltip: l10n.treeZoomFit,
+                      icon: const Icon(Icons.fit_screen_outlined),
+                      onPressed: () => _fit(layout),
+                    ),
+                  ],
+                ),
               ),
+            ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
 class _PersonCard extends StatelessWidget {
-  const _PersonCard({required this.person, required this.highlight});
+  const _PersonCard({required this.person, required this.highlight, this.onLongPress});
 
   final TreePerson person;
   final bool highlight;
+  final void Function(TreePerson person)? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -357,8 +631,10 @@ class _PersonCard extends StatelessWidget {
         side: BorderSide(color: accent.withValues(alpha: 0.6), width: highlight ? 2.5 : 1.2),
       ),
       child: InkWell(
+        key: ValueKey('tree-card-${person.id}'),
         borderRadius: BorderRadius.circular(12),
         onTap: () => context.push(Routes.treePerson(person.id)),
+        onLongPress: onLongPress == null ? null : () => onLongPress!(person),
         child: Padding(
           padding: const EdgeInsets.all(6),
           child: Column(
@@ -389,50 +665,37 @@ class _PersonCard extends StatelessWidget {
 }
 
 class _LinksPainter extends CustomPainter {
-  _LinksPainter({required this.tree, required this.pos, required this.color, required this.spouseColor});
+  _LinksPainter({required this.links, required this.color, required this.spouseColor});
 
-  final TreeData tree;
-  final Map<String, Offset> pos;
+  final List<({List<({double x, double y})> points, RelationKind kind, bool adoptive})> links;
   final Color color;
   final Color spouseColor;
 
   @override
   void paint(Canvas canvas, Size size) {
-    const w = TreeCanvas.cardW, h = TreeCanvas.cardH;
     final line = Paint()
       ..color = color.withValues(alpha: 0.7)
       ..strokeWidth = 1.4
       ..style = PaintingStyle.stroke;
-    final dashed = Paint()
-      ..color = color.withValues(alpha: 0.5)
+    final adoptive = Paint()
+      ..color = color.withValues(alpha: 0.45)
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke;
     final spouse = Paint()
       ..color = spouseColor.withValues(alpha: 0.8)
-      ..strokeWidth = 2;
-    for (final r in tree.relations.where((r) => r.confirmed)) {
-      final a = pos[r.personA], b = pos[r.personB];
-      if (a == null || b == null) continue;
-      if (r.kind == RelationKind.spouse) {
-        final left = a.dx < b.dx ? a : b, right = a.dx < b.dx ? b : a;
-        final y = left.dy + h / 2;
-        canvas.drawLine(Offset(left.dx + w, y), Offset(right.dx, y), spouse);
-      } else {
-        final from = Offset(a.dx + w / 2, a.dy + h);
-        final to = Offset(b.dx + w / 2, b.dy);
-        final midY = from.dy + (to.dy - from.dy) / 2;
-        final path = Path()
-          ..moveTo(from.dx, from.dy)
-          ..lineTo(from.dx, midY)
-          ..lineTo(to.dx, midY)
-          ..lineTo(to.dx, to.dy);
-        canvas.drawPath(path, r.adoptive ? dashed : line);
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    for (final l in links) {
+      final path = Path()..moveTo(l.points.first.x, l.points.first.y);
+      for (final p in l.points.skip(1)) {
+        path.lineTo(p.x, p.y);
       }
+      canvas.drawPath(path, l.kind == RelationKind.spouse ? spouse : (l.adoptive ? adoptive : line));
     }
   }
 
   @override
-  bool shouldRepaint(_LinksPainter old) => old.tree != tree || old.pos != pos || old.color != color;
+  bool shouldRepaint(_LinksPainter old) => old.links != links || old.color != color;
 }
 
 /// Cover photo of the tree. Admins add, change or remove it.

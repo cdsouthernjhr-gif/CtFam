@@ -259,6 +259,14 @@ class TreeData {
     return _sorted(ids);
   }
 
+  /// The confirmed link between two people (either direction), if any.
+  TreeRelation? relationBetween(String a, String b) {
+    for (final r in _confirmed) {
+      if ((r.personA == a && r.personB == b) || (r.personA == b && r.personB == a)) return r;
+    }
+    return null;
+  }
+
   bool isAdoptiveChild(String parentId, String childId) => _confirmed.any(
     (r) => r.kind == RelationKind.parent && r.personA == parentId && r.personB == childId && r.adoptive,
   );

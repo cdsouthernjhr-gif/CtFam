@@ -150,4 +150,55 @@ void main() {
     expect(find.text('Pilih dari galeri'), findsOneWidget);
     expect(find.text('Padam gambar'), findsNothing, reason: 'no photo yet');
   });
+
+  testWidgets('owner: long-press a card opens the editing menu; zoom buttons work', (tester) async {
+    await pumpLocalized(tester, const FamilyTreeScreen(), overrides: overrides(FamilyRole.owner));
+    expect(find.byTooltip('Muat turun PDF'), findsOneWidget);
+
+    final viewer = tester.widget<InteractiveViewer>(find.byKey(const Key('tree.viewer')));
+    final before = viewer.transformationController!.value.storage[0];
+    await tester.tap(find.byTooltip('Zum masuk'));
+    await tester.pump();
+    expect(viewer.transformationController!.value.storage[0], greaterThan(before));
+    await tester.tap(find.byTooltip('Zum keluar'));
+    await tester.pump();
+    await tester.tap(find.byTooltip('Zum keluar'));
+    await tester.pump();
+    expect(viewer.transformationController!.value.storage[0], lessThan(before));
+
+    await tester.tap(find.byTooltip('Muat skrin'));
+    await tester.pump();
+    await tester.longPress(find.byKey(const ValueKey('tree-card-faris')));
+    await tester.pumpAndSettle();
+    for (final label in [
+      'Lihat butiran',
+      'Edit maklumat',
+      'Tambah ibu/bapa',
+      'Tambah anak',
+      'Tambah pasangan',
+      'Buang daripada salasilah',
+    ]) {
+      expect(find.text(label), findsOneWidget, reason: label);
+    }
+  });
+
+  testWidgets('members: long-press does nothing (no editing menu)', (tester) async {
+    await pumpLocalized(tester, const FamilyTreeScreen(), overrides: overrides(FamilyRole.member));
+    final card = tester.widget<InkWell>(find.byKey(const ValueKey('tree-card-faris')));
+    expect(card.onLongPress, isNull, reason: 'no editing menu for plain members');
+  });
+
+  testWidgets('owner removes a relation from the person page', (tester) async {
+    when(() => repo.relationship('F1', 'faris')).thenAnswer((_) async => const Relationship(kind: 'none'));
+    when(() => repo.deleteRelation('r3')).thenAnswer((_) async {});
+    tester.view.physicalSize = const Size(900, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await pumpLocalized(tester, const PersonScreen(personId: 'faris'), overrides: overrides(FamilyRole.owner));
+    await tester.tap(find.byTooltip('Buang hubungan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Padam'));
+    await tester.pumpAndSettle();
+    verify(() => repo.deleteRelation('r3')).called(1);
+  });
 }
