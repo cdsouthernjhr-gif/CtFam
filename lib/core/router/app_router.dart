@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../features/authentication/presentation/auth_screens.dart';
 import '../../features/authentication/presentation/verify_code_screen.dart';
+import '../../features/collections/presentation/collections_screen.dart';
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/calendar/presentation/event_detail_screen.dart';
 import '../../features/calendar/presentation/event_form_screen.dart';
@@ -135,6 +136,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.notifications, builder: (_, _) => const NotificationsScreen()),
       GoRoute(path: Routes.sync, builder: (_, _) => const SyncScreen()),
       GoRoute(path: Routes.familyLinks, builder: (_, _) => const FamilyLinksScreen()),
+      GoRoute(
+        path: Routes.collections,
+        builder: (_, _) => const CollectionsScreen(),
+        routes: [
+          GoRoute(
+            path: ':collectionId',
+            builder: (_, state) => CollectionScreen(collectionId: state.pathParameters['collectionId']!),
+          ),
+        ],
+      ),
       GoRoute(
         path: Routes.familyTree,
         builder: (_, _) => const FamilyTreeScreen(),

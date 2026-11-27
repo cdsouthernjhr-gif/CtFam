@@ -18,6 +18,8 @@ abstract final class Routes {
   static const familyTree = '/family-tree';
   static const familyLinks = '/family-links';
   static String treePerson(String id) => '$familyTree/$id';
+  static const collections = '/collections';
+  static String collection(String id) => '$collections/$id';
 
   // Bottom navigation branches
   static const home = '/home';

@@ -89,6 +89,12 @@ class FamilyScreen extends ConsumerWidget {
               onPressed: () => showAnnouncementSheet(context, ref, familyId: familyId),
             ),
           IconButton(
+            key: const Key('family.collections'),
+            tooltip: l10n.collectionsTitle,
+            icon: const Icon(Icons.savings_outlined),
+            onPressed: () => context.push(Routes.collections),
+          ),
+          IconButton(
             tooltip: l10n.linksTitle,
             icon: const Icon(Icons.hub_outlined),
             onPressed: () => context.push(Routes.familyLinks),

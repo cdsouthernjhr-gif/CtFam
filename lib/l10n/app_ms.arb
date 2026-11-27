@@ -1596,5 +1596,172 @@
         "type": "String"
       }
     }
+  },
+  "collectionsTitle": "Kutipan",
+  "collectionNew": "Kutipan baharu",
+  "collectionEdit": "Edit kutipan",
+  "collectionsEmptyTitle": "Belum ada kutipan",
+  "collectionsEmptyBody": "Cipta kutipan untuk kenduri, hadiah atau tabung keluarga. Aplikasi ini merekod kutipan sahaja; wang tidak dipindahkan.",
+  "collectionTitle": "Tajuk",
+  "collectionPurpose": "Tujuan",
+  "collectionPurposeHint": "Contoh: Kenduri tahlil arwah Atok",
+  "collectionTargetType": "Sasaran",
+  "collectionModeOpen": "Tanpa sasaran",
+  "collectionModeLump": "Sasaran sekaligus",
+  "collectionModePerMember": "Ikut ahli",
+  "collectionTarget": "Jumlah sasaran",
+  "collectionAmount": "Jumlah",
+  "collectionAmountInvalid": "Masukkan jumlah yang sah (contoh 150 atau 150.50)",
+  "collectionPerMemberHint": "Pilih ahli dan tetapkan sasaran setiap seorang. Mereka boleh bayar beransur-ansur.",
+  "collectionTargetTotal": "Jumlah sasaran: {amount}",
+  "collectionOpenHint": "Boleh diisi tanpa had selagi kutipan dibuka.",
+  "collectionNeedTargets": "Tetapkan sasaran untuk sekurang-kurangnya seorang ahli.",
+  "collectionNoDueDate": "Tiada tarikh akhir",
+  "collectionDue": "Tarikh akhir {date}",
+  "collectionShareClan": "Kongsi dengan keluarga berkaitan",
+  "collectionShareClanHint": "Ahli rumpun juga boleh melihat dan membayar.",
+  "collectionTreasurers": "Bendahari tambahan",
+  "collectionTreasurersHint": "Anda, pemilik dan pentadbir keluarga sudah menjadi bendahari. Bendahari mengesahkan bayaran dan merekod perbelanjaan.",
+  "collectionRecordOnly": "Aplikasi ini merekod kutipan sahaja. Wang tidak dipindahkan melalui aplikasi.",
+  "collectionPay": "Saya sudah bayar",
+  "collectionRecordPayment": "Rekod bayaran",
+  "collectionAddExpense": "Rekod perbelanjaan",
+  "collectionPayMemberHint": "Bayaran anda akan disahkan oleh bendahari sebelum dikira.",
+  "collectionPayTreasurerHint": "Sebagai bendahari, bayaran yang anda rekod terus disahkan.",
+  "collectionPayer": "Dibayar oleh",
+  "collectionNote": "Catatan (pilihan)",
+  "collectionExpenseWhat": "Untuk apa",
+  "collectionAddReceipt": "Tambah resit",
+  "collectionReceiptAdded": "Resit dipilih",
+  "collectionReceiptOptional": "Pilihan · gambar resit atau bukti bayaran",
+  "collectionExpenseSaved": "Perbelanjaan direkod",
+  "collectionPaymentConfirmedSaved": "Bayaran direkod dan disahkan",
+  "collectionPaymentPendingSaved": "Bayaran direkod · menunggu pengesahan bendahari",
+  "collectionRejectTitle": "Tolak bayaran ini?",
+  "collectionRejectReason": "Sebab (pilihan)",
+  "collectionCollected": "Terkumpul {amount}",
+  "collectionMyPart": "Anda: {paid} / {target}",
+  "collectionPendingAmount": "{amount} menunggu pengesahan",
+  "collectionClosed": "Ditutup",
+  "collectionSharedClan": "Dikongsi dengan rumpun",
+  "collectionNotFound": "Kutipan tidak dijumpai",
+  "collectionRemind": "Hantar peringatan",
+  "collectionReminded": "{count, plural, =0{Tiada sesiapa yang perlu diingatkan} other{Peringatan dihantar kepada {count} orang}}",
+  "collectionClose": "Tutup kutipan",
+  "collectionReopen": "Buka semula kutipan",
+  "collectionDeleteTitle": "Padam kutipan?",
+  "collectionDeleteMessage": "\"{title}\" dan semua rekodnya akan dipadam.",
+  "collectionProgress": "{collected} daripada {target}",
+  "collectionAboveTarget": "Melebihi sasaran sebanyak {amount}",
+  "collectionReached": "Sasaran tercapai 🎉",
+  "collectionRemaining": "Baki {amount} lagi",
+  "collectionStatCollected": "Terkumpul",
+  "collectionStatPending": "Menunggu",
+  "collectionStatSpent": "Dibelanjakan",
+  "collectionStatBalance": "Baki",
+  "collectionMyDone": "Bahagian anda sudah lengkap ✅",
+  "collectionToConfirm": "Menunggu pengesahan ({count})",
+  "collectionConfirm": "Sahkan",
+  "collectionByMember": "Ikut ahli",
+  "collectionPayments": "Bayaran",
+  "collectionNoPayments": "Belum ada bayaran.",
+  "collectionExpenses": "Perbelanjaan",
+  "collectionNoExpenses": "Belum ada perbelanjaan.",
+  "collectionStatusPending": "Menunggu pengesahan",
+  "collectionStatusConfirmed": "Disahkan",
+  "collectionStatusRejected": "Ditolak",
+  "collectionRejectedBecause": "Sebab: {reason}",
+  "collectionDeletePayment": "Padam bayaran ini?",
+  "collectionDeleteExpense": "Padam perbelanjaan ini?",
+  "receipt": "Resit",
+  "@collectionTargetTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@collectionDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@collectionCollected": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@collectionMyPart": {
+    "placeholders": {
+      "paid": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "@collectionPendingAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@collectionDeleteMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@collectionProgress": {
+    "placeholders": {
+      "collected": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "@collectionAboveTarget": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@collectionRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@collectionRejectedBecause": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "@collectionReminded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@collectionToConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }
