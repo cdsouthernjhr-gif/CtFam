@@ -175,6 +175,10 @@ class TodoListController extends AsyncNotifier<TodoListState> {
         _set(cur.copyWith(items: mergeServerItem(cur.items, fresh)));
       case 'todo_comments':
         _set(s.copyWith(commentsVersion: s.commentsVersion + 1));
+      case 'todo_item_photos':
+        final itemId = c.record['item_id'] as String?;
+        if (itemId == null) return;
+        await reloadItem(itemId);
       case 'todo_lists':
         if (c.record['deleted_at'] != null) {
           _set(s.copyWith(deleted: true));
@@ -184,6 +188,14 @@ class TodoListController extends AsyncNotifier<TodoListState> {
           if (cur != null) _set(cur.copyWith(list: list));
         }
     }
+  }
+
+  /// Re-reads one item from the server (e.g. after its photos changed).
+  Future<void> reloadItem(String itemId) async {
+    final fresh = await _repo.item(itemId).catchError((_) => null);
+    final cur = _s;
+    if (fresh == null || cur == null) return;
+    _set(cur.copyWith(items: mergeServerItem(cur.items, fresh)));
   }
 
   Future<void> refresh() async {

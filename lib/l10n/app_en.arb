@@ -646,5 +646,14 @@
   "treePdfGeneration": "G{n}",
   "treeSpinStop": "Tap the photo to stop",
   "treeSpinResume": "Tap the photo to spin again",
-  "treeOpenProfile": "Open full profile"
+  "treeOpenProfile": "Open full profile",
+  "photosTitle": "Photos",
+  "photosOptionalHint": "Optional: photos before and after the work (up to 4 each).",
+  "photoBefore": "Before",
+  "photoAfter": "After",
+  "photoCompare": "Compare",
+  "photoAdd": "Add {kind} photo",
+  "photoDeleteTitle": "Delete this photo?",
+  "photosSaveFirst": "Save the task first to add before/after photos.",
+  "listCover": "Cover photo"
 }

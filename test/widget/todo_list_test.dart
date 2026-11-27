@@ -324,5 +324,60 @@ void main() {
       expect(find.text('Beli susu'), findsOneWidget);
       expect(find.text('Beli roti'), findsNothing);
     });
+
+    testWidgets('before/after photos: count on the tile, sections, compare and delete', (tester) async {
+      final withPhotos = TodoItem(
+        id: 'p',
+        listId: 'L1',
+        title: 'Cat pagar',
+        completed: false,
+        priority: TodoPriority.normal,
+        recurrence: TodoRecurrence.none,
+        revision: 1,
+        position: 0,
+        photos: [
+          TodoItemPhoto(id: 'ph1', kind: TodoPhotoKind.before, path: 'F1/L1/p/1.jpg', createdAt: DateTime(2026)),
+          TodoItemPhoto(id: 'ph2', kind: TodoPhotoKind.after, path: 'F1/L1/p/2.jpg', createdAt: DateTime(2026)),
+        ],
+      );
+      when(() => repo.items('L1')).thenAnswer((_) async => [withPhotos]);
+      when(() => repo.item('p')).thenAnswer((_) async => withPhotos);
+      when(() => repo.comments('p')).thenAnswer((_) async => const []);
+      when(() => repo.deleteItemPhoto('ph1')).thenAnswer((_) async {});
+      await pump(tester);
+
+      expect(
+        find.descendant(of: find.byKey(const ValueKey('todo-item-p')), matching: find.text('2')),
+        findsOneWidget,
+        reason: 'photo count on the tile',
+      );
+      await tester.tap(find.text('Cat pagar'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Selepas (1/4)'), 200, scrollable: find.byType(Scrollable).last);
+      expect(find.text('Sebelum (1/4)'), findsOneWidget);
+      expect(find.byKey(const ValueKey('todo.addPhoto.before')), findsOneWidget, reason: 'room for 3 more');
+      expect(find.byKey(const ValueKey('todo.compare')), findsOneWidget, reason: 'both kinds present');
+
+      await tester.tap(find.byKey(const ValueKey('todo-photo-ph1')));
+      await tester.pumpAndSettle();
+      expect(find.text('Sebelum · 1/1'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('todo.deletePhoto')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Padam').last);
+      await tester.pumpAndSettle();
+      verify(() => repo.deleteItemPhoto('ph1')).called(1);
+    });
+
+    testWidgets('a new task cannot have photos until saved', (tester) async {
+      await pump(tester);
+      await tester.tap(find.byIcon(Icons.edit_note));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Simpan tugasan dahulu untuk menambah gambar sebelum/selepas.'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.byKey(const ValueKey('todo.addPhoto.before')), findsNothing);
+    });
   });
 }

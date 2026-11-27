@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../core/errors/app_failure.dart';
 import '../../../core/offline/offline_store.dart';
@@ -256,12 +258,78 @@ class TodoRepository {
     return rows.map(TodoActivity.fromJson).toList();
   });
 
+  // ---------------------------------------------------------------- photos
+  static const photoBucket = 'todo-photos';
+  static const _uuid = Uuid();
+
+  static String _ext(String contentType) => switch (contentType) {
+    'image/png' => 'png',
+    'image/webp' => 'webp',
+    _ => 'jpg',
+  };
+
+  Future<String> _upload(String folder, Uint8List bytes, String contentType) async {
+    final path = '$folder/${_uuid.v4()}.${_ext(contentType)}';
+    await _client.storage
+        .from(photoBucket)
+        .uploadBinary(path, bytes, fileOptions: FileOptions(contentType: contentType));
+    return path;
+  }
+
+  /// A failed removal only leaves an unreferenced file behind.
+  Future<void> _removeQuietly(String? path) async {
+    if (path == null) return;
+    try {
+      await _client.storage.from(photoBucket).remove([path]);
+    } catch (_) {}
+  }
+
+  /// Uploads a before/after photo for [item] and records it (max 4 per kind).
+  /// Needs a connection; the file is removed again if recording fails.
+  Future<void> addItemPhoto(TodoItem item, String familyId, TodoPhotoKind kind, Uint8List bytes, String contentType) =>
+      _guard(() async {
+        final path = await _upload('$familyId/${item.listId}/${item.id}', bytes, contentType);
+        try {
+          await _client.rpc<Map<String, dynamic>>(
+            'add_todo_item_photo',
+            params: {'p_id': _uuid.v4(), 'p_item_id': item.id, 'p_kind': kind.name, 'p_path': path},
+          );
+        } catch (_) {
+          await _removeQuietly(path);
+          rethrow;
+        }
+      });
+
+  Future<void> deleteItemPhoto(String photoId) => _guard(() async {
+    final path = await _client.rpc<String?>('delete_todo_item_photo', params: {'p_id': photoId});
+    await _removeQuietly(path);
+  });
+
+  /// Sets the list's cover photo (list creator or family owner/admin).
+  Future<void> setListCover(TodoList list, Uint8List bytes, String contentType) => _guard(() async {
+    final path = await _upload('${list.familyId}/${list.id}/cover', bytes, contentType);
+    String? old;
+    try {
+      old = await _client.rpc<String?>('set_todo_list_cover', params: {'p_list_id': list.id, 'p_path': path});
+    } catch (_) {
+      await _removeQuietly(path);
+      rethrow;
+    }
+    await _removeQuietly(old);
+  });
+
+  Future<void> removeListCover(TodoList list) => _guard(() async {
+    final old = await _client.rpc<String?>('set_todo_list_cover', params: {'p_list_id': list.id, 'p_path': null});
+    await _removeQuietly(old);
+  });
+
   // ---------------------------------------------------------------- realtime
   /// Changes of one list: channel `todo:{listId}`.
   Stream<TodoChange> watchList(String listId) => _watch('todo:$listId', [
     ('todo_items', 'list_id', listId),
     ('todo_comments', 'list_id', listId),
     ('todo_lists', 'id', listId),
+    ('todo_item_photos', 'list_id', listId),
   ]);
 
   /// List-level changes for the overview: channel `todo-family:{familyId}`.

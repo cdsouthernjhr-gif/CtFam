@@ -1580,5 +1580,21 @@
   },
   "treeSpinStop": "Tekan gambar untuk berhenti",
   "treeSpinResume": "Tekan gambar untuk berputar semula",
-  "treeOpenProfile": "Lihat profil penuh"
+  "treeOpenProfile": "Lihat profil penuh",
+  "photosTitle": "Gambar",
+  "photosOptionalHint": "Pilihan: gambar sebelum dan selepas kerja dibuat (maksimum 4 setiap satu).",
+  "photoBefore": "Sebelum",
+  "photoAfter": "Selepas",
+  "photoCompare": "Bandingkan",
+  "photoAdd": "Tambah gambar {kind}",
+  "photoDeleteTitle": "Padam gambar ini?",
+  "photosSaveFirst": "Simpan tugasan dahulu untuk menambah gambar sebelum/selepas.",
+  "listCover": "Gambar sampul",
+  "@photoAdd": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  }
 }

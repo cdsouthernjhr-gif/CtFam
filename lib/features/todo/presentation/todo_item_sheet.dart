@@ -9,6 +9,7 @@ import '../../family/domain/family_models.dart';
 import '../../family/presentation/family_providers.dart';
 import '../data/todo_repository.dart';
 import '../domain/todo_models.dart';
+import 'todo_photos.dart';
 import 'todo_providers.dart';
 import 'todo_ui.dart';
 
@@ -248,6 +249,11 @@ class _TodoItemSheetState extends ConsumerState<TodoItemSheet> {
                     ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
                     : Text(_isNew ? l10n.addTask : l10n.actionSave),
               ),
+              const Divider(height: AppSpacing.xl),
+              if (_isNew)
+                Text(l10n.photosSaveFirst, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline))
+              else
+                TodoPhotoSection(listId: widget.listId, item: widget.item!),
               if (!_isNew) ...[
                 const Divider(height: AppSpacing.xl),
                 Text(l10n.comments, style: theme.textTheme.titleMedium),

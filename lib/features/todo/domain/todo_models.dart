@@ -57,6 +57,7 @@ class TodoListSummary {
     this.description,
     this.createdBy,
     this.updatedAt,
+    this.coverPath,
   });
 
   factory TodoListSummary.fromJson(Map<String, dynamic> j) => TodoListSummary(
@@ -72,6 +73,7 @@ class TodoListSummary {
     completedItems: (j['completed_items'] as int?) ?? 0,
     overdueItems: (j['overdue_items'] as int?) ?? 0,
     dueTodayItems: (j['due_today_items'] as int?) ?? 0,
+    coverPath: j['cover_path'] as String?,
   );
 
   final String id;
@@ -86,6 +88,9 @@ class TodoListSummary {
   final int completedItems;
   final int overdueItems;
   final int dueTodayItems;
+
+  /// Optional cover photo (bucket todo-photos).
+  final String? coverPath;
 
   bool get isPrivate => visibility == 'members';
   double get progress => totalItems == 0 ? 0 : completedItems / totalItems;
@@ -102,6 +107,7 @@ class TodoList {
     this.description,
     this.createdBy,
     this.deletedAt,
+    this.coverPath,
   });
 
   factory TodoList.fromJson(Map<String, dynamic> j) => TodoList(
@@ -114,6 +120,7 @@ class TodoList {
     createdBy: j['created_by'] as String?,
     revision: (j['revision'] as int?) ?? 1,
     deletedAt: _date(j['deleted_at']),
+    coverPath: j['cover_path'] as String?,
   );
 
   final String id;
@@ -125,6 +132,34 @@ class TodoList {
   final String? createdBy;
   final int revision;
   final DateTime? deletedAt;
+  final String? coverPath;
+}
+
+enum TodoPhotoKind {
+  before,
+  after;
+
+  static TodoPhotoKind parse(String? v) => v == 'after' ? after : before;
+}
+
+/// A before/after photo on an item (bucket todo-photos).
+class TodoItemPhoto {
+  const TodoItemPhoto({required this.id, required this.kind, required this.path, this.createdAt});
+
+  factory TodoItemPhoto.fromJson(Map<String, dynamic> j) => TodoItemPhoto(
+    id: j['id'] as String,
+    kind: TodoPhotoKind.parse(j['kind'] as String?),
+    path: j['path'] as String,
+    createdAt: _date(j['created_at']),
+  );
+
+  /// Most photos of each kind per item (enforced by the database).
+  static const maxPerKind = 4;
+
+  final String id;
+  final TodoPhotoKind kind;
+  final String path;
+  final DateTime? createdAt;
 }
 
 class TodoItem {
@@ -146,6 +181,7 @@ class TodoItem {
     this.assigneeIds = const [],
     this.deleted = false,
     this.createdAt,
+    this.photos = const [],
   });
 
   factory TodoItem.fromJson(Map<String, dynamic> j) => TodoItem(
@@ -168,12 +204,17 @@ class TodoItem {
     assigneeIds: j['todo_assignments'] is List
         ? (j['todo_assignments'] as List).map((a) => (a as Map<String, dynamic>)['user_id'] as String).toList()
         : const [],
+    photos: j['todo_item_photos'] is List
+        ? ((j['todo_item_photos'] as List).map((p) => TodoItemPhoto.fromJson(p as Map<String, dynamic>)).toList()
+            ..sort((a, b) => (a.createdAt ?? DateTime(0)).compareTo(b.createdAt ?? DateTime(0))))
+        : const [],
   );
 
-  /// Columns + assignees used by every item query.
+  /// Columns + assignees + photos used by every item query.
   static const select =
       'id, list_id, family_id, title, description, status, priority, due_at, recurrence, position, '
-      'completed_at, completed_by, created_by, revision, deleted_at, created_at, todo_assignments(user_id)';
+      'completed_at, completed_by, created_by, revision, deleted_at, created_at, todo_assignments(user_id), '
+      'todo_item_photos(id, kind, path, created_at)';
 
   final String id;
   final String listId;
@@ -192,6 +233,12 @@ class TodoItem {
   final double position;
   final bool deleted;
   final DateTime? createdAt;
+  final List<TodoItemPhoto> photos;
+
+  List<TodoItemPhoto> photosOf(TodoPhotoKind kind) => [
+    for (final p in photos)
+      if (p.kind == kind) p,
+  ];
 
   bool isOverdue(DateTime now) => !completed && dueAt != null && dueAt!.isBefore(now);
 
@@ -232,6 +279,7 @@ class TodoItem {
     position: position,
     deleted: deleted ?? this.deleted,
     createdAt: createdAt,
+    photos: photos,
   );
 }
 

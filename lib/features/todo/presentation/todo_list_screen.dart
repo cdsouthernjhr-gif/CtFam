@@ -14,6 +14,7 @@ import '../data/todo_repository.dart';
 import '../domain/todo_logic.dart';
 import '../domain/todo_models.dart';
 import 'todo_item_sheet.dart';
+import 'todo_photos.dart';
 import 'todo_providers.dart';
 import 'todo_ui.dart';
 
@@ -132,6 +133,8 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                       context.go('/todo/${widget.listId}/activity');
                     case 'rename':
                       await _rename(list);
+                    case 'cover':
+                      await editTodoListCover(context, ref, list);
                     case 'delete':
                       await _delete(list);
                   }
@@ -139,6 +142,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                 itemBuilder: (_) => [
                   PopupMenuItem(value: 'activity', child: Text(l10n.activity)),
                   if (canManage) PopupMenuItem(value: 'rename', child: Text(l10n.renameList)),
+                  if (canManage) PopupMenuItem(value: 'cover', child: Text(l10n.listCover)),
                   if (canManage) PopupMenuItem(value: 'delete', child: Text(l10n.deleteList)),
                 ],
               ),
@@ -155,6 +159,16 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
           ),
           body: Column(
             children: [
+              if (list.coverPath != null)
+                SizedBox(
+                  key: const ValueKey('todo.cover'),
+                  height: 140,
+                  width: double.infinity,
+                  child: GestureDetector(
+                    onTap: canManage ? () => editTodoListCover(context, ref, list) : null,
+                    child: TodoImage(path: list.coverPath!),
+                  ),
+                ),
               _FilterBar(
                 filter: _filter,
                 members: members.where((m) => m.status == MemberStatus.active).toList(),
@@ -362,6 +376,7 @@ class _ItemTile extends StatelessWidget {
         _Meta(icon: Icons.flag_outlined, text: priorityLabel(l10n, item.priority), color: pColor),
       if (item.recurrence != TodoRecurrence.none)
         _Meta(icon: Icons.repeat, text: recurrenceLabel(l10n, item.recurrence)),
+      if (item.photos.isNotEmpty) _Meta(icon: Icons.photo_outlined, text: '${item.photos.length}'),
       if (pending) _Meta(icon: Icons.sync, text: l10n.syncing),
     ];
     return ListTile(

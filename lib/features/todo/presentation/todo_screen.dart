@@ -8,6 +8,7 @@ import '../../../core/widgets/state_views.dart';
 import '../../../shared/providers/session_controller.dart';
 import '../domain/todo_models.dart';
 import 'todo_list_form_sheet.dart';
+import 'todo_photos.dart';
 import 'todo_providers.dart';
 import 'todo_ui.dart';
 
@@ -105,58 +106,69 @@ class _ListCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => context.go('/todo/${s.id}'),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (s.coverPath != null) SizedBox(height: 96, child: TodoImage(path: s.coverPath!)),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 18,
-                    backgroundColor: theme.colorScheme.secondaryContainer,
-                    child: Icon(categoryIcon(s.category), size: 20, color: theme.colorScheme.onSecondaryContainer),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(s.name, style: theme.textTheme.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
-                        Text(
-                          '${categoryLabel(l10n, s.category)} · ${l10n.itemsProgress(s.completedItems, s.totalItems)}',
-                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: theme.colorScheme.secondaryContainer,
+                        child: Icon(categoryIcon(s.category), size: 20, color: theme.colorScheme.onSecondaryContainer),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              s.name,
+                              style: theme.textTheme.titleMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${categoryLabel(l10n, s.category)} · ${l10n.itemsProgress(s.completedItems, s.totalItems)}',
+                              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
+                      if (s.isPrivate) Icon(Icons.lock_outline, size: 18, color: theme.colorScheme.outline),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: s.progress,
+                      minHeight: 8,
+                      color: theme.colorScheme.secondary,
+                      backgroundColor: theme.colorScheme.surfaceContainerHighest,
                     ),
                   ),
-                  if (s.isPrivate) Icon(Icons.lock_outline, size: 18, color: theme.colorScheme.outline),
+                  if (s.overdueItems > 0 || s.dueTodayItems > 0) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      children: [
+                        if (s.overdueItems > 0)
+                          _Badge(text: l10n.overdueCount(s.overdueItems), color: theme.colorScheme.error),
+                        if (s.dueTodayItems > 0)
+                          _Badge(text: l10n.dueTodayCount(s.dueTodayItems), color: theme.colorScheme.primary),
+                      ],
+                    ),
+                  ],
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
-                  value: s.progress,
-                  minHeight: 8,
-                  color: theme.colorScheme.secondary,
-                  backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                ),
-              ),
-              if (s.overdueItems > 0 || s.dueTodayItems > 0) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  children: [
-                    if (s.overdueItems > 0)
-                      _Badge(text: l10n.overdueCount(s.overdueItems), color: theme.colorScheme.error),
-                    if (s.dueTodayItems > 0)
-                      _Badge(text: l10n.dueTodayCount(s.dueTodayItems), color: theme.colorScheme.primary),
-                  ],
-                ),
-              ],
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

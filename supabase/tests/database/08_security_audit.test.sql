@@ -39,9 +39,9 @@ select is(
     join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'public' and has_function_privilege('authenticated', p.oid, 'execute')),
   array[
-    'account_deletion_blockers', 'add_conversation_members', 'calendar_occurrences', 'cancel_event_occurrence',
+    'account_deletion_blockers', 'add_conversation_members', 'add_todo_item_photo', 'calendar_occurrences', 'cancel_event_occurrence',
     'conversation_summaries', 'create_family', 'create_group_conversation', 'create_invitation',
-    'create_todo_list', 'delete_family', 'delete_family_event', 'delete_message', 'delete_person', 'delete_relation', 'delete_todo_item',
+    'create_todo_list', 'delete_family', 'delete_family_event', 'delete_message', 'delete_person', 'delete_relation', 'delete_todo_item', 'delete_todo_item_photo',
     'delete_todo_list', 'edit_message', 'family_link_requests', 'get_or_create_direct_conversation', 'leave_conversation',
     'leave_family', 'link_person_account', 'linked_families', 'mark_conversation_read', 'mark_family_delivered', 'mark_notifications_read', 'merge_persons', 'merge_suggestions',
     'post_announcement', 'preview_invitation', 'propose_relation', 'redeem_invitation', 'register_device_token',
@@ -50,7 +50,7 @@ select is(
     'review_membership', 'review_person_merge', 'review_relation', 'revoke_invitation', 'search_messages',
     'send_message', 'set_conversation_member_role', 'set_event_reminders', 'set_event_rsvp',
     'set_member_role', 'set_member_status', 'set_message_pinned', 'set_person_photo', 'set_todo_item_status',
-    'set_todo_list_members', 'set_tree_photo', 'todo_list_summaries', 'transfer_ownership', 'update_group_conversation',
+    'set_todo_list_cover', 'set_todo_list_members', 'set_tree_photo', 'todo_list_summaries', 'transfer_ownership', 'update_group_conversation',
     'update_todo_list', 'upsert_family_event', 'upsert_person', 'upsert_todo_item'
   ]::text[],
   'callable RPCs match the reviewed allow-list');
