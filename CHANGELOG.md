@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.9.7] - 2026-11-27: Before/after photos in To-Do; list cover photos
+
+### Added
+- To-Do items: optional **Before** and **After** photos (up to 4 each, camera or gallery). Tap for full
+  screen with zoom and delete; **Compare** shows before and after together. Items with photos show a
+  photo count. Photos can be added once the task is saved and need a connection.
+- To-Do lists: optional cover photo (list creator or family owner/admin, menu ⋮ → Cover photo), shown
+  above the list and on the list card.
+
+### Database
+- Migration `20261127000100_todo_photos` (applied to the hosted project with approval): private bucket
+  `todo-photos` with list-aware storage policies (private lists stay private), table
+  `todo_item_photos` (RPC-only writes, limit enforced on the server), `todo_lists.cover_path`, RPCs
+  `add_todo_item_photo`, `delete_todo_item_photo`, `set_todo_list_cover`; `todo_list_summaries` returns
+  the cover. pgTAP: `15_todo_photos` (31 assertions).
+
 ## [0.9.6] - 2026-11-27: Spinning 3D photo card in the family tree
 
 ### Added
