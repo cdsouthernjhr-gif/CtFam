@@ -214,6 +214,13 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
             title: Text(l10n.notificationSettings),
             onTap: () => context.push(Routes.notificationSettings),
           ),
+          ListTile(
+            key: const Key('profile.about'),
+            leading: const Icon(Icons.info_outline),
+            title: Text(l10n.aboutTitle),
+            subtitle: version == null ? null : Text(l10n.version('${version.version}+${version.buildNumber}')),
+            onTap: () => context.push(Routes.about),
+          ),
           ListTile(title: Text(l10n.security, style: Theme.of(context).textTheme.titleSmall)),
           ListTile(
             leading: const Icon(Icons.password),

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../features/about/about_screen.dart';
 import '../../features/authentication/presentation/auth_screens.dart';
 import '../../features/authentication/presentation/verify_code_screen.dart';
 import '../../features/collections/presentation/collections_screen.dart';
@@ -127,6 +128,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(path: 'password', builder: (_, _) => const ResetPasswordScreen()),
           GoRoute(path: 'notifications', builder: (_, _) => const NotificationSettingsScreen()),
+          GoRoute(path: 'about', builder: (_, _) => const AboutScreen()),
         ],
       ),
       GoRoute(path: Routes.familySettings, builder: (_, _) => const FamilySettingsScreen()),

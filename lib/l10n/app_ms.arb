@@ -1763,5 +1763,31 @@
         "type": "int"
       }
     }
+  },
+  "aboutTitle": "Tentang FamilySync",
+  "aboutTagline": "Aplikasi keluarga: tugasan, chat, kalendar, salasilah dan kutipan dalam satu tempat.",
+  "aboutNewInVersion": "Baharu dalam versi {version}",
+  "aboutAllFeatures": "Semua fungsi ({count})",
+  "aboutFeatureCount": "{count} fungsi",
+  "@aboutNewInVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "@aboutAllFeatures": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@aboutFeatureCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

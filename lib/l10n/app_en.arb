@@ -732,5 +732,10 @@
   "collectionRejectedBecause": "Reason: {reason}",
   "collectionDeletePayment": "Delete this payment?",
   "collectionDeleteExpense": "Delete this expense?",
-  "receipt": "Receipt"
+  "receipt": "Receipt",
+  "aboutTitle": "About FamilySync",
+  "aboutTagline": "A family app: tasks, chat, calendar, family tree and collections in one place.",
+  "aboutNewInVersion": "New in version {version}",
+  "aboutAllFeatures": "All features ({count})",
+  "aboutFeatureCount": "{count, plural, =1{1 feature} other{{count} features}}"
 }

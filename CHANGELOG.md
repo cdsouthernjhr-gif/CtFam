@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.11] - 2026-11-27: About screen
+
+### Added
+- **Profile → About FamilySync**: app name, version, what is new in this version, and every feature so
+  far grouped by area, each tagged with the version that added it. Every release adds its features
+  to this list (enforced by a test).
+
 ## [0.9.10] - 2026-11-27: Cash icon for Collections
 
 ### Changed
