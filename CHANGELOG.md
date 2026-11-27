@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.9] - 2026-11-27: New icon for Collections
+
+### Changed
+- Collections use a "giving hand" icon (instead of the piggy bank) on the Family tab, the Collections
+  screens and in notifications.
+
 ## [0.9.8] - 2026-11-27: Money collections (Kutipan)
 
 ### Added
