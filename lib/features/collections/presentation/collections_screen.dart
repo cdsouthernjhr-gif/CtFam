@@ -45,7 +45,7 @@ class CollectionsScreen extends ConsumerWidget {
                   children: [
                     const SizedBox(height: 80),
                     MessageView(
-                      icon: Icons.volunteer_activism_outlined,
+                      icon: Icons.payments_outlined,
                       title: l10n.collectionsEmptyTitle,
                       message: l10n.collectionsEmptyBody,
                     ),
@@ -92,7 +92,7 @@ class _SummaryCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.volunteer_activism_outlined, color: theme.colorScheme.primary),
+                  Icon(Icons.payments_outlined, color: theme.colorScheme.primary),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
@@ -189,7 +189,7 @@ class CollectionScreen extends ConsumerWidget {
         if (c == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: MessageView(icon: Icons.volunteer_activism_outlined, title: l10n.collectionNotFound),
+            body: MessageView(icon: Icons.payments_outlined, title: l10n.collectionNotFound),
           );
         }
         final me = ref.watch(currentUserIdProvider);
@@ -306,7 +306,7 @@ class _CollectionView extends ConsumerWidget {
           ? null
           : FloatingActionButton.extended(
               key: const Key('collection.pay'),
-              icon: const Icon(Icons.payments_outlined),
+              icon: const Icon(Icons.add_circle_outline),
               label: Text(treasurer ? l10n.collectionRecordPayment : l10n.collectionPay),
               onPressed: () =>
                   showMoneyEntrySheet(context, collection: c, kind: MoneyEntryKind.payment, treasurer: treasurer),

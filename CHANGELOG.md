@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.10] - 2026-11-27: Cash icon for Collections
+
+### Changed
+- Collections now use a cash (banknotes) icon on the Family tab, the Collections screens and in
+  notifications. The "I have paid" / "Record payment" button uses a plus icon so it stays distinct.
+
 ## [0.9.9] - 2026-11-27: New icon for Collections
 
 ### Changed

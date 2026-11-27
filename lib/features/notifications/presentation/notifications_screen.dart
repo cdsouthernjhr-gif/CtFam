@@ -14,7 +14,7 @@ IconData notificationIcon(String type) => switch (type) {
   'family_request' || 'member_joined' => Icons.group_add_outlined,
   'family_event' => Icons.event_outlined,
   'announcement' => Icons.campaign_outlined,
-  'collection' => Icons.volunteer_activism_outlined,
+  'collection' => Icons.payments_outlined,
   _ => Icons.notifications_none,
 };
 

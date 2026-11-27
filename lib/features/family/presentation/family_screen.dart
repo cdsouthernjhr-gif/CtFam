@@ -91,7 +91,7 @@ class FamilyScreen extends ConsumerWidget {
           IconButton(
             key: const Key('family.collections'),
             tooltip: l10n.collectionsTitle,
-            icon: const Icon(Icons.volunteer_activism_outlined),
+            icon: const Icon(Icons.payments_outlined),
             onPressed: () => context.push(Routes.collections),
           ),
           IconButton(
