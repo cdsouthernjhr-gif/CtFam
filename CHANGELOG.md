@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.9.8] - 2026-11-27: Money collections (Kutipan)
+
+### Added
+- **Collections** (Family tab → savings icon): each with a title and a purpose, an optional due date and
+  optional sharing with linked families. Target types: one total, per member (pay in instalments), or
+  no target.
+- Members record their own payments ("I have paid", optional receipt photo); a treasurer confirms or
+  rejects them (with a reason) and only confirmed payments count. Payments recorded by a treasurer are
+  confirmed at once. Treasurers: the creator, the extra treasurers they pick, and the family
+  owner/admins.
+- Treasurers record expenses (with receipts); the page shows collected, pending, spent and balance,
+  progress to the target (and how much above it), a per-member table, and every payment with its
+  status. Everyone who can see a collection sees all amounts. Treasurers can send a reminder (once a
+  day) to whoever still owes, and close or reopen a collection.
+- Notifications for new collections, payments to confirm, confirmations/rejections and reminders.
+- The app only records money; it does not move it.
+
+### Database
+- Migration `20261127000200_collections` (applied to the hosted project with approval): tables
+  `collections`, `collection_treasurers`, `collection_targets`, `collection_payments`,
+  `collection_expenses` (read-only under RLS, writes through RPCs), private bucket
+  `collection-receipts`, notification type `collection`, RPCs `upsert_collection`,
+  `set_collection_status`, `delete_collection`, `record_collection_payment`,
+  `review_collection_payment`, `delete_collection_payment`, `record_collection_expense`,
+  `delete_collection_expense`, `remind_collection`, `collection_summaries`. pgTAP: `16_collections`
+  (56 assertions).
+
 ## [0.9.7] - 2026-11-27: Before/after photos in To-Do; list cover photos
 
 ### Added
