@@ -643,5 +643,8 @@
   "treePdfOverview": "Page map",
   "treePdfOverviewHint": "This chart is too big for one page, so it is printed at full size over several pages. Each box below is one page; arrange them by label (A1, A2, B1…) to join them.",
   "treePdfBranchOf": "Branch of {name}",
-  "treePdfGeneration": "G{n}"
+  "treePdfGeneration": "G{n}",
+  "treeSpinStop": "Tap the photo to stop",
+  "treeSpinResume": "Tap the photo to spin again",
+  "treeOpenProfile": "Open full profile"
 }

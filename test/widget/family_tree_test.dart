@@ -212,4 +212,54 @@ void main() {
     expect(find.text('Cucu (1)'), findsOneWidget);
     expect(find.text('Faris'), findsOneWidget);
   });
+
+  testWidgets('tapping a photo spins a 3D card; tapping it stops and shows the details', (tester) async {
+    when(() => repo.relationship('F1', 'faris')).thenAnswer(
+      (_) async => const Relationship(kind: 'blood', ms: 'anak saudara', en: 'nephew', up: 1, down: 2, via: 'hasan'),
+    );
+    await pumpLocalized(tester, const FamilyTreeScreen(), overrides: overrides(FamilyRole.member));
+    await tester.tap(find.byKey(const ValueKey('tree-photo-faris')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byKey(const ValueKey('spin-card')), findsOneWidget);
+    expect(find.text('Tekan gambar untuk berhenti'), findsOneWidget);
+    expect(find.byKey(const ValueKey('spin-details')), findsNothing, reason: 'no details while spinning');
+
+    await tester.tap(find.byKey(const ValueKey('spin-card')));
+    await tester.pump(const Duration(seconds: 4)); // eases to the front and stops
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byKey(const ValueKey('spin-details')), findsOneWidget);
+    expect(find.text('anak saudara anda · anak kepada Hasan'), findsOneWidget);
+    expect(find.text('Lihat profil penuh'), findsOneWidget);
+    expect(find.textContaining('Ibu bapa'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('spin-card'))); // spins again
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byKey(const ValueKey('spin-details')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('spin-close')));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const ValueKey('spin-card')), findsNothing);
+  });
+
+  testWidgets('with "remove animations" the card does not spin and details show at once', (tester) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await pumpLocalized(tester, const FamilyTreeScreen(), overrides: overrides(FamilyRole.member));
+    await tester.tap(find.byKey(const ValueKey('tree-photo-faris')));
+    await tester.pump(const Duration(milliseconds: 400)); // past the canvas' double-tap window
+    await tester.pumpAndSettle();
+    expect(find.text('Tekan gambar untuk berhenti'), findsNothing, reason: 'no spin hint without animations');
+    expect(find.byKey(const ValueKey('spin-details')), findsOneWidget);
+    expect(find.text('Lihat profil penuh'), findsOneWidget);
+  });
+
+  testWidgets('tapping the rest of the card still opens the person page', (tester) async {
+    await pumpLocalized(tester, const FamilyTreeScreen(), overrides: overrides(FamilyRole.member));
+    final card = tester.getRect(find.byKey(const ValueKey('tree-card-hasan')));
+    await tester.tapAt(card.bottomCenter - const Offset(0, 6));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const ValueKey('spin-card')), findsNothing);
+    expect(tester.takeException().toString(), contains('GoRouter'), reason: 'navigates to the person page');
+  });
 }

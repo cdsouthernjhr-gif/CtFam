@@ -31,6 +31,17 @@ String descendantLabel(AppLocalizations l10n, int generation) => switch (generat
 bool isTreeAdmin(FamilyRole? role) => role == FamilyRole.owner || role == FamilyRole.admin;
 
 /// Owner/admin of [familyId] (people are edited by their home family).
+/// "Anak saudara anda (melalui Ali)" etc.; null when there is no label.
+String? relationshipText(AppLocalizations l10n, TreeData tree, Relationship r) {
+  final label = r.label(l10n.localeName);
+  if (label == null) return null;
+  final via = r.via == null ? null : tree.persons[r.via!];
+  if (via == null) return l10n.treeRelationIs(label);
+  return r.kind == 'marriage'
+      ? l10n.treeRelationViaSpouse(label, via.fullName)
+      : l10n.treeRelationViaParent(label, via.fullName);
+}
+
 final adminOfFamilyProvider = Provider.family<bool, String>((ref, familyId) {
   final memberships = ref.watch(sessionControllerProvider.select((s) => s.activeMemberships));
   return memberships.any((m) => m.familyId == familyId && isTreeAdmin(m.role));
@@ -143,16 +154,6 @@ class _Body extends ConsumerWidget {
     final isMe = person.userId != null && person.userId == me;
     final rel = isMe ? null : ref.watch(relationshipProvider((familyId: familyId, personId: person.id)));
     final now = DateTime.now();
-
-    String? relText(Relationship r) {
-      final label = r.label(l10n.localeName);
-      if (label == null) return null;
-      final via = r.via == null ? null : tree.persons[r.via!];
-      if (via == null) return l10n.treeRelationIs(label);
-      return r.kind == 'marriage'
-          ? l10n.treeRelationViaSpouse(label, via.fullName)
-          : l10n.treeRelationViaParent(label, via.fullName);
-    }
 
     final memberships = ref.watch(sessionControllerProvider.select((s) => s.activeMemberships));
     bool adminOf(String? familyId) => memberships.any((m) => m.familyId == familyId && isTreeAdmin(m.role));
@@ -273,7 +274,7 @@ class _Body extends ConsumerWidget {
                   : switch (rel.requireValue.kind) {
                       'none' => l10n.treeNoRelation,
                       'no_profile' => l10n.treeNeedOwnProfile,
-                      _ => relText(rel.requireValue) ?? l10n.treeNoRelation,
+                      _ => relationshipText(l10n, tree, rel.requireValue) ?? l10n.treeNoRelation,
                     },
               style: TextStyle(color: scheme.onPrimaryContainer, fontWeight: FontWeight.w600),
             ),

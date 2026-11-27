@@ -1577,5 +1577,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "treeSpinStop": "Tekan gambar untuk berhenti",
+  "treeSpinResume": "Tekan gambar untuk berputar semula",
+  "treeOpenProfile": "Lihat profil penuh"
 }

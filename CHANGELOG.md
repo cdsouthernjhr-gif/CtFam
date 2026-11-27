@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.6] - 2026-11-27: Spinning 3D photo card in the family tree
+
+### Added
+- Family tree: tap a person's photo (the circle on the card) to open their photo on a card that turns
+  in 3D (the back shows the name and years). Tap the card: it slows down, stops facing you and shows the
+  details: age, relationship to you, birthday and countdown, parents, spouses, children, and
+  **Open full profile**. Tap again to spin again; ✕ closes. People without a photo get a card with
+  their initials. With the system "remove animations" setting on, it does not spin and the details
+  show at once. Tapping the rest of the card still opens the person page.
+
 ## [0.9.5] - 2026-11-24: Print-ready family tree PDF; all descendants on the person page
 
 ### Added

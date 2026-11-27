@@ -16,6 +16,7 @@ import '../domain/tree_layout.dart';
 import '../domain/tree_models.dart';
 import 'person_form_sheet.dart';
 import 'person_screen.dart';
+import 'person_spin_dialog.dart';
 import 'relation_sheet.dart';
 import 'tree_print_screen.dart';
 import 'tree_photo.dart';
@@ -520,6 +521,7 @@ class _TreeCanvasState extends State<TreeCanvas> {
                             person: widget.tree.persons[e.key]!,
                             highlight: e.key == widget.highlightId,
                             onLongPress: widget.onLongPress,
+                            onPhotoTap: (p) => showPersonSpin(context, widget.tree, p),
                           ),
                         ),
                     ],
@@ -557,11 +559,15 @@ class _TreeCanvasState extends State<TreeCanvas> {
 }
 
 class _PersonCard extends StatelessWidget {
-  const _PersonCard({required this.person, required this.highlight, this.onLongPress});
+  const _PersonCard({required this.person, required this.highlight, this.onLongPress, this.onPhotoTap});
 
   final TreePerson person;
   final bool highlight;
   final void Function(TreePerson person)? onLongPress;
+
+  /// Tapping the photo opens the spinning 3D card; the rest of the card
+  /// opens the person page.
+  final void Function(TreePerson person)? onPhotoTap;
 
   @override
   Widget build(BuildContext context) {
@@ -586,11 +592,19 @@ class _PersonCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              StorageAvatar(
-                radius: 17,
-                bucket: TreeRepository.photoBucket,
-                path: person.photoPath,
-                initials: person.initials,
+              GestureDetector(
+                key: ValueKey('tree-photo-${person.id}'),
+                behavior: HitTestBehavior.opaque,
+                onTap: onPhotoTap == null ? null : () => onPhotoTap!(person),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8), // a bigger touch target
+                  child: StorageAvatar(
+                    radius: 17,
+                    bucket: TreeRepository.photoBucket,
+                    path: person.photoPath,
+                    initials: person.initials,
+                  ),
+                ),
               ),
               const SizedBox(height: 4),
               Text(
